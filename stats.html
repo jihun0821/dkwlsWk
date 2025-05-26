@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hanil Sports Prediction</title>
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="matches.css">
+    <link rel="stylesheet" href="features.css">
+    <link rel="stylesheet" href="sports-navbar.css">
+    <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
+</head>
+<body>
+    <header class="navbar">
+    <a href="index.html" class="logo">
+      <img src="https://i.imgur.com/q3OcEgT.png" alt="HSP 로고" class="logo-img">
+    </a>
+        <input type="text" class="search-bar" placeholder="경기 검색">
+        <button class="login" id="loginBtn">로그인</button>
+        <button class="logout" id="logoutBtn" style="display: none;">로그아웃</button>
+        <button class="add-match" id="addMatchBtn" style="display: none;">경기 추가</button>
+        <div class="icons">
+            <span class="icon" id="toggleThemeBtn">🌙</span>
+        </div>
+    </header>
+
+    <nav class="sports-navbar">
+      <a class="sports-link active" href="index.html">
+        <span class="sports-icon">⚽</span>
+        Football
+      </a>
+      <a class="sports-link" href="#" id="moreLink">
+        <span class="sports-icon">⋯</span>
+        More
+      </a>
+    </nav>
+
+    <div id="moreModal" class="modal">
+        <div class="modal-content">
+          <span class="close" id="closeMoreModal">&times;</span>
+          <p>더 많은 종목을 추가할 예정입니다</p>
+        </div>
+    </div>
+
+    <div class="sidebar_1">
+        <a href="schedule.html"><h3>경기일정</h3></a>
+    </div>
+
+    <div class="sidebar_2">
+        <a href="stats.html"><h3>주요스탯</h3></a>
+    </div>
+
+    <div class="sidebar_3">
+        <a href="leaderboard.html"><h3>리더보드</h3></a>
+    </div>
+
+    <div class="sidebar_4">
+        <a href="notice.html"><h3>공지사항</h3></a>
+    </div>
+
+    <div class="sidebar_5">
+        <a href="https://www.hanilians.xyz/"><h3>한일리안</h3></a>
+    </div>
+
+    <div class="sidebar_6">
+        <a href="https://cafe.naver.com/browns28nd"><h3>네이버카페</h3></a>
+    </div>
+
+    <div class="sidebar_7">
+        <a href="https://docs.google.com/spreadsheets/d/1ZLiF4kczcSurKRB8vqgqzpRruJFjwsFzvpY6gUSMN_k/edit?gid=0#gid=0"><h3>운동장 예약</h3></a>
+    </div>
+
+    <div class="sidebar_8">
+        <a href="standing/table.html"><h3>순위/대진표</h3></a>
+    </div>
+
+    <main>
+      <section class="main">
+        <section class="stats-section">
+          <h2>득점 TOP 3</h2>
+          <div class="top3-container">
+            <div class="top-card_first">
+              <div class="rank-badge">🥇 1위</div>
+              <div class="player-name">문지훈</div>
+              <div class="player-team">C204</div>
+              <div class="player-goals">7골</div>
+            </div>
+          
+            <div class="top-card_second">
+              <div class="rank-badge">🥈 2위</div>
+              <div class="player-name">금담인</div>
+              <div class="player-team">C20X</div>
+              <div class="player-goals">5골</div>
+            </div>
+
+            <div class="top-card_third">
+              <div class="rank-badge">🥉 3위</div>
+              <div class="player-name">정성훈, 최다민</div>
+              <div class="player-team">CXXX, CXXX</div>
+              <div class="player-goals">4골</div>
+            </div>
+
+            <div class="top-card_fourth">
+              <div class="rank-badge"> 4위</div>
+              <div class="player-name">허재혁</div>
+              <div class="player-team">CXXX</div>
+              <div class="player-goals">3골</div>
+            </div>
+
+            <div class="top-card_fifth">
+              <a href="https://docs.google.com/spreadsheets/d/1FMbES_cQjVVZ_Mv7RmuQYS4AJFlDvA5K7HfadLSnaZs/edit?gid=0#gid=0" class="other-name">기타 참고</a>
+          </div>
+          
+         
+      </section>
