@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hanil Sports Prediction</title>
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="matches.css">
+    <link rel="stylesheet" href="features.css">
+    <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
+</head>
+<body>
+    <header class="navbar">
+        <a href="index.html" class="logo">
+          <img src="https://i.imgur.com/q3OcEgT.png" alt="HSP 로고" class="logo-img">
+        </a>
+        <input type="text" class="search-bar" placeholder="경기 검색">
+        <button class="login" id="loginBtn">로그인</button>
+        <button class="logout" id="logoutBtn" style="display: none;">로그아웃</button>
+        <button class="add-match" id="addMatchBtn" style="display: none;">경기 추가</button>
+        <div class="icons">
+            <span class="icon" id="toggleThemeBtn">🌙</span>
+        </div>
+    </header>
+
+    <nav class="sports-navbar">
+      <a class="sports-link active" href="index.html">
+        <span class="sports-icon">⚽</span>
+        Football
+      </a>
+      <a class="sports-link" href="#" id="moreLink">
+        <span class="sports-icon">⋯</span>
+        More
+      </a>
+    </nav>
+
+    <div id="moreModal" class="modal">
+        <div class="modal-content">
+          <span class="close" id="closeMoreModal">&times;</span>
+          <p>더 많은 종목을 추가할 예정입니다</p>
+        </div>
+    </div>
+
+    <div class="sidebar_1">
+        <a href="schedule.html"><h3>경기일정</h3></a>
+    </div>
+    <div class="sidebar_2">
+        <a href="stats.html"><h3>주요스탯</h3></a>
+    </div>
+    <div class="sidebar_3">
+        <a href="leaderboard.html"><h3>리더보드</h3></a>
+    </div>
+    <div class="sidebar_4">
+        <a href="notice.html"><h3>공지사항</h3></a>
+    </div>
+    <div class="sidebar_5">
+        <a href="https://www.hanilians.xyz/"><h3>한일리안</h3></a>
+    </div>
+    <div class="sidebar_6">
+        <a href="https://cafe.naver.com/browns28nd"><h3>네이버카페</h3></a>
+    </div>
+    <div class="sidebar_7">
+        <a href="https://docs.google.com/spreadsheets/d/1ZLiF4kczcSurKRB8vqgqzpRruJFjwsFzvpY6gUSMN_k/edit?gid=0#gid=0"><h3>운동장 예약</h3></a>
+    </div>
+    <div class="sidebar_8">
+        <a href="standing_table.html"><h3>순위/대진표</h3></a>
+    </div>
+
+    <main>
+      <section class="main">
+        <h2>축구 순위표</h2>
+        <div style="margin-bottom:16px;">
+          <label for="filterGroup">조별 보기:</label>
+          <input type="text" id="filterGroup" placeholder="예: A">
+          <button onclick="filterTable()">필터</button>
+          <button onclick="resetFilter()">전체보기</button>
+        </div>
+        <div class="table-responsive">
+          <table id="rankingTable">
+            <thead>
+              <tr>
+                <th>순위</th>
+                <th>팀명</th>
+                <th>조</th>
+                <th>경기 수</th>
+                <th>승점</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 순위표가 여기에 출력됩니다 -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <script>
+        // 팀 정보 미리 세팅 (예시)
+        const teams = [
+          { teamName: "울산", group: "A", played: 3, points: 7 },
+          { teamName: "포항", group: "A", played: 3, points: 6 },
+          { teamName: "전북", group: "A", played: 3, points: 4 },
+          { teamName: "인천", group: "B", played: 3, points: 9 },
+          { teamName: "서울", group: "B", played: 3, points: 3 },
+          { teamName: "수원", group: "B", played: 3, points: 1 }
+          // 필요시 추가
+        ];
+
+        const rankingTableBody = document.querySelector('#rankingTable tbody');
+        const filterGroupInput = document.getElementById('filterGroup');
+
+        function renderTable(filteredTeams = null) {
+          const displayTeams = filteredTeams !== null ? filteredTeams : teams;
+
+          // 그룹, 승점, 경기수로 정렬
+          const sorted = [...displayTeams].sort((a, b) => {
+            if (a.group < b.group) return -1;
+            if (a.group > b.group) return 1;
+            if (b.points !== a.points) return b.points - a.points;
+            return b.played - a.played;
+          });
+
+          rankingTableBody.innerHTML = '';
+          let currentGroup = '';
+          let rank = 1;
+
+          sorted.forEach((team, idx) => {
+            if (team.group !== currentGroup) {
+              currentGroup = team.group;
+              rank = 1;
+            }
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${rank}</td>
+              <td>${team.teamName}</td>
+              <td>${team.group}</td>
+              <td>${team.played}</td>
+              <td>${team.points}</td>
+            `;
+            rankingTableBody.appendChild(row);
+            rank++;
+          });
+        }
+
+        function filterTable() {
+          const group = filterGroupInput.value.trim();
+          if (!group) {
+            renderTable();
+            return;
+          }
+          const filtered = teams.filter(team => team.group.toLowerCase() === group.toLowerCase());
+          renderTable(filtered);
+        }
+
+        function resetFilter() {
+          filterGroupInput.value = '';
+          renderTable();
+        }
+
+        // 페이지 로드시 표시
+        renderTable();
+      </script>
+    </main>
+</body>
+</html>
