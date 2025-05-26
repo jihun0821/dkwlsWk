@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // 예시: 페이지 이동 로직 (실제로는 페이지 숫자 상태를 관리해야 함)
 let currentPage = 1;
-const totalPages = 4; // 예시로 10페이지라고 가정
+const totalPages = 5; // 예시로 10페이지라고 가정
 
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
