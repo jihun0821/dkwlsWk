@@ -295,3 +295,53 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }
   });
+
+// 페이지네이션 설정
+const totalPage = 4; // 전체 페이지 수
+const groupSize = 5; // 한 번에 보여줄 페이지 수
+
+let currentPage = 1;
+
+function renderPagination() {
+  const pageNumbersDiv = document.getElementById("pageNumbers");
+  pageNumbersDiv.innerHTML = "";
+
+  // 현재 그룹 계산
+  const currentGroup = Math.ceil(currentPage / groupSize);
+  const startPage = (currentGroup - 1) * groupSize + 1;
+  const endPage = Math.min(startPage + groupSize - 1, totalPage);
+
+  // 페이지 버튼 생성
+  for (let i = startPage; i <= endPage; i++) {
+    const btn = document.createElement("button");
+    btn.className = "page-number" + (i === currentPage ? " active" : "");
+    btn.innerText = i;
+    btn.onclick = () => {
+      currentPage = i;
+      renderPagination();
+    };
+    pageNumbersDiv.appendChild(btn);
+  }
+
+  // 이전/다음 버튼 상태
+  document.getElementById("prevBtn").disabled = currentPage === 1;
+  document.getElementById("nextBtn").disabled = currentPage === totalPage;
+
+  // 부가 정보 (예시)
+  document.getElementById("pageInfo").innerText = `현재 페이지: ${currentPage} / ${totalPage}`;
+}
+
+document.getElementById("prevBtn").onclick = function() {
+  if (currentPage > 1) {
+    currentPage--;
+    renderPagination();
+  }
+};
+document.getElementById("nextBtn").onclick = function() {
+  if (currentPage < totalPage) {
+    currentPage++;
+    renderPagination();
+  }
+};
+
+renderPagination();
