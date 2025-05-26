@@ -296,52 +296,34 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
-// 페이지네이션 설정
-const totalPage = 5; // 전체 페이지 수
-const groupSize = 5; // 한 번에 보여줄 페이지 수
-
+// 예시: 페이지 이동 로직 (실제로는 페이지 숫자 상태를 관리해야 함)
 let currentPage = 1;
+const totalPages = 4; // 예시로 10페이지라고 가정
 
-function renderPagination() {
-  const pageNumbersDiv = document.getElementById("pageNumbers");
-  pageNumbersDiv.innerHTML = "";
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
 
-  // 현재 그룹 계산
-  const currentGroup = Math.ceil(currentPage / groupSize);
-  const startPage = (currentGroup - 1) * groupSize + 1;
-  const endPage = Math.min(startPage + groupSize - 1, totalPage);
-
-  // 페이지 버튼 생성
-  for (let i = startPage; i <= endPage; i++) {
-    const btn = document.createElement("button");
-    btn.className = "page-number" + (i === currentPage ? " active" : "");
-    btn.innerText = i;
-    btn.onclick = () => {
-      currentPage = i;
-      renderPagination();
-    };
-    pageNumbersDiv.appendChild(btn);
-  }
-
-  // 이전/다음 버튼 상태
-  document.getElementById("prevBtn").disabled = currentPage === 1;
-  document.getElementById("nextBtn").disabled = currentPage === totalPage;
-
-  // 부가 정보 (예시)
-  document.getElementById("pageInfo").innerText = `현재 페이지: ${currentPage} / ${totalPage}`;
+function updateButtons() {
+  prevBtn.disabled = currentPage === 1;
+  nextBtn.disabled = currentPage === totalPages;
 }
 
-document.getElementById("prevBtn").onclick = function() {
+prevBtn.addEventListener('click', () => {
   if (currentPage > 1) {
     currentPage--;
-    renderPagination();
+    updateButtons();
+    // 실제 페이지 변경 작업을 여기에 추가
+    console.log('이전 페이지:', currentPage);
   }
-};
-document.getElementById("nextBtn").onclick = function() {
-  if (currentPage < totalPage) {
-    currentPage++;
-    renderPagination();
-  }
-};
+});
 
-renderPagination();
+nextBtn.addEventListener('click', () => {
+  if (currentPage < totalPages) {
+    currentPage++;
+    updateButtons();
+    // 실제 페이지 변경 작업을 여기에 추가
+    console.log('다음 페이지:', currentPage);
+  }
+});
+
+updateButtons();
