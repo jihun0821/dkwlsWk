@@ -67,97 +67,68 @@
     </div>
 
     <main>
-      <section class="main">
-        <h2>축구 순위표</h2>
-        <div style="margin-bottom:16px;">
-          <label for="filterGroup">조별 보기:</label>
-          <input type="text" id="filterGroup" placeholder="예: A">
-          <button onclick="filterTable()">필터</button>
-          <button onclick="resetFilter()">전체보기</button>
-        </div>
-        <div class="table-responsive">
-          <table id="rankingTable">
-            <thead>
-              <tr>
-                <th>순위</th>
-                <th>팀명</th>
-                <th>조</th>
-                <th>경기 수</th>
-                <th>승점</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 순위표가 여기에 출력됩니다 -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-      <script>
-        // 팀 정보 미리 세팅 (예시)
-        const teams = [
-          { teamName: "울산", group: "A", played: 3, points: 7 },
-          { teamName: "포항", group: "A", played: 3, points: 6 },
-          { teamName: "전북", group: "A", played: 3, points: 4 },
-          { teamName: "인천", group: "B", played: 3, points: 9 },
-          { teamName: "서울", group: "B", played: 3, points: 3 },
-          { teamName: "수원", group: "B", played: 3, points: 1 }
-          // 필요시 추가
-        ];
-
-        const rankingTableBody = document.querySelector('#rankingTable tbody');
-        const filterGroupInput = document.getElementById('filterGroup');
-
-        function renderTable(filteredTeams = null) {
-          const displayTeams = filteredTeams !== null ? filteredTeams : teams;
-
-          // 그룹, 승점, 경기수로 정렬
-          const sorted = [...displayTeams].sort((a, b) => {
-            if (a.group < b.group) return -1;
-            if (a.group > b.group) return 1;
-            if (b.points !== a.points) return b.points - a.points;
-            return b.played - a.played;
-          });
-
-          rankingTableBody.innerHTML = '';
-          let currentGroup = '';
-          let rank = 1;
-
-          sorted.forEach((team, idx) => {
-            if (team.group !== currentGroup) {
-              currentGroup = team.group;
-              rank = 1;
-            }
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${rank}</td>
-              <td>${team.teamName}</td>
-              <td>${team.group}</td>
-              <td>${team.played}</td>
-              <td>${team.points}</td>
-            `;
-            rankingTableBody.appendChild(row);
-            rank++;
-          });
-        }
-
-        function filterTable() {
-          const group = filterGroupInput.value.trim();
-          if (!group) {
-            renderTable();
-            return;
-          }
-          const filtered = teams.filter(team => team.group.toLowerCase() === group.toLowerCase());
-          renderTable(filtered);
-        }
-
-        function resetFilter() {
-          filterGroupInput.value = '';
-          renderTable();
-        }
-
-        // 페이지 로드시 표시
-        renderTable();
-      </script>
-    </main>
-</body>
-</html>
+        <section class="main">
+          <h2>축구 순위표</h2>
+          <div class="group-tables">
+            <div class="group-table-container">
+              <h3>A조</h3>
+              <table id="groupTableA">
+                <thead>
+                  <tr>
+                    <th>순위</th>
+                    <th>팀명</th>
+                    <th>경기 수</th>
+                    <th>승점</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="group-table-container">
+              <h3>B조</h3>
+              <table id="groupTableB">
+                <thead>
+                  <tr>
+                    <th>순위</th>
+                    <th>팀명</th>
+                    <th>경기 수</th>
+                    <th>승점</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="group-table-container">
+              <h3>C조</h3>
+              <table id="groupTableC">
+                <thead>
+                  <tr>
+                    <th>순위</th>
+                    <th>팀명</th>
+                    <th>경기 수</th>
+                    <th>승점</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="group-table-container">
+              <h3>D조</h3>
+              <table id="groupTableD">
+                <thead>
+                  <tr>
+                    <th>순위</th>
+                    <th>팀명</th>
+                    <th>경기 수</th>
+                    <th>승점</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <script src="standing_table.js"></script>
+      </main>
+  </body>
+  </html>
