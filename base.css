@@ -33,6 +33,7 @@ body {
   padding: 15px;
   border-radius: 8px;
   border: none;
+  font-weight: bold;
 }
 
 .icons {
@@ -83,28 +84,89 @@ body {
 /* ============== 3. 메인 레이아웃 ============== */
 main {
   display: flex;
-  padding: 20px;
+  padding: 40px 20px 20px 20px; /* 상단 패딩을 0으로 */
   gap: 20px;
 }
 
 /* ============== 4. 사이드바 영역 ============== */
-.sidebar_1, .sidebar_2, .sidebar_3, .sidebar_4{
-  background-color: #1e1e1e;
-  height: 60px;
-  width: 100px;
+.sidebar_1, .sidebar_2, .sidebar_3, .sidebar_4, .sidebar_5, .sidebar_6, .sidebar_7, .sidebar_8 {
+  background-color: #615b5b;
+  height: 50px;
+  width: 105px;
   border-radius: 20px;
   text-align: center;
-  line-height: 60px;
+  line-height: 20px;
+  font-size: 14px;
 }
+
+.sidebar_1 a, .sidebar_2 a, .sidebar_3 a, .sidebar_4 a, .sidebar_5 a, .sidebar_6 a, .sidebar_7 a, .sidebar_8 a {
+  text-decoration: none;
+  color: white;
+}
+
+.sidebar_1 {
+  position: absolute;
+  top: 215px;
+  left: 190px;
+}
+
+.sidebar_1 a:hover, .sidebar_2 a:hover, .sidebar_3 a:hover, .sidebar_4 a:hover, .sidebar_5 a:hover, .sidebar_6 a:hover, .sidebar_7 a:hover, .sidebar_8 a:hover {
+  color: #7699b6 ;
+  text-decoration: underline;
+}
+
+.sidebar_2 {
+  position: absolute;
+  top: 295px;
+  left: 190px;
+}
+
+.sidebar_3 {
+  position: absolute;
+  top: 375px;
+  left:190px;
+}
+
+.sidebar_4 {
+  position: absolute;
+  top: 455px;
+  left: 190px;
+}
+
+.sidebar_5 {
+  position: absolute;
+  top: 565px;
+  left: 190px
+}
+
+.sidebar_6 {
+  position: absolute;
+  top: 645px;
+  left: 190px;
+}
+
+.sidebar_7 {
+  position: absolute;
+  top: 725px;
+  left:190px;
+}
+
+.sidebar_8 {
+  position: absolute;
+  top: 805px;
+  left: 190px;
+}
+
 
 /* ============== 5. 메인 콘텐츠 영역 ============== */
 .main {
   flex: 1;
-  background-color: #1e1e1e;
+  background-color: #272424;
   padding: 30px;
   border-radius: 30px;
   margin-right: 150px;
-  margin-left: 300px;
+  margin-left: 230px;
+  padding-left: 80px;
 }
 
 .main h2 {
@@ -250,3 +312,69 @@ main {
     color: #888;
     cursor: pointer;
   }
+/* ============== 20. 페이지네이션 ============== */
+.pagination-container {
+  width: 100%;
+  margin: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+.page-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #fff;
+  color: #2d2d2d;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px 0 rgba(20, 20, 43, 0.06);
+  font-size: 1.3em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.page-btn:disabled {
+  color: #ccc;
+  background: #f6f3f3;
+  cursor: not-allowed;
+}
+.page-numbers {
+  display: flex;
+  gap: 8px;
+}
+.page-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #f6f3f3;
+  color: #2d2d2d;
+  font-size: 1.1em;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px 0 rgba(20,20,43,0.06);
+}
+.page-number.active {
+  background: #3585f6;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 4px 10px 0 rgba(53,133,246,0.08);
+}
+.page-number:hover:not(.active) {
+  background: #e3e3e3;
+}
+.page-info {
+  margin-top: 10px;
+  color: #444;
+  font-size: 1em;
+}
