@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
 // 페이지네이션 설정
-const totalPage = 4; // 전체 페이지 수
+const totalPage = 5; // 전체 페이지 수
 const groupSize = 5; // 한 번에 보여줄 페이지 수
 
 let currentPage = 1;
