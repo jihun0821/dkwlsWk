@@ -313,69 +313,31 @@ main {
     cursor: pointer;
   }
 /* ============== 20. 페이지네이션 ============== */
-  .pagination-container {
-  width: 100%;
-  margin: 40px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-}
 .pagination {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
-  gap: 10px;
+  gap: 60px;
+  margin-bottom: 30px;
 }
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: #fff;
-  color: #2d2d2d;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px 0 rgba(20, 20, 43, 0.06);
-  font-size: 1.3em;
-  font-weight: bold;
+
+.pagination-btn {
+  color: #2051ff;
+  border: 1px solid #2051ff;
+  background: white;
+  border-radius: 6px;
+  padding: 8px 16px;
   cursor: pointer;
-  transition: background 0.1s;
-}
-.page-btn:disabled {
-  color: #ccc;
-  background: #f6f3f3;
-  cursor: not-allowed;
-}
-.page-numbers {
+  font-weight: bold;
   display: flex;
+  align-items: center;
   gap: 8px;
+  font-size: 16px;
+  transition: background 0.2s;
 }
-.page-number {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: #f6f3f3;
-  color: #2d2d2d;
-  font-size: 1.1em;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: background 0.1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px 0 rgba(20,20,43,0.06);
-}
-.page-number.active {
-  background: #3585f6;
-  color: #fff;
-  font-weight: bold;
-  box-shadow: 0 4px 10px 0 rgba(53,133,246,0.08);
-}
-.page-number:hover:not(.active) {
-  background: #e3e3e3;
-}
-.page-info {
-  margin-top: 5px;
-  color: #444;
-  font-size: 1em;
+
+.pagination-btn:disabled {
+  color: #aaa;
+  border-color: #aaa;
+  cursor: not-allowed;
 }
