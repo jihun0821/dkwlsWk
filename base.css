@@ -348,37 +348,74 @@ main {
 .group-tables {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 28px 36px;
+  grid-template-rows: repeat(2, 1fr);
+  gap: 40px 50px; /* 행, 열 간격 */
   justify-items: center;
   margin-top: 10px;
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .group-table-container {
-  width: 320px;
-  background: #fff;
+  min-width: 340px;
+  min-height: 210px;
+  background: #444;
   border-radius: 14px;
-  padding: 12px 12px 4px 12px;
-  box-shadow: 0 2px 10px rgba(30, 58, 138, 0.08);
-  margin-bottom: 12px;
+  padding: 18px 14px 10px 14px;
+  box-shadow: 0 2px 10px rgba(30, 58, 138, 0.09);
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
+
 .group-table-container h3 {
-  color: #1e3a8a;
+  color: #3da5ff;
   text-align: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-size: 19px;
   letter-spacing: 2px;
 }
+
 .group-table-container table {
   width: 100%;
   font-size: 15px;
-  margin-top: 0;
-  margin-bottom: 0;
+  margin: 0;
+  border-collapse: collapse;
+  background: transparent;
 }
-.group-table-container th, .group-table-container td {
+
+.group-table-container th,
+.group-table-container td {
   font-size: 15px;
-  padding: 7px;
+  padding: 10px 6px;
+  color: #fff;              
+  text-align: center;
+  background: transparent;
 }
+
+.group-table-container th {
+  font-weight: bold;
+  border-bottom: 2px solid #3da5ff;
+  color: #3da5ff;
+  background: transparent;
+}
+
+.group-table-container tr:not(:last-child) td {
+  border-bottom: 1px solid #555;
+}
+
+/* 반응형: 모바일에서는 1열로 */
 @media (max-width: 900px) {
   .group-tables {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    gap: 28px 0;
+  }
+  .group-table-container {
+    min-width: 0;
+    width: 90vw;
+    max-width: 420px;
   }
 }
