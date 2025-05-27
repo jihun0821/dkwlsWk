@@ -1,18 +1,28 @@
 // 팀 정보 미리 세팅 (예시)
 const teams = [
-  { teamName: "울산", group: "A", played: 3, points: 7 },
-  { teamName: "포항", group: "A", played: 3, points: 6 },
-  { teamName: "전북", group: "A", played: 3, points: 4 },
-  { teamName: "인천", group: "B", played: 3, points: 9 },
-  { teamName: "서울", group: "B", played: 3, points: 3 },
-  { teamName: "수원", group: "B", played: 3, points: 1 },
-  // 필요시 추가
-  { teamName: "광주", group: "C", played: 2, points: 6 },
-  { teamName: "대전", group: "C", played: 2, points: 4 },
-  { teamName: "청주", group: "C", played: 2, points: 2 },
-  { teamName: "경남", group: "D", played: 2, points: 6 },
-  { teamName: "부산", group: "D", played: 2, points: 3 },
-  { teamName: "창원", group: "D", played: 2, points: 0 }
+  { teamName: "C204", group: "1", played: 2, points: 6 },
+  { teamName: "C302", group: "1", played: 2, points: 6 },
+  { teamName: "C307", group: "1", played: 2, points: 3 },
+  { teamName: "C103", group: "1", played: 2, points: 0 },
+  { teamName: "C206", group: "1", played: 2, points: 0 },
+
+  { teamName: "C102", group: "2", played: 2, points: 4 },
+  { teamName: "C202", group: "2", played: 2, points: 4 },
+  { teamName: "C305", group: "2", played: 2, points: 4 },
+  { teamName: "C203", group: "2", played: 2, points: 1 },
+  { teamName: "C101", group: "2", played: 2, points: 0 },
+
+  { teamName: "C201", group: "3", played: 2, points: 6 },
+  { teamName: "C301", group: "3", played: 1, points: 3 },
+  { teamName: "C303", group: "3", played: 1, points: 3 },
+  { teamName: "C205", group: "3", played: 2, points: 0 },
+  { teamName: "C207", group: "3", played: 2, points: 0 },
+
+  { teamName: "C106", group: "4", played: 2, points: 6 },
+  { teamName: "C306", group: "4", played: 2, points: 4 },
+  { teamName: "C304", group: "4", played: 2, points: 3 },
+  { teamName: "C104", group: "4", played: 2, points: 1 },
+  { teamName: "C105", group: "4", played: 2, points: 0 },
 ];
 
 // 그룹별로 표에 렌더링
@@ -39,4 +49,4 @@ function renderGroupTable(group) {
 }
 
 // 각 그룹 표 렌더링
-['A', 'B', 'C', 'D'].forEach(renderGroupTable);
+['1', '2', '3', '4'].forEach(renderGroupTable);
