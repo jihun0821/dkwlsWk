@@ -206,6 +206,10 @@ async function signUp(email, password, nickname, avatarUrl) {
     }
 
     alert('회원가입 성공! 이메일 인증 후 로그인하세요.');
+    
+    // 회원가입 성공 후 프로필 표시
+    showUserProfile();
+    
   } catch (err) {
     console.error('회원가입 처리 중 오류:', err);
     alert('회원가입 처리 중 오류가 발생했습니다.');
@@ -241,9 +245,43 @@ async function login(email, password) {
     
     // 프로필 표시
     showUserProfile();
+    
   } catch (err) {
     console.error('로그인 처리 중 오류:', err);
     alert('로그인 처리 중 오류가 발생했습니다.');
+  }
+}
+
+// UI 업데이트 함수 - 로그인/로그아웃 버튼과 프로필 박스 관리
+function updateUIForAuthState(isLoggedIn, profileData = null) {
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const profileBox = document.getElementById('profile-box');
+  
+  if (isLoggedIn && profileData) {
+    // 로그인 상태: 로그인 버튼 숨기고 프로필 박스 표시
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    
+    if (profileBox) {
+      profileBox.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
+          <img src="${profileData.avatar_url || 'https://via.placeholder.com/40/444/fff?text=USER'}" 
+               alt="프로필" 
+               style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;">
+          <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
+          <button onclick="logout()" 
+                  style="background: linear-gradient(135deg, #ff4757, #ff3742); color: white; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(255,71,87,0.3);">
+            로그아웃
+          </button>
+        </div>
+      `;
+    }
+  } else {
+    // 로그아웃 상태: 로그인 버튼 표시하고 프로필 박스 숨기기
+    if (loginBtn) loginBtn.style.display = 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    if (profileBox) profileBox.innerHTML = '';
   }
 }
 
@@ -255,6 +293,7 @@ async function showUserProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.log('사용자 정보 없음');
+      updateUIForAuthState(false);
       return;
     }
 
@@ -268,35 +307,28 @@ async function showUserProfile() {
 
     if (error) {
       console.error('프로필 불러오기 실패:', error);
+      // 프로필이 없는 경우 기본 프로필로 UI 업데이트
+      updateUIForAuthState(true, {
+        nickname: user.email.split('@')[0],
+        avatar_url: 'https://via.placeholder.com/40/444/fff?text=USER'
+      });
       return;
     }
 
     console.log('프로필 데이터:', data);
 
-    // 모달 닫기
-    document.getElementById('authModal').style.display = 'none';
+    // 모든 모달 닫기
+    const authModal = document.getElementById('authModal');
+    const profileModal = document.getElementById('profileModal');
+    if (authModal) authModal.style.display = 'none';
+    if (profileModal) profileModal.style.display = 'none';
 
-    // 프로필 박스 업데이트 - 스타일 개선
-    const profileBox = document.getElementById('profile-box');
-    profileBox.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 20px; backdrop-filter: blur(10px);">
-        <img src="${data?.avatar_url || 'https://via.placeholder.com/40/444/fff?text=USER'}" 
-             alt="프로필" 
-             style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;">
-        <span style="color: white; font-weight: bold; font-size: 14px;">${data?.nickname || '사용자'}</span>
-        <button onclick="logout()" 
-                style="background: #ff4757; color: white; border: none; padding: 4px 8px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: bold;">
-          로그아웃
-        </button>
-      </div>
-    `;
-
-    // 버튼 상태 변경
-    document.getElementById('loginBtn').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'none'; // 별도 로그아웃 버튼은 숨김
+    // UI 업데이트
+    updateUIForAuthState(true, data);
     
   } catch (err) {
     console.error('프로필 표시 중 오류:', err);
+    updateUIForAuthState(false);
   }
 }
 
@@ -306,12 +338,8 @@ async function logout() {
   try {
     await supabase.auth.signOut();
     
-    // 프로필 박스 초기화
-    document.getElementById('profile-box').innerHTML = '';
-    
-    // 버튼 상태 복원
-    document.getElementById('loginBtn').style.display = 'inline-block';
-    document.getElementById('logoutBtn').style.display = 'none';
+    // UI 업데이트
+    updateUIForAuthState(false);
     
     alert('로그아웃되었습니다.');
   } catch (err) {
@@ -420,12 +448,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // 자동 로그인 유지
+  // 자동 로그인 유지 - 페이지 로드 시 세션 확인
   if (supabase) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('세션 확인:', session);
       if (session) {
         showUserProfile();
+      } else {
+        updateUIForAuthState(false);
       }
     });
   }
