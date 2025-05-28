@@ -292,3 +292,107 @@ body.light-mode .OtherService_2 {
   color :#111;
   background-color: #ffffff;
 }
+
+/* ====== 라이트 모드: 주요스탯(득점/어시/자책) ====== */
+body.light-mode .stats-section h2 {
+  color: #007bff;
+}
+
+body.light-mode .top-card_first,
+body.light-mode .top-card_second,
+body.light-mode .top-card_third,
+body.light-mode .top-card_fourth,
+body.light-mode .top-card_fifth,
+body.light-mode .assist-card_first,
+body.light-mode .assist-card_second,
+body.light-mode .assist-card_third,
+body.light-mode .assist-card_fourth,
+body.light-mode .assist-card_fifth,
+body.light-mode .own-card_first,
+body.light-mode .own-card_second,
+body.light-mode .own-card_third,
+body.light-mode .own-card_fourth,
+body.light-mode .own-card_fifth {
+  background: #fff;
+  color: #222;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  margin: 0 0 10px 0;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+body.light-mode .rank-badge {
+  color: #007bff;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+body.light-mode .player-name {
+  color: #222;
+}
+
+body.light-mode .other-name {
+  color: #007bff;
+}
+
+/* ====== 라이트 모드: 순위표(standing_table.html) ====== */
+body.light-mode .group-tables {
+  background: #f3f5f5;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 24px 0;
+}
+
+body.light-mode .group-table-container {
+  margin-bottom: 36px;
+  background: #fff;
+}
+
+body.light-mode .group-table-container h3 {
+  color: #007bff;
+  margin-bottom: 8px;
+}
+
+body.light-mode table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fafbfc;
+  color: #4759c2;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+body.light-mode th, body.light-mode td {
+  border: 1px solid #eee;
+  padding: 10px 0;
+  text-align: center;
+}
+
+body.light-mode th {
+  background: #f5f7fa;
+  color: #222;
+}
+
+body.light-mode tbody tr:nth-child(even) {
+  background: #77777a;
+}
+
+body.light-mode tbody tr {
+  background: #77777a; 
+}
+
+body.light-mode tbody tr:hover {
+  background: #1e45f1;
+  color: #222;
+}
+
+body.light-mode .bracket-container {
+  background: #f3f5f5;
+}
+
+body.light-mode .match_table {
+  background: #ffffff;
+}
