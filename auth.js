@@ -15,6 +15,155 @@ function isHanilEmail(email) {
   return email.endsWith('@hanilgo.cnehs.kr');
 }
 
+// 프로필 이미지 미리보기 기능
+function setupProfileImagePreview() {
+  const avatarInput = document.getElementById('avatar');
+  const fileLabel = document.querySelector('.file-upload-label');
+  const previewContainer = document.querySelector('.profile-preview');
+  
+  if (avatarInput) {
+    avatarInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      
+      if (file) {
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('파일 크기가 너무 큽니다. 5MB 이하의 파일을 선택해주세요.');
+          e.target.value = '';
+          return;
+        }
+        
+        // 파일 타입 체크
+        if (!file.type.startsWith('image/')) {
+          alert('이미지 파일만 업로드 가능합니다.');
+          e.target.value = '';
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          // 기존 미리보기 제거
+          const existingPreview = previewContainer.querySelector('img');
+          if (existingPreview) {
+            existingPreview.remove();
+          }
+          
+          // 새 미리보기 이미지 생성
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.alt = '프로필 미리보기';
+          previewContainer.appendChild(img);
+          
+          // 파일 라벨 업데이트
+          if (fileLabel) {
+            fileLabel.textContent = `선택된 파일: ${file.name}`;
+            fileLabel.classList.add('has-file');
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // 파일이 선택되지 않은 경우
+        const existingPreview = previewContainer.querySelector('img');
+        if (existingPreview) {
+          existingPreview.remove();
+        }
+        
+        if (fileLabel) {
+          fileLabel.textContent = '프로필 사진 선택 (선택사항)';
+          fileLabel.classList.remove('has-file');
+        }
+      }
+    });
+  }
+}
+
+// 파일을 Base64로 변환하는 함수
+function convertFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// 프로필 모달을 표시하고 초기화하는 함수
+function showProfileModal() {
+  const authModal = document.getElementById('authModal');
+  const profileModal = document.getElementById('profileModal');
+  
+  // 인증 모달 닫기
+  if (authModal) {
+    authModal.style.display = 'none';
+  }
+  
+  // 프로필 모달 표시
+  if (profileModal) {
+    profileModal.style.display = 'flex';
+    
+    // 입력 필드 초기화
+    const nicknameInput = document.getElementById('nickname');
+    const avatarInput = document.getElementById('avatar');
+    const fileLabel = document.querySelector('.file-upload-label');
+    const previewContainer = document.querySelector('.profile-preview');
+    
+    if (nicknameInput) nicknameInput.value = '';
+    if (avatarInput) avatarInput.value = '';
+    
+    if (fileLabel) {
+      fileLabel.textContent = '프로필 사진 선택 (선택사항)';
+      fileLabel.classList.remove('has-file');
+    }
+    
+    // 기존 미리보기 제거
+    if (previewContainer) {
+      const existingPreview = previewContainer.querySelector('img');
+      if (existingPreview) {
+        existingPreview.remove();
+      }
+    }
+  }
+}
+
+// 프로필 저장 처리 (업데이트된 버전)
+async function saveProfile() {
+  const nickname = document.getElementById('nickname').value.trim();
+  const avatarFile = document.getElementById('avatar').files[0];
+  
+  if (!nickname) {
+    alert('닉네임을 입력해주세요.');
+    return;
+  }
+  
+  // 닉네임 길이 체크
+  if (nickname.length < 2 || nickname.length > 20) {
+    alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+    return;
+  }
+  
+  let avatarUrl = 'https://via.placeholder.com/80/444/fff?text=USER';
+  
+  // 파일이 있으면 Base64로 변환하여 저장
+  if (avatarFile) {
+    try {
+      avatarUrl = await convertFileToBase64(avatarFile);
+    } catch (error) {
+      console.error('이미지 변환 오류:', error);
+      alert('이미지 처리 중 오류가 발생했습니다.');
+      return;
+    }
+  }
+
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  
+  // 프로필 모달 닫기
+  document.getElementById('profileModal').style.display = 'none';
+  
+  // 회원가입 진행
+  await signUp(email, password, nickname, avatarUrl);
+}
+
 // 회원가입 처리
 async function signUp(email, password, nickname, avatarUrl) {
   console.log('회원가입 시도:', { email, nickname });
@@ -145,41 +294,6 @@ async function logout() {
   }
 }
 
-// 프로필 모달 표시
-function showProfileModal() {
-  document.getElementById('authModal').style.display = 'none';
-  document.getElementById('profileModal').style.display = 'flex';
-}
-
-// 프로필 저장 처리
-async function saveProfile() {
-  const nickname = document.getElementById('nickname').value;
-  const avatarFile = document.getElementById('avatar').files[0];
-  
-  if (!nickname) {
-    alert('닉네임을 입력해주세요.');
-    return;
-  }
-  
-  let avatarUrl = 'https://via.placeholder.com/40';
-  
-  // 파일이 있으면 처리 (실제로는 파일 업로드 서비스 사용해야 함)
-  if (avatarFile) {
-    // 임시로 기본 이미지 사용
-    avatarUrl = 'https://via.placeholder.com/40';
-    alert('파일 업로드 기능은 아직 구현되지 않았습니다. 기본 이미지를 사용합니다.');
-  }
-
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  
-  // 프로필 모달 닫기
-  document.getElementById('profileModal').style.display = 'none';
-  
-  // 회원가입 진행
-  await signUp(email, password, nickname, avatarUrl);
-}
-
 // 초기화: 로그인 유지 & 이벤트 바인딩
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM 로드 완료, 이벤트 바인딩 시작');
@@ -196,6 +310,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const doSignUpBtn = document.getElementById('doSignUp');
 
   console.log('요소 확인:', { loginBtn, doLoginBtn, doSignUpBtn });
+
+  // 프로필 이미지 미리보기 설정
+  setupProfileImagePreview();
 
   // 로그인 버튼 클릭 시 모달 표시
   if (loginBtn) {
