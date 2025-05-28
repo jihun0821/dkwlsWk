@@ -503,3 +503,106 @@ main {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
+
+/* 모달 */
+/* 로그인/회원가입/프로필 설정용 모달 스타일 */
+.auth-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-family: Arial, sans-serif;
+}
+
+.auth-modal-content {
+  background-color: #202020;
+  color: #ffffff;
+  margin: 10% auto;
+  padding: 30px 40px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 26px;
+  color: #888;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.auth-modal-close:hover {
+  color: #000;
+}
+
+.auth-modal-content input[type="text"],
+.auth-modal-content input[type="email"],
+.auth-modal-content input[type="password"],
+.auth-modal-content input[type="file"] {
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #f8f8f8;
+}
+
+.auth-modal-content button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #2051ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.auth-modal-content button:hover {
+  background-color: #1a3dcc;
+}
+
+.profile-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.profile-modal-content {
+  background-color: #fff;
+  color: #000;
+  margin: 10% auto;
+  padding: 30px 40px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.profile-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 26px;
+  color: #888;
+  cursor: pointer;
+}
+
