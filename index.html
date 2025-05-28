@@ -174,15 +174,59 @@
         </div>
     </div>
       
+
+    주요 기능들:
+    1. CSS 스타일링
+    기존 base.css의 다크 테마와 일관성 있는 디자인
+    반응형 디자인으로 모바일에서도 잘 보임
+    호버 효과와 트랜지션으로 부드러운 UI
+    2. 프로필 이미지 미리보기
+    파일 선택 시 즉시 미리보기 표시
+    이미지 파일만 업로드 가능하도록 검증
+    5MB 파일 크기 제한
+    3. 입력 검증
+    닉네임 2-20자 제한
+    이미지 파일 타입 검증
+    Base64로 이미지 저장 (로컬 저장)
+    4. 사용법
+    위의 CSS를 base.css에 추가하거나 별도 CSS 파일로 만들어 링크
+    HTML의 기존 프로필 모달을 위의 HTML로 교체
+    JavaScript 코드를 auth.js에 추가하거나 업데이트
+    이렇게 하면 로컬에서 사진을 선택할 수 있고, 미리보기까지 볼 수 있는 세련된 프로필 설정 모달이 완성됩니다!
+    
+    
+    
+    
+    
+    
+    
+    <!-- 프로필 설정 모달 (업데이트된 버전) -->
     <div id="profileModal" class="profile-modal">
-        <div class="profile-modal-content">
-          <span class="profile-modal-close" id="closeProfileModal">&times;</span>
-          <h2>프로필 설정</h2>
-          <input id="nickname" type="text" placeholder="닉네임" />
-          <input id="avatar" type="file" accept="image/*" />
-          <button id="saveProfileBtn">저장</button>
+      <div class="profile-modal-content">
+        <span class="profile-modal-close" id="closeProfileModal">&times;</span>
+        <h2>프로필 설정</h2>
+        
+        <!-- 프로필 이미지 미리보기 영역 -->
+        <div class="profile-preview"></div>
+        
+        <!-- 닉네임 입력 -->
+        <input id="nickname" type="text" placeholder="닉네임 (2-20자)" maxlength="20" />
+        
+        <!-- 파일 업로드 -->
+        <div class="file-upload-wrapper">
+          <label for="avatar" class="file-upload-label">
+            프로필 사진 선택 (선택사항)
+          </label>
+          <input id="avatar" type="file" accept="image/*" style="display: none;" />
         </div>
-      </div>       
+        
+        <!-- 버튼들 -->
+        <div class="modal-buttons">
+          <button id="saveProfileBtn">저장하고 가입</button>
+          <button class="cancel-btn" onclick="document.getElementById('profileModal').style.display='none'">취소</button>
+        </div>
+      </div>
+    </div>
       
       
     <script src="auth.js"></script>
