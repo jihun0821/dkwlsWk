@@ -683,7 +683,36 @@ function getMatchDetailsById(matchId) {
                     first: ["17", "18", "19"],
                 }
             }
-        }                   
+        },
+        "24": {
+            id: "24",
+            homeTeam: "C102",
+            awayTeam: "C305",
+            homeScore: 3,
+            awayScore: 2,
+            date: "2025-05-28",
+            league: "호실축구",
+            status: "finished",
+            stats: {
+                homePossession: 50,
+                awayPossession: 50,
+                homeShots: 0,
+                awayShots: 0
+            },
+            events: [],
+            lineups: {
+                home: {
+                    third: ["1"],
+                    second: ["2", "3", "4", "5"],
+                    first: ["6", "7", "8"],
+                },
+                away: {
+                    third: ["12"],
+                    second: ["13", "14", "15", "16"],
+                    first: ["17", "18", "19"],
+                }
+            }
+        }                         
     }
 
     const defaultMatch = {
