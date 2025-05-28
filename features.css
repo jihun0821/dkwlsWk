@@ -377,11 +377,11 @@ body.light-mode th {
 }
 
 body.light-mode tbody tr:nth-child(even) {
-  background: #77777a;
+  background: #bfbfc4;
 }
 
 body.light-mode tbody tr {
-  background: #77777a; 
+  background: #bfbfc4; 
 }
 
 body.light-mode tbody tr:hover {
@@ -396,3 +396,28 @@ body.light-mode .bracket-container {
 body.light-mode .match_table {
   background: #ffffff;
 }
+
+body.light-mode .auth-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-family: Arial, sans-serif;
+}
+
+body.light-mode .auth-modal-content {
+  background-color: #ffffff;
+  color: #000000;
+  margin: 10% auto;
+  padding: 30px 40px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
