@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="features.css">
     <link rel="stylesheet" href="sports-navbar.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <header class="navbar">
@@ -18,7 +19,7 @@
         <input type="text" class="search-bar" placeholder="경기 검색">
         <button class="login" id="loginBtn">로그인</button>
         <button class="logout" id="logoutBtn" style="display: none;">로그아웃</button>
-        <button class="add-match" id="addMatchBtn" style="display: none;">경기 추가</button>
+        <div id="profile-box"></div>
         <div class="icons">
             <span class="icon" id="toggleThemeBtn">🌙</span>
         </div>
@@ -160,6 +161,31 @@
     </div>
     <div class="overlay" id="overlay"></div>
 
+<!-- 로그인 모달 부분만 수정 -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+        <span class="auth-modal-close" id="closeAuthModal">&times;</span>
+        <h2>로그인 / 회원가입</h2>
+        <input id="email" type="email" placeholder="이메일" />
+        <input id="password" type="password" placeholder="비밀번호" />
+        <!-- ID에서 괄호 제거 -->
+        <button id="doLogin">로그인</button>
+        <button id="doSignUp">회원가입</button>
+        </div>
+    </div>
+      
+    <div id="profileModal" class="profile-modal">
+        <div class="profile-modal-content">
+          <span class="profile-modal-close" id="closeProfileModal">&times;</span>
+          <h2>프로필 설정</h2>
+          <input id="nickname" type="text" placeholder="닉네임" />
+          <input id="avatar" type="file" accept="image/*" />
+          <button id="saveProfileBtn">저장</button>
+        </div>
+      </div>       
+      
+      
+    <script src="auth.js"></script>
     <script src="matchData.js"></script>
     <script src="script.js"></script>
 </body>
