@@ -167,7 +167,7 @@ async function saveProfile() {
 // 회원가입 처리
 async function signUp(email, password, nickname, avatarUrl) {
   console.log('회원가입 시도:', { email, nickname });
-  
+
   if (!supabase) {
     alert('Supabase 초기화 오류');
     return;
@@ -191,8 +191,16 @@ async function signUp(email, password, nickname, avatarUrl) {
     }
 
     console.log('회원가입 성공:', data);
-    const user = data.user;
-    
+
+    // 안전하게 user 정보 가져오기
+    const user = data?.user ?? data?.session?.user;
+
+    if (!user) {
+      alert('사용자 정보를 불러올 수 없습니다.');
+      console.error('user 객체가 없음:', data);
+      return;
+    }
+
     // 프로필 생성
     const { error: profileError } = await supabase.from('profiles').insert({
       id: user.id,
@@ -202,19 +210,21 @@ async function signUp(email, password, nickname, avatarUrl) {
     });
 
     if (profileError) {
-      console.error('프로필 생성 오류:', profileError);
+      console.error('프로필 생성 오류:', profileError.message);
+      alert('회원가입은 되었지만, 프로필 저장에 실패했습니다.');
+    } else {
+      alert('회원가입 성공! 이메일 인증 후 로그인하세요.');
     }
 
-    alert('회원가입 성공! 이메일 인증 후 로그인하세요.');
-    
-    // 회원가입 성공 후 프로필 표시
+    // 프로필 UI 업데이트
     showUserProfile();
-    
+
   } catch (err) {
     console.error('회원가입 처리 중 오류:', err);
     alert('회원가입 처리 중 오류가 발생했습니다.');
   }
 }
+
 
 // 로그인 처리
 async function login(email, password) {
