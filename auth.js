@@ -77,14 +77,44 @@ function setupProfileImagePreview() {
   }
 }
 
-// 파일을 Base64로 변환하는 함수
-function convertFileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+// Supabase Storage에 이미지 업로드하는 함수
+async function uploadAvatarToStorage(file, userId) {
+  if (!file || !userId) return null;
+
+  try {
+    // 파일 확장자 추출
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    const fileName = `${userId}_${Date.now()}.${fileExt}`;
+    
+    console.log('파일 업로드 시작:', fileName);
+
+    // Supabase Storage에 파일 업로드
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Storage 업로드 오류:', error);
+      throw error;
+    }
+
+    console.log('Storage 업로드 성공:', data);
+
+    // 공개 URL 생성
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName);
+
+    console.log('생성된 공개 URL:', publicUrl);
+    return publicUrl;
+
+  } catch (error) {
+    console.error('이미지 업로드 실패:', error);
+    throw error;
+  }
 }
 
 // 프로필 모달을 표시하고 초기화하는 함수
@@ -125,10 +155,11 @@ function showProfileModal() {
   }
 }
 
-// 프로필 저장 처리 (업데이트된 버전)
+// 프로필 저장 처리 (Supabase Storage 사용)
 async function saveProfile() {
   const nickname = document.getElementById('nickname').value.trim();
   const avatarFile = document.getElementById('avatar').files[0];
+  const saveBtn = document.getElementById('saveProfileBtn');
   
   if (!nickname) {
     alert('닉네임을 입력해주세요.');
@@ -140,54 +171,37 @@ async function saveProfile() {
     alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
     return;
   }
-  
-  let avatarUrl = 'https://via.placeholder.com/80/444/fff?text=USER';
-  
-  // 파일이 있으면 Base64로 변환하여 저장
-  if (avatarFile) {
-    try {
-      avatarUrl = await convertFileToBase64(avatarFile);
-    } catch (error) {
-      console.error('이미지 변환 오류:', error);
-      alert('이미지 처리 중 오류가 발생했습니다.');
-      return;
-    }
+
+  // 버튼 비활성화 및 로딩 표시
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = '저장 중...';
   }
 
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   
-  // 프로필 모달 닫기
-  document.getElementById('profileModal').style.display = 'none';
+  let avatarUrl = 'https://via.placeholder.com/80/444/fff?text=USER';
   
-  // 회원가입 진행
-  await signUp(email, password, nickname, avatarUrl);
-}
-
-// 회원가입 처리
-async function signUp(email, password, nickname, avatarUrl) {
-  console.log('회원가입 시도:', { email, nickname });
-
-  if (!supabase) {
-    alert('Supabase 초기화 오류');
-    return;
-  }
-
-  if (!isHanilEmail(email)) {
-    alert('한일고 이메일(@hanilgo.cnehs.kr)만 가입할 수 있습니다.');
-    return;
-  }
-
   try {
+    // 먼저 사용자 계정 생성
+    console.log('회원가입 시도:', { email, nickname });
+
+    if (!supabase) {
+      throw new Error('Supabase 초기화 오류');
+    }
+
+    if (!isHanilEmail(email)) {
+      throw new Error('한일고 이메일(@hanilgo.cnehs.kr)만 가입할 수 있습니다.');
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password
     });
 
     if (error) {
-      console.error('회원가입 오류:', error);
-      alert('회원가입 실패: ' + error.message);
-      return;
+      throw new Error('회원가입 실패: ' + error.message);
     }
 
     console.log('회원가입 성공:', data);
@@ -196,9 +210,14 @@ async function signUp(email, password, nickname, avatarUrl) {
     const user = data?.user ?? data?.session?.user;
 
     if (!user) {
-      alert('사용자 정보를 불러올 수 없습니다.');
-      console.error('user 객체가 없음:', data);
-      return;
+      throw new Error('사용자 정보를 불러올 수 없습니다.');
+    }
+
+    // 파일이 있으면 Supabase Storage에 업로드
+    if (avatarFile) {
+      console.log('이미지 업로드 시작...');
+      avatarUrl = await uploadAvatarToStorage(avatarFile, user.id);
+      console.log('이미지 업로드 완료:', avatarUrl);
     }
 
     // 프로필 생성
@@ -211,20 +230,28 @@ async function signUp(email, password, nickname, avatarUrl) {
 
     if (profileError) {
       console.error('프로필 생성 오류:', profileError.message);
-      alert('회원가입은 되었지만, 프로필 저장에 실패했습니다.');
-    } else {
-      alert('회원가입 성공! 이메일 인증 후 로그인하세요.');
+      throw new Error('회원가입은 되었지만, 프로필 저장에 실패했습니다.');
     }
 
+    // 프로필 모달 닫기
+    document.getElementById('profileModal').style.display = 'none';
+    
+    alert('회원가입 성공! 이메일 인증 후 로그인하세요.');
+    
     // 프로필 UI 업데이트
     showUserProfile();
 
-  } catch (err) {
-    console.error('회원가입 처리 중 오류:', err);
-    alert('회원가입 처리 중 오류가 발생했습니다.');
+  } catch (error) {
+    console.error('프로필 저장 중 오류:', error);
+    alert(error.message || '프로필 저장 중 오류가 발생했습니다.');
+  } finally {
+    // 버튼 다시 활성화
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '저장하고 가입';
+    }
   }
 }
-
 
 // 로그인 처리
 async function login(email, password) {
@@ -274,11 +301,16 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     if (logoutBtn) logoutBtn.style.display = 'none';
     
     if (profileBox) {
+      // 이미지 로딩 에러 처리를 위한 기본 이미지
+      const defaultAvatar = 'https://via.placeholder.com/40/444/fff?text=USER';
+      const avatarUrl = profileData.avatar_url || defaultAvatar;
+      
       profileBox.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
-          <img src="${profileData.avatar_url || 'https://via.placeholder.com/40/444/fff?text=USER'}" 
+          <img src="${avatarUrl}" 
                alt="프로필" 
-               style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;">
+               style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;"
+               onerror="this.src='${defaultAvatar}'">
           <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
           <button onclick="logout()" 
                   style="background: linear-gradient(135deg, #ff4757, #ff3742); color: white; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(255,71,87,0.3);">
