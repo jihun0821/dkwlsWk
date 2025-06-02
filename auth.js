@@ -194,18 +194,16 @@ async function saveProfile() {
       throw new Error('한일고 이메일(@hanilgo.cnehs.kr)만 가입할 수 있습니다.');
     }
 
-    // 🔥 수정된 부분: 닉네임을 메타데이터에 포함
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          nickname: nickname,
-          // 기본 아바타도 미리 설정 가능
-          avatar_url: avatarUrl
-        }
-      }
-    });
+const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    user_metadata: {
+      nickname: nickname,
+      avatar_url: avatarUrl
+    }
+  }
+});
 
     if (error) {
       throw new Error('회원가입 실패: ' + error.message);
