@@ -155,7 +155,7 @@ function showProfileModal() {
   }
 }
 
-// 프로필 저장 처리 (Supabase Storage 사용)
+// 수정된 saveProfile 함수 (일부)
 async function saveProfile() {
   const nickname = document.getElementById('nickname').value.trim();
   const avatarFile = document.getElementById('avatar').files[0];
@@ -184,7 +184,6 @@ async function saveProfile() {
   let avatarUrl = 'https://via.placeholder.com/80/444/fff?text=USER';
   
   try {
-    // 먼저 사용자 계정 생성
     console.log('회원가입 시도:', { email, nickname });
 
     if (!supabase) {
@@ -195,9 +194,17 @@ async function saveProfile() {
       throw new Error('한일고 이메일(@hanilgo.cnehs.kr)만 가입할 수 있습니다.');
     }
 
+    // 🔥 수정된 부분: 닉네임을 메타데이터에 포함
     const { data, error } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        data: {
+          nickname: nickname,
+          // 기본 아바타도 미리 설정 가능
+          avatar_url: avatarUrl
+        }
+      }
     });
 
     if (error) {
@@ -218,9 +225,18 @@ async function saveProfile() {
       console.log('이미지 업로드 시작...');
       avatarUrl = await uploadAvatarToStorage(avatarFile, user.id);
       console.log('이미지 업로드 완료:', avatarUrl);
+      
+      // 🔥 업로드된 이미지 URL로 사용자 메타데이터 업데이트
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: avatarUrl }
+      });
+      
+      if (updateError) {
+        console.warn('메타데이터 업데이트 실패:', updateError);
+      }
     }
 
-    // 프로필 생성
+    // profiles 테이블에도 저장 (선택사항)
     const { error: profileError } = await supabase.from('profiles').insert({
       id: user.id,
       email: email,
@@ -230,7 +246,8 @@ async function saveProfile() {
 
     if (profileError) {
       console.error('프로필 생성 오류:', profileError.message);
-      throw new Error('회원가입은 되었지만, 프로필 저장에 실패했습니다.');
+      // profiles 테이블 저장 실패해도 회원가입은 성공
+      console.warn('회원가입은 완료되었지만 프로필 테이블 저장에 실패했습니다.');
     }
 
     // 프로필 모달 닫기
