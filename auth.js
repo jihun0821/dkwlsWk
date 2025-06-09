@@ -3,8 +3,8 @@ console.log('Supabase 라이브러리 확인:', window.supabase);
 
 const supabase = window.supabase
   ? window.supabase.createClient(
-      'https://vyafmobfqmudllqqtwsg.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5YWZtb2JmcW11ZGxscXF0d3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTc5MzQsImV4cCI6MjA2Mzk3MzkzNH0.MouQPiOy4cgWq81BBIMplBx2R5v9VGroZaZhvxQ0Uck'
+      'https://ckwfolmletqxtuzinixg.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrd2ZvbG1sZXRxeHR1emluaXhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0NTE4NjksImV4cCI6MjA2NTAyNzg2OX0.e9QxIpu_HHMwcixZa1wexB8_Ec04qI6Ez8yv4i97A_Q'
     )
   : null;
 
