@@ -1,4 +1,5 @@
-// === 기존 코드 유지 ===
+
+// 테마 버튼
 const toggleThemeBtn = document.getElementById("toggleThemeBtn");
 const matchDetailsPanel = document.getElementById("matchDetailsPanel");
 const overlay = document.getElementById("overlay");
@@ -13,7 +14,7 @@ const totalPages = Math.ceil(Object.keys(getAllMatchData()).length / matchesPerP
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
-// === 테마 설정 ===
+// 라이트/다크 모드 로딩 시
 window.onload = function () {
     const savedTheme = localStorage.getItem("theme");
     const body = document.body;
@@ -26,83 +27,170 @@ window.onload = function () {
         toggleThemeBtn.textContent = "🌙";
     }
 
-    // 페이지에 pagination이 있는 경우에만 renderMatches 실행
     const pagination = document.querySelector('.pagination-container');
     if (pagination) {
         renderMatches();
         updateButtons();
     } else {
-        // index.html 같은 경우: 정적인 .match 요소들에 이벤트 연결
         setupMatchClickListeners();
     }
 };
 
-
 toggleThemeBtn?.addEventListener("click", () => {
     document.body.classList.toggle("light-mode");
-    if (document.body.classList.contains("light-mode")) {
-        localStorage.setItem("theme", "light");
-        toggleThemeBtn.textContent = "☀️";
-    } else {
-        localStorage.setItem("theme", "dark");
-        toggleThemeBtn.textContent = "🌙";
-    }
+    localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
+    toggleThemeBtn.textContent = document.body.classList.contains("light-mode") ? "☀️" : "🌙";
 });
 
-// === 경기 목록 렌더링 ===
-function renderMatches() {
-    const matchContainer = document.querySelector("section.main");
-    const allMatches = Object.values(getAllMatchData());
-    const start = (currentPage - 1) * matchesPerPage;
-    const end = start + matchesPerPage;
-    const matchesToShow = allMatches.slice(start, end);
+// 로그인 여부 확인
+function isUserLoggedIn() {
+    return !!localStorage.getItem("userEmail");
+}
 
-    // 기존 match-list 요소 모두 삭제
-    document.querySelectorAll(".match-list").forEach(el => el.remove());
+// 쿠키
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
 
-    const pagination = document.querySelector(".pagination-container");
-    const matchHtml = matchesToShow.map(match => `
-        <div class="match-list">
-            <div class="match" data-match-id="${match.id}">
-                <div class="match-info">
-                    <div class="match-date">${match.date}</div>
-                    <div class="match-teams">
-                        <span class="team home">${match.homeTeam}</span>
-                        <span class="score">${match.status === "cancelled" ? "취소" : `${match.homeScore} - ${match.awayScore}`}</span>
-                        <span class="team away">${match.awayTeam}</span>
-                    </div>
+function setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days*24*60*60*1000).toUTCString();
+    document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+}
+
+// 투표 통계
+function getVotingStats(matchId) {
+    const statsKey = `match_${matchId}_stats`;
+    const savedStats = localStorage.getItem(statsKey);
+
+    if (savedStats) return JSON.parse(savedStats);
+
+    const homeVotes = Math.floor(Math.random() * 30) + 10;
+    const drawVotes = Math.floor(Math.random() * 20) + 5;
+    const awayVotes = Math.floor(Math.random() * 25) + 8;
+
+    const defaultStats = {
+        homeWin: homeVotes,
+        draw: drawVotes,
+        awayWin: awayVotes,
+        total: homeVotes + drawVotes + awayVotes
+    };
+
+    localStorage.setItem(statsKey, JSON.stringify(defaultStats));
+    return defaultStats;
+}
+
+function saveVote(matchId, voteType) {
+    const statsKey = `match_${matchId}_stats`;
+    const stats = getVotingStats(matchId);
+    stats[voteType]++;
+    stats.total++;
+    localStorage.setItem(statsKey, JSON.stringify(stats));
+    setCookie(`voted_${matchId}`, voteType, 30);
+    return stats;
+}
+
+function renderVotingGraph(container, stats) {
+    const totalVotes = stats.total;
+    const homePercent = Math.round((stats.homeWin / totalVotes) * 100);
+    const drawPercent = Math.round((stats.draw / totalVotes) * 100);
+    const awayPercent = Math.round((stats.awayWin / totalVotes) * 100);
+
+    container.innerHTML = `
+        <div class="voting-stats">
+            <div class="stat-row">
+                <div class="stat-value">${homePercent}%</div>
+                <div class="stat-bar">
+                    <div class="home-stat" style="width: ${homePercent}%"></div>
+                    <div class="draw-stat" style="width: ${drawPercent}%"></div>
+                    <div class="away-stat" style="width: ${awayPercent}%"></div>
                 </div>
+                <div class="stat-value">${awayPercent}%</div>
             </div>
-            <p></p>
+            <div class="stat-labels">
+                <span class="home-label">홈 승 (${stats.homeWin})</span>
+                <span class="draw-label">무승부 (${stats.draw})</span>
+                <span class="away-label">원정 승 (${stats.awayWin})</span>
+            </div>
         </div>
-    `).join("");
-
-    pagination.insertAdjacentHTML("beforebegin", matchHtml);
-    setupMatchClickListeners(); // 새로 생성된 요소에 이벤트 연결
+    `;
 }
 
-function updateButtons() {
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
+function openPanel(matchId) {
+    loadMatchDetails(matchId);
+    matchDetailsPanel.classList.add("active");
+    overlay.classList.add("active");
+    document.body.style.overflow = "hidden";
 }
 
-prevBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        updateButtons();
-        renderMatches();
-    }
-});
+function closePanel() {
+    matchDetailsPanel.classList.remove("active");
+    overlay.classList.remove("active");
+    document.body.style.overflow = "";
+}
 
-nextBtn.addEventListener('click', () => {
-    if (currentPage < totalPages) {
-        currentPage++;
-        updateButtons();
-        renderMatches();
-    }
-});
+function loadMatchDetails(matchId) {
+    const matchDetails = getMatchDetailsById(matchId);
+    panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
 
-// === 전체 데이터 접근 ===
+    const userVote = getCookie(`voted_${matchId}`);
+    const stats = getVotingStats(matchId);
+
+    let predictionHtml = "";
+
+    if (matchDetails.status === "scheduled") {
+        if (userVote || !isUserLoggedIn()) {
+            predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+        } else {
+            predictionHtml = `
+                <h3>승부예측</h3>
+                <div class="prediction-btns">
+                    <button class="prediction-btn home-win" data-vote="homeWin">1</button>
+                    <button class="prediction-btn draw" data-vote="draw">X</button>
+                    <button class="prediction-btn away-win" data-vote="awayWin">2</button>
+                </div>`;
+        }
+    } else {
+        predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+    }
+
+    panelContent.innerHTML = `
+        <div class="match-date">${matchDetails.date}</div>
+        <div class="match-league">${matchDetails.league}</div>
+        <div class="match-score">
+            <div class="team-name">${matchDetails.homeTeam}</div>
+            <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
+            <div class="team-name">${matchDetails.awayTeam}</div>
+        </div>
+        <div class="prediction-container">${predictionHtml}</div>
+    `;
+
+    const statsContainer = panelContent.querySelector('#votingStats');
+    if (statsContainer) renderVotingGraph(statsContainer, stats);
+
+    const buttons = panelContent.querySelectorAll('.prediction-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const voteType = btn.getAttribute("data-vote");
+            const updated = saveVote(matchId, voteType);
+            const container = btn.closest('.prediction-container');
+            container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+            renderVotingGraph(container.querySelector('#votingStats'), updated);
+        });
+    });
+}
+
+function setupMatchClickListeners() {
+    document.querySelectorAll('.match').forEach(match => {
+        match.addEventListener('click', () => {
+            const matchId = match.dataset.matchId;
+            openPanel(matchId);
+        });
+    });
+}
+
 function getAllMatchData() {
     return {
         "1": getMatchDetailsById("1"),
@@ -132,241 +220,62 @@ function getAllMatchData() {
     };
     }
 
-function openPanel(matchId) {
-    loadMatchDetails(matchId);
-    matchDetailsPanel.classList.add("active");
-    overlay.classList.add("active");
-    document.body.style.overflow = "hidden";
-}
+function renderMatches() {
+    const matchContainer = document.querySelector("section.main");
+    const allMatches = Object.values(getAllMatchData());
+    const matchesToShow = allMatches.slice((currentPage - 1) * matchesPerPage, currentPage * matchesPerPage);
 
-function closePanel() {
-    matchDetailsPanel.classList.remove("active");
-    overlay.classList.remove("active");
-    document.body.style.overflow = "";
-}
+    document.querySelectorAll(".match-list").forEach(el => el.remove());
+    const pagination = document.querySelector(".pagination-container");
 
-function loadMatchDetails(matchId) {
-    const matchDetails = getMatchDetailsById(matchId);
-    panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
-
-    let predictionHtml = '';
-    function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
-    }
-    
-    function getVotingStats(matchId) {
-        return {
-            home: 0,
-            draw: 0,
-            away: 0,
-            total: 0
-        };
-    }
-    
-    if (matchDetails.status === "scheduled") {
-        predictionHtml = `
-            <div class="prediction-container">
-                <h3>승부예측</h3>
-                <div id="votingStats">
-                    <p>승부예측 기능이 현재 비활성화되었습니다.</p>
-                </div>
-            </div>
-        `;
-    } else if (matchDetails.status === "live") {
-        predictionHtml = `
-            <div class="prediction-container">
-                <h3>승부예측 결과</h3>
-                <div id="votingStats">
-                    <p>승부예측 기능이 현재 비활성화되었습니다.</p>
-                </div>
-            </div>
-        `;
-    } else if (matchDetails.status === "finished") {
-        predictionHtml = `
-            <div class="prediction-container">
-                <h3>승부예측 결과</h3>
-                <div id="votingStats">
-                    <p>승부예측 기능이 현재 비활성화되었습니다.</p>
-                </div>
-            </div>
-        `;
-    } else if (matchDetails.status === "cancelled") {
-        predictionHtml = `
-        <div class="prediction-container">
-            <h3>승부예측 결과</h3>
-            <div id="votingStats">
-                <p>승부예측 기능이 현재 비활성화되었습니다.</p>
-            </div>
-        </div>
-        `;
-    }
-
-    panelContent.innerHTML = `
-        <div class="match-detail-header">
-            <div class="match-date">${matchDetails.date}</div>
-            <div class="match-league">${matchDetails.league}</div>
-        </div>
-
-        <div class="match-score">
-            <div class="team-info">
-                <div class="team-logo">
-                </div>
-                <div class="team-name">${matchDetails.homeTeam}</div>
-            </div>
-
-            <div class="score-display">
-                ${matchDetails.homeScore} - ${matchDetails.awayScore}
-            </div>
-
-            <div class="team-info">
-                <div class="team-logo">
-                </div>
-                <div class="team-name">${matchDetails.awayTeam}</div>
-            </div>
-        </div>
-
-        ${predictionHtml}
-
-        <div class="tab-container">
-            <div class="tabs">
-                <div class="tab active" data-tab="timeline">타임라인</div>
-                <div class="tab" data-tab="lineups">라인업</div>
-                <div class="tab" data-tab="stats">통계</div>
-            </div>
-
-            <div class="tab-content" id="timelineTab">
-                ${matchDetails.events.map(event => `
-                    <div class="event">
-                        <div class="event-icon">${event.type === 'goal' ? '⚽' : event.type === 'card' ? '🟨' : '🔄'}</div>
-                        <div class="event-info">
-                            <div class="player-name">${event.player}</div>
-                            <div class="event-detail">${event.detail}</div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-
-            <div class="tab-content" id="lineupsTab" style="display: none;">
-                <div class="lineups-container">
-                    <div class="lineups-teams">
-                        <div class="lineup-team home-lineup">
-                            <h3>${matchDetails.homeTeam}</h3>
-                            <div class="field-container">
-                                <div class="position-group">
-                                    <div class="position-label">1학년</div>
-                                    <div class="players-list">
-                                        ${matchDetails.lineups.home.first.map(player => `<div class="player">${player}</div>`).join('')}
-                                    </div>
-                                </div>
-                                <div class="position-group">
-                                    <div class="position-label">2학년</div>
-                                    <div class="players-list">
-                                        ${matchDetails.lineups.home.second.map(player => `<div class="player">${player}</div>`).join('')}
-                                    </div>
-                                </div>
-                                <div class="position-group">
-                                    <div class="position-label">3학년</div>
-                                    <div class="players-list">
-                                        ${matchDetails.lineups.home.third.map(player => `<div class="player">${player}</div>`).join('')}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="lineup-team away-lineup">
-                            <h3>${matchDetails.awayTeam}</h3>
-                            <div class="field-container">
-                                <div class="position-group">
-                                    <div class="position-label">1학년</div>
-                                    <div class="players-list">
-                                        ${matchDetails.lineups.away.first.map(player => `<div class="player">${player}</div>`).join('')}
-                                    </div>
-                                </div>
-                                <div class="position-group">
-                                    <div class="position-label">2학년</div>
-                                    <div class="players-list">
-                                        ${matchDetails.lineups.away.second.map(player => `<div class="player">${player}</div>`).join('')}
-                                    </div>
-                                </div>
-                                <div class="position-group">
-                                    <div class="position-label">3학년</div>
-                                    <div class="players-list">
-                                        ${matchDetails.lineups.away.third.map(player => `<div class="player">${player}</div>`).join('')}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    const html = matchesToShow.map(match => `
+        <div class="match-list">
+            <div class="match" data-match-id="${match.id}">
+                <div class="match-info">
+                    <div class="match-date">${match.date}</div>
+                    <div class="match-teams">
+                        <span class="team home">${match.homeTeam}</span>
+                        <span class="score">${match.status === "cancelled" ? "취소" : `${match.homeScore} - ${match.awayScore}`}</span>
+                        <span class="team away">${match.awayTeam}</span>
                     </div>
                 </div>
             </div>
-
-            <div class="tab-content" id="statsTab" style="display: none;">
-                <div class="additional-stats">
-                    <h3>경기 통계</h3>
-                    <p>통계 정보가 현재 비활성화되었습니다.</p>
-                </div>
-            </div>
         </div>
-    `;
+    `).join("");
 
-    const tabs = panelContent.querySelectorAll('.tab');
-    const tabContents = panelContent.querySelectorAll('.tab-content');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            tabContents.forEach(content => {
-                content.style.display = 'none';
-            });
-            
-            const tabName = this.getAttribute('data-tab');
-            const activeTabContent = document.getElementById(tabName + 'Tab');
-            if (activeTabContent) {
-                activeTabContent.style.display = 'block';
-            }
-        });
-    });
+    pagination.insertAdjacentHTML("beforebegin", html);
+    setupMatchClickListeners();
 }
-
-function setupMatchClickListeners() {
-    const matches = document.querySelectorAll('.match');
-    matches.forEach(match => {
-        match.addEventListener('click', () => {
-            openPanel(match.getAttribute('data-match-id'));
-        });
-    });
-
-    closePanelBtn.addEventListener('click', closePanel);
-    overlay.addEventListener('click', closePanel);
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    var moreLink = document.getElementById("moreLink");
-    var moreModal = document.getElementById("moreModal");
-    var closeMoreModal = document.getElementById("closeMoreModal");
-  
-    if(moreLink && moreModal && closeMoreModal){
-      moreLink.addEventListener("click", function(e){
-        e.preventDefault();
-        moreModal.style.display = "block";
-      });
-      closeMoreModal.addEventListener("click", function(){
-        moreModal.style.display = "none";
-      });
-      window.addEventListener("click", function(e){
-        if(e.target === moreModal){
-          moreModal.style.display = "none";
-        }
-      });
-    }
-  });
-
 
 function updateButtons() {
-  prevBtn.disabled = currentPage === 1;
-  nextBtn.disabled = currentPage === totalPages;
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
 }
+
+prevBtn?.addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        updateButtons();
+        renderMatches();
+    }
+});
+nextBtn?.addEventListener('click', () => {
+    if (currentPage < totalPages) {
+        currentPage++;
+        updateButtons();
+        renderMatches();
+    }
+});
+
+// 검색창 필터링
+document.querySelector('.search-bar')?.addEventListener('input', function (e) {
+    const keyword = e.target.value.toLowerCase();
+    document.querySelectorAll('section.main .match').forEach(match => {
+        match.style.display = match.textContent.toLowerCase().includes(keyword) ? 'block' : 'none';
+    });
+});
+
+// 패널 닫기 버튼 및 오버레이 클릭 시 닫힘 처리
+closePanelBtn?.addEventListener("click", closePanel);
+overlay?.addEventListener("click", closePanel);
+
