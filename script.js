@@ -15,7 +15,7 @@ const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
 // 라이트/다크 모드 로딩 시
-document.addEventListener('DOMContentLoaded', function () {
+window.onload = function () {
     const savedTheme = localStorage.getItem("theme");
     const body = document.body;
 
@@ -171,21 +171,16 @@ function loadMatchDetails(matchId) {
     if (statsContainer) renderVotingGraph(statsContainer, stats);
 
     const buttons = panelContent.querySelectorAll('.prediction-btn');
-buttons.forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const voteType = btn.getAttribute("data-vote");
-
-    // 결과 예측 후 확인
-    const isCorrect = confirm("예측이 맞았나요? [확인 = 맞음, 취소 = 틀림]");
-    await updateUserScore(isCorrect ? 1 : -1);
-
-    const updated = saveVote(matchId, voteType);
-    const container = btn.closest('.prediction-container');
-    container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
-    renderVotingGraph(container.querySelector('#votingStats'), updated);
-  });
-});
-
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const voteType = btn.getAttribute("data-vote");
+            const updated = saveVote(matchId, voteType);
+            const container = btn.closest('.prediction-container');
+            container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+            renderVotingGraph(container.querySelector('#votingStats'), updated);
+        });
+    });
+}
 
 function setupMatchClickListeners() {
     document.querySelectorAll('.match').forEach(match => {
