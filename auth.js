@@ -1,16 +1,28 @@
-const { 
-  initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile,
-  getFirestore, doc, setDoc, getDoc
-} = window.firebase;
+// Firebase 설정 (Storage 제거)
+import { initializeApp } from 'firebase/app';
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  updateProfile 
+} from 'firebase/auth';
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc 
+} from 'firebase/firestore';
+
 // Firebase 설정 (여기에 본인의 Firebase 설정을 넣으세요)
 const firebaseConfig = {
-  apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
-  authDomain: "hsp-auth-22845.firebaseapp.com",
-  projectId: "hsp-auth-22845",
-  storageBucket: "hsp-auth-22845.firebasestorage.app",
-  messagingSenderId: "1034282361573",
-  appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET", // Storage 사용 안 해도 필드는 남겨둠
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 // Firebase 초기화 (Storage 제거)
@@ -165,6 +177,7 @@ async function login(email, password) {
     const user = userCredential.user;
 
     console.log('로그인 성공:', user);
+    alert('로그인 성공');
     
     // 모달 닫기
     document.getElementById('authModal').style.display = 'none';
@@ -190,41 +203,47 @@ async function login(email, password) {
   }
 }
 
-// UI 업데이트 함수
-function updateUIForAuthState(isLoggedIn, profileData = null) {
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
+// 프로필 박스 동적 렌더링
+function renderProfileBox(user, profileData = null) {
   const profileBox = document.getElementById('profile-box');
-  
-  if (isLoggedIn && profileData) {
-    // 로그인 상태: 로그인 버튼 숨기고 프로필 박스 표시
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    
-    if (profileBox) {
-      // 기본 아바타 URL
-      const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
-      const avatarUrl = profileData.avatar_url || defaultAvatar;
-      
-      profileBox.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
-          <img src="${avatarUrl}" 
-               alt="프로필" 
-               style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;"
-               onerror="this.src='${defaultAvatar}'">
-          <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
-          <button onclick="logout()" 
-                  style="background: linear-gradient(135deg, #ff4757, #ff3742); color: white; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(255,71,87,0.3);">
-            로그아웃
-          </button>
-        </div>
-      `;
+  if (!profileBox) return;
+
+  if (user && profileData) {
+    // 로그인 상태: 프로필, 닉네임, 로그아웃 버튼
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
+    const avatarUrl = profileData.avatar_url || defaultAvatar;
+
+    profileBox.innerHTML = `
+      <div>
+        <img src="${avatarUrl}" 
+             alt="프로필" 
+             style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;"
+             onerror="this.src='${defaultAvatar}'">
+        <span>${profileData.nickname || '사용자'}</span>
+        <button id="logoutBtnInProfile">로그아웃</button>
+      </div>
+    `;
+
+    // 로그아웃 버튼 바인딩
+    const logoutBtn = document.getElementById('logoutBtnInProfile');
+    if (logoutBtn) {
+      logoutBtn.onclick = logout;
     }
   } else {
-    // 로그아웃 상태: 로그인 버튼 표시하고 프로필 박스 숨기기
-    if (loginBtn) loginBtn.style.display = 'inline-block';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    if (profileBox) profileBox.innerHTML = '';
+    // 로그아웃 상태: 로그인 버튼만
+    profileBox.innerHTML = `
+      <div>
+        <button id="loginBtnInProfile">로그인</button>
+      </div>
+    `;
+    // 로그인 버튼 바인딩
+    const loginBtn = document.getElementById('loginBtnInProfile');
+    if (loginBtn) {
+      loginBtn.onclick = () => {
+        const authModal = document.getElementById('authModal');
+        if (authModal) authModal.style.display = 'flex';
+      };
+    }
   }
 }
 
@@ -236,11 +255,9 @@ async function showUserProfile() {
     const user = auth.currentUser;
     if (!user) {
       console.log('사용자 정보 없음');
-      updateUIForAuthState(false);
+      renderProfileBox(null);
       return;
     }
-
-    console.log('현재 사용자:', user);
 
     // Firestore에서 프로필 정보 가져오기
     const docRef = doc(db, 'profiles', user.uid);
@@ -250,10 +267,8 @@ async function showUserProfile() {
     
     if (docSnap.exists()) {
       profileData = docSnap.data();
-      console.log('프로필 데이터:', profileData);
     } else {
       // 프로필이 없는 경우 기본 프로필 사용
-      console.log('프로필 데이터 없음, 기본값 사용');
       const nickname = user.displayName || user.email.split('@')[0];
       profileData = {
         nickname: nickname,
@@ -267,12 +282,12 @@ async function showUserProfile() {
     if (authModal) authModal.style.display = 'none';
     if (profileModal) profileModal.style.display = 'none';
 
-    // UI 업데이트
-    updateUIForAuthState(true, profileData);
+    // 프로필 박스 렌더링
+    renderProfileBox(user, profileData);
     
   } catch (error) {
     console.error('프로필 표시 중 오류:', error);
-    updateUIForAuthState(false);
+    renderProfileBox(null);
   }
 }
 
@@ -281,110 +296,89 @@ async function logout() {
   console.log('로그아웃 시도');
   try {
     await signOut(auth);
-    
-    // UI 업데이트
-    updateUIForAuthState(false);
-    
+    renderProfileBox(null);
+    alert('로그아웃되었습니다.');
   } catch (error) {
     console.error('로그아웃 오류:', error);
     alert('로그아웃 중 오류가 발생했습니다.');
   }
 }
 
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const authModal = document.getElementById('authModal');
-const closeAuthModal = document.getElementById('closeAuthModal');
-const profileModal = document.getElementById('profileModal');
-const closeProfileModal = document.getElementById('closeProfileModal');
-const saveProfileBtn = document.getElementById('saveProfileBtn');
-const doLoginBtn = document.getElementById('doLogin');
-const doSignUpBtn = document.getElementById('doSignUp');
+// 초기화: 로그인 유지 & 이벤트 바인딩
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM 로드 완료, 이벤트 바인딩 시작');
 
-console.log('요소 확인:', { loginBtn, doLoginBtn, doSignUpBtn });
+  const authModal = document.getElementById('authModal');
+  const closeAuthModal = document.getElementById('closeAuthModal');
+  const profileModal = document.getElementById('profileModal');
+  const closeProfileModal = document.getElementById('closeProfileModal');
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
 
-// 프로필 이미지 미리보기 설정 (파일 업로드 비활성화)
-setupProfileImagePreview();
+  const doLoginBtn = document.getElementById('doLogin');
+  const doSignUpBtn = document.getElementById('doSignUp');
 
-// 로그인 버튼 클릭 시 모달 표시
-if (loginBtn) {
-  loginBtn.onclick = () => {
-    console.log('로그인 버튼 클릭');
-    authModal.style.display = 'flex';
-  };
-}
+  setupProfileImagePreview();
 
-// 로그아웃
-if (logoutBtn) {
-  logoutBtn.onclick = logout;
-}
-
-// 로그인 모달 닫기
-if (closeAuthModal) {
-  closeAuthModal.onclick = () => {
-    authModal.style.display = 'none';
-  };
-}
-
-// 프로필 모달 닫기
-if (closeProfileModal) {
-  closeProfileModal.onclick = () => {
-    profileModal.style.display = 'none';
-  };
-}
-
-// 프로필 저장
-if (saveProfileBtn) {
-  saveProfileBtn.onclick = saveProfile;
-}
-
-// 로그인 실행
-if (doLoginBtn) {
-  doLoginBtn.onclick = () => {
-    console.log('로그인 버튼 클릭됨');
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    if (!email || !password) {
-      alert('이메일과 비밀번호를 입력해주세요.');
-      return;
-    }
-    login(email, password);
-  };
-} else {
-  console.error('doLogin 버튼을 찾을 수 없습니다');
-}
-
-// 회원가입 실행 - 프로필 모달 표시
-if (doSignUpBtn) {
-  doSignUpBtn.onclick = () => {
-    console.log('회원가입 버튼 클릭됨');
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    if (!email || !password) {
-      alert('이메일과 비밀번호를 입력해주세요.');
-      return;
-    }
-    showProfileModal();
-  };
-} else {
-  console.error('doSignUp 버튼을 찾을 수 없습니다');
-}
-
-// 바깥 영역 클릭 시 모달 닫기
-window.onclick = (e) => {
-  if (e.target === authModal) authModal.style.display = 'none';
-  if (e.target === profileModal) profileModal.style.display = 'none';
-};
-
-// Firebase Auth 상태 변경 리스너 - 자동 로그인 유지
-onAuthStateChanged(auth, (user) => {
-  console.log('Auth 상태 변경:', user);
-  if (user) {
-    showUserProfile();
-  } else {
-    updateUIForAuthState(false);
+  // 모달 닫기
+  if (closeAuthModal) {
+    closeAuthModal.onclick = () => {
+      authModal.style.display = 'none';
+    };
   }
+
+  if (closeProfileModal) {
+    closeProfileModal.onclick = () => {
+      profileModal.style.display = 'none';
+    };
+  }
+
+  // 프로필 저장
+  if (saveProfileBtn) {
+    saveProfileBtn.onclick = saveProfile;
+  }
+
+  // 로그인 실행
+  if (doLoginBtn) {
+    doLoginBtn.onclick = () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      if (!email || !password) {
+        alert('이메일과 비밀번호를 입력해주세요.');
+        return;
+      }
+      login(email, password);
+    };
+  }
+
+  // 회원가입 실행 - 프로필 모달 표시
+  if (doSignUpBtn) {
+    doSignUpBtn.onclick = () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      if (!email || !password) {
+        alert('이메일과 비밀번호를 입력해주세요.');
+        return;
+      }
+      showProfileModal();
+    };
+  }
+
+  // 바깥 클릭 시 모달 닫기
+  window.onclick = (e) => {
+    if (e.target === authModal) {
+      authModal.style.display = 'none';
+    }
+    if (e.target === profileModal) {
+      profileModal.style.display = 'none';
+    }
+  };
+
+  // Firebase Auth 상태 변경 리스너 - 자동 로그인 유지
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      showUserProfile();
+    } else {
+      renderProfileBox(null);
+    }
+  });
 });
-window.logout = logout;
