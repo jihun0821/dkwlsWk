@@ -389,3 +389,4 @@ onAuthStateChanged(auth, (user) => {
     updateUIForAuthState(false);
   }
 });
+window.logout = logout;
