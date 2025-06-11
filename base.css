@@ -51,9 +51,9 @@ body {
   background: linear-gradient(135deg, #ff4757, #ff3742);
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 10px 30px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: bold;
   font-family: "Arial", sans-serif;
   cursor: pointer;
