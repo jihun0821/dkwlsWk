@@ -1,28 +1,12 @@
-// Firebase 설정 (Storage 제거)
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  updateProfile 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  getDoc 
-} from 'firebase/firestore';
 
 // Firebase 설정 (여기에 본인의 Firebase 설정을 넣으세요)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET", // Storage 사용 안 해도 필드는 남겨둠
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
+  authDomain: "hsp-auth-22845.firebaseapp.com",
+  projectId: "hsp-auth-22845",
+  storageBucket: "hsp-auth-22845.firebasestorage.app",
+  messagingSenderId: "1034282361573",
+  appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
 };
 
 // Firebase 초기화 (Storage 제거)
@@ -305,113 +289,99 @@ async function logout() {
   }
 }
 
-// 초기화: 로그인 유지 & 이벤트 바인딩
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM 로드 완료, 이벤트 바인딩 시작');
-  
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const authModal = document.getElementById('authModal');
-  const closeAuthModal = document.getElementById('closeAuthModal');
-  const profileModal = document.getElementById('profileModal');
-  const closeProfileModal = document.getElementById('closeProfileModal');
-  const saveProfileBtn = document.getElementById('saveProfileBtn');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const authModal = document.getElementById('authModal');
+const closeAuthModal = document.getElementById('closeAuthModal');
+const profileModal = document.getElementById('profileModal');
+const closeProfileModal = document.getElementById('closeProfileModal');
+const saveProfileBtn = document.getElementById('saveProfileBtn');
+const doLoginBtn = document.getElementById('doLogin');
+const doSignUpBtn = document.getElementById('doSignUp');
 
-  const doLoginBtn = document.getElementById('doLogin');
-  const doSignUpBtn = document.getElementById('doSignUp');
+console.log('요소 확인:', { loginBtn, doLoginBtn, doSignUpBtn });
 
-  console.log('요소 확인:', { loginBtn, doLoginBtn, doSignUpBtn });
+// 프로필 이미지 미리보기 설정 (파일 업로드 비활성화)
+setupProfileImagePreview();
 
-  // 프로필 이미지 미리보기 설정 (파일 업로드 비활성화)
-  setupProfileImagePreview();
-
-  // 로그인 버튼 클릭 시 모달 표시
-  if (loginBtn) {
-    loginBtn.onclick = () => {
-      console.log('로그인 버튼 클릭');
-      authModal.style.display = 'flex';
-    };
-  }
-
-  // 로그아웃
-  if (logoutBtn) {
-    logoutBtn.onclick = logout;
-  }
-
-  // 모달 닫기
-  if (closeAuthModal) {
-    closeAuthModal.onclick = () => {
-      authModal.style.display = 'none';
-    };
-  }
-
-  if (closeProfileModal) {
-    closeProfileModal.onclick = () => {
-      profileModal.style.display = 'none';
-    };
-  }
-
-  // 프로필 저장
-  if (saveProfileBtn) {
-    saveProfileBtn.onclick = saveProfile;
-  }
-
-  // 로그인 실행
-  if (doLoginBtn) {
-    doLoginBtn.onclick = () => {
-      console.log('로그인 버튼 클릭됨');
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      console.log('입력값 확인:', { email: email, passwordLength: password.length });
-      
-      if (!email || !password) {
-        alert('이메일과 비밀번호를 입력해주세요.');
-        return;
-      }
-      
-      login(email, password);
-    };
-  } else {
-    console.error('doLogin 버튼을 찾을 수 없습니다');
-  }
-
-  // 회원가입 실행 - 프로필 모달 표시
-  if (doSignUpBtn) {
-    doSignUpBtn.onclick = () => {
-      console.log('회원가입 버튼 클릭됨');
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      if (!email || !password) {
-        alert('이메일과 비밀번호를 입력해주세요.');
-        return;
-      }
-      
-      // 프로필 설정 모달 표시
-      showProfileModal();
-    };
-  } else {
-    console.error('doSignUp 버튼을 찾을 수 없습니다');
-  }
-
-  // 바깥 클릭 시 모달 닫기
-  window.onclick = (e) => {
-    if (e.target === authModal) {
-      authModal.style.display = 'none';
-    }
-    if (e.target === profileModal) {
-      profileModal.style.display = 'none';
-    }
+// 로그인 버튼 클릭 시 모달 표시
+if (loginBtn) {
+  loginBtn.onclick = () => {
+    console.log('로그인 버튼 클릭');
+    authModal.style.display = 'flex';
   };
+}
 
-  // Firebase Auth 상태 변경 리스너 - 자동 로그인 유지
-  onAuthStateChanged(auth, (user) => {
-    console.log('Auth 상태 변경:', user);
-    if (user) {
-      showUserProfile();
-    } else {
-      updateUIForAuthState(false);
+// 로그아웃
+if (logoutBtn) {
+  logoutBtn.onclick = logout;
+}
+
+// 로그인 모달 닫기
+if (closeAuthModal) {
+  closeAuthModal.onclick = () => {
+    authModal.style.display = 'none';
+  };
+}
+
+// 프로필 모달 닫기
+if (closeProfileModal) {
+  closeProfileModal.onclick = () => {
+    profileModal.style.display = 'none';
+  };
+}
+
+// 프로필 저장
+if (saveProfileBtn) {
+  saveProfileBtn.onclick = saveProfile;
+}
+
+// 로그인 실행
+if (doLoginBtn) {
+  doLoginBtn.onclick = () => {
+    console.log('로그인 버튼 클릭됨');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+      alert('이메일과 비밀번호를 입력해주세요.');
+      return;
     }
-  });
+    login(email, password);
+  };
+} else {
+  console.error('doLogin 버튼을 찾을 수 없습니다');
+}
+
+// 회원가입 실행 - 프로필 모달 표시
+if (doSignUpBtn) {
+  doSignUpBtn.onclick = () => {
+    console.log('회원가입 버튼 클릭됨');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+      alert('이메일과 비밀번호를 입력해주세요.');
+      return;
+    }
+    showProfileModal();
+  };
+} else {
+  console.error('doSignUp 버튼을 찾을 수 없습니다');
+}
+
+// 바깥 영역 클릭 시 모달 닫기
+window.onclick = (e) => {
+  if (e.target === authModal) authModal.style.display = 'none';
+  if (e.target === profileModal) profileModal.style.display = 'none';
+};
+
+// Firebase Auth 상태 변경 리스너 - 자동 로그인 유지
+onAuthStateChanged(auth, (user) => {
+  console.log('Auth 상태 변경:', user);
+  if (user) {
+    showUserProfile();
+  } else {
+    updateUIForAuthState(false);
+  }
 });
