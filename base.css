@@ -46,24 +46,29 @@ body {
   cursor: pointer;
 }
 
-/* 로그인/로그아웃/경기 추가 버튼 */
 .login, .logout, .add-match {
-  background-color: #ffffff;
-  color: rgb(0, 0, 0);
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold; 
-  font-family: "Arial", sans-serif; 
-  transition: background-color 0.3s, transform 0.1s;
+  font-weight: bold;
+  font-family: "Arial", sans-serif;
+  transition: all 0.3s ease;
   margin-right: 120px;
+  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
 }
 
 .login:hover, .logout:hover, .add-match:hover {
-  background-color: #9ea7af;
-  transform: scale(1.05);
+  background: linear-gradient(135deg, #ff3742, #ff2635);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 4px 8px rgba(255, 71, 87, 0.4);
+}
+
+.login:active, .logout:active, .add-match:active {
+  transform: translateY(0) scale(1.01);
 }
 
 .login {
