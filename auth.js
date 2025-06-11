@@ -1,5 +1,8 @@
-const { initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, getFirestore, doc, setDoc, getDoc } = window.firebase;
-
+const { 
+  initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signOut, onAuthStateChanged, updateProfile,
+  getFirestore, doc, setDoc, getDoc
+} = window.firebase;
 // Firebase 설정 (여기에 본인의 Firebase 설정을 넣으세요)
 const firebaseConfig = {
   apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
