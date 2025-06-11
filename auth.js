@@ -18,12 +18,12 @@ import {
 
 // Firebase 설정 (여기에 본인의 Firebase 설정을 넣으세요)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET", // Storage 사용 안 해도 필드는 남겨둠
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
+  authDomain: "hsp-auth-22845.firebaseapp.com",
+  projectId: "hsp-auth-22845",
+  storageBucket: "hsp-auth-22845.firebasestorage.app",
+  messagingSenderId: "1034282361573",
+  appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
 };
 
 // Firebase 초기화 (Storage 제거)
