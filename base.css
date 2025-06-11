@@ -48,7 +48,7 @@ body {
 
 /* 로그인/로그아웃/경기 추가 버튼 - 통일 스타일 */
 .login, .logout, .add-match {
-  background: linear-gradient(135deg, #ff4757, #ff3742) !important;
+  background: linear-gradient(135deg, #ca3e4a, #ee343d) !important;
   color: white !important;
   border: none !important;
   padding: 10px 30px !important;
