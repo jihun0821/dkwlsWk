@@ -9,13 +9,29 @@
     <link rel="stylesheet" href="features.css">
     <link rel="stylesheet" href="modal.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Firebase SDK CDN -->
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getStorage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Firebase를 전역에서 사용할 수 있도록 설정
+        window.firebase = {
+            initializeApp,
+            getAuth,
+            getStorage,
+            getFirestore
+        };
+    </script>
 </head>
 <body>
     <header class="navbar">
-    <a href="index.html" class="logo">
-      <img src="https://i.imgur.com/q3OcEgT.png" alt="HSP 로고" class="logo-img">
-    </a>
+        <a href="index.html" class="logo">
+            <img src="https://i.imgur.com/q3OcEgT.png" alt="HSP 로고" class="logo-img">
+        </a>
         <input type="text" class="search-bar" placeholder="경기 검색">
         <button class="login" id="loginBtn">로그인</button>
         <button class="logout" id="logoutBtn" style="display: none;">로그아웃</button>
@@ -26,20 +42,20 @@
     </header>
 
     <nav class="sports-navbar">
-      <a class="sports-link active" href="index.html">
-        <span class="sports-icon">⚽</span>
-        Football
-      </a>
-      <a class="sports-link" href="#" id="moreLink">
-        <span class="sports-icon">⋯</span>
-        More
-      </a>
+        <a class="sports-link active" href="index.html">
+            <span class="sports-icon">⚽</span>
+            Football
+        </a>
+        <a class="sports-link" href="#" id="moreLink">
+            <span class="sports-icon">⋯</span>
+            More
+        </a>
     </nav>
 
     <div id="moreModal" class="modal">
         <div class="modal-content">
-          <span class="close" id="closeMoreModal">&times;</span>
-          <p>더 많은 종목을 추가할 예정입니다</p>
+            <span class="close" id="closeMoreModal">&times;</span>
+            <p>더 많은 종목을 추가할 예정입니다</p>
         </div>
     </div>
 
@@ -76,7 +92,6 @@
     </div>
 
     <main>
-    
         <section class="main">
             <h2>&nbsp;&nbsp;&nbsp;끝난 경기</h2>
             <div class="match-list">
@@ -150,7 +165,6 @@
         <p></p>
     </main>
 
-
     <div class="match-details-panel" id="matchDetailsPanel">
         <div class="panel-header">
             <button class="close-panel" id="closePanelBtn">×</button>
@@ -161,55 +175,52 @@
     </div>
     <div class="overlay" id="overlay"></div>
 
-<!-- 로그인 모달 부분만 수정 -->
+    <!-- 로그인/회원가입 모달 -->
     <div id="authModal" class="auth-modal">
         <div class="auth-modal-content">
-        <span class="auth-modal-close" id="closeAuthModal">&times;</span>
-        <h2>로그인 / 회원가입</h2>
-        <input id="email" type="email" placeholder="이메일" />
-        <input id="password" type="password" placeholder="비밀번호" />
-        <!-- ID에서 괄호 제거 -->
-        <button id="doLogin">로그인</button>
-        <button id="doSignUp">회원가입</button>
+            <span class="auth-modal-close" id="closeAuthModal">&times;</span>
+            <h2>로그인 / 회원가입</h2>
+            <div class="auth-form">
+                <input id="email" type="email" placeholder="이메일 (@hanilgo.cnehs.kr)" />
+                <input id="password" type="password" placeholder="비밀번호 (6자 이상)" />
+                <div class="auth-buttons">
+                    <button id="doLogin" class="auth-btn login-btn">로그인</button>
+                    <button id="doSignUp" class="auth-btn signup-btn">회원가입</button>
+                </div>
+            </div>
         </div>
     </div>
     
-    
-    
-    
-    
-    
-    
-    <!-- 프로필 설정 모달 (업데이트된 버전) -->
+    <!-- 프로필 설정 모달 -->
     <div id="profileModal" class="profile-modal">
-      <div class="profile-modal-content">
-        <span class="profile-modal-close" id="closeProfileModal">&times;</span>
-        <h2>프로필 설정</h2>
-        
-        <!-- 프로필 이미지 미리보기 영역 -->
-        <div class="profile-preview"></div>
-        
-        <!-- 닉네임 입력 -->
-        <input id="nickname" type="text" placeholder="닉네임 (2-20자)" maxlength="20" />
-        
-        <!-- 파일 업로드 -->
-        <div class="file-upload-wrapper">
-          <label for="avatar" class="file-upload-label">
-            프로필 사진 선택 (선택사항)
-          </label>
-          <input id="avatar" type="file" accept="image/*" style="display: none;" />
+        <div class="profile-modal-content">
+            <span class="profile-modal-close" id="closeProfileModal">&times;</span>
+            <h2>프로필 설정</h2>
+            
+            <!-- 프로필 이미지 미리보기 영역 -->
+            <div class="profile-preview"></div>
+            
+            <!-- 닉네임 입력 -->
+            <input id="nickname" type="text" placeholder="닉네임 (2-20자)" maxlength="20" />
+            
+            <!-- 파일 업로드 -->
+            <div class="file-upload-wrapper">
+                <label for="avatar" class="file-upload-label">
+                    프로필 사진 선택 (선택사항)
+                </label>
+                <input id="avatar" type="file" accept="image/*" style="display: none;" />
+            </div>
+            
+            <!-- 버튼들 -->
+            <div class="modal-buttons">
+                <button id="saveProfileBtn" class="save-profile-btn">저장하고 가입</button>
+                <button class="cancel-btn" onclick="document.getElementById('profileModal').style.display='none'">취소</button>
+            </div>
         </div>
-        
-        <!-- 버튼들 -->
-        <div class="modal-buttons">
-          <button id="saveProfileBtn">저장하고 가입</button>
-          <button class="cancel-btn" onclick="document.getElementById('profileModal').style.display='none'">취소</button>
-        </div>
-      </div>
     </div>
-      
-      
-    <script src="auth.js"></script>
+
+    <!-- 스크립트는 Firebase SDK 로드 후에 실행 -->
+    <script type="module" src="auth.js"></script>
     <script src="matchData.js"></script>
     <script src="script.js"></script>
 </body>
