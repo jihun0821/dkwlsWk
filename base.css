@@ -46,9 +46,8 @@ body {
   cursor: pointer;
 }
 
-/* 로그인/로그아웃/경기 추가 버튼 - 통일 스타일 */
 .login, .logout, .add-match {
-  background: linear-gradient(135deg, #ca3e4a, #ee343d);
+  background: #6e6969;
   color: white;
   border: none;
   padding: 10px 30px;
@@ -59,13 +58,11 @@ body {
   font-family: "Arial", sans-serif;
   transition: all 0.3s ease;
   margin-right: 120px;
-  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
 }
 
 .login:hover, .logout:hover, .add-match:hover {
-  background: linear-gradient(135deg, #ff3742, #ff2635);
+  background: #6b6262;
   transform: translateY(-1px) scale(1.05);
-  box-shadow: 0 4px 8px rgba(255, 71, 87, 0.4);
 }
 
 .login:active, .logout:active, .add-match:active {
