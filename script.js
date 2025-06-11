@@ -15,7 +15,7 @@ const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
 // 라이트/다크 모드 로딩 시
-window.onload = function () {
+document.addEventListener('DOMContentLoaded', function () {
     const savedTheme = localStorage.getItem("theme");
     const body = document.body;
 
