@@ -200,7 +200,6 @@ async function showUserProfile() {
     const user = auth.currentUser;
     if (!user) {
       console.log('사용자 정보 없음');
-      updateUIForAuthState(false);
       return;
     }
 
@@ -232,11 +231,9 @@ async function showUserProfile() {
     if (profileModal) profileModal.style.display = 'none';
 
     // UI 업데이트
-    updateUIForAuthState(true, profileData);
     
   } catch (error) {
     console.error('프로필 표시 중 오류:', error);
-    updateUIForAuthState(false);
   }
 }
 
@@ -247,7 +244,6 @@ async function logout() {
     await signOut(auth);
     
     // UI 업데이트
-    updateUIForAuthState(false);
     
     alert('로그아웃되었습니다.');
   } catch (error) {
@@ -349,7 +345,6 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     showUserProfile();
   } else {
-    updateUIForAuthState(false);
   }
 });
 window.logout = logout;
