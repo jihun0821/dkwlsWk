@@ -192,44 +192,6 @@ async function login(email, password) {
   }
 }
 
-// UI 업데이트 함수
-function updateUIForAuthState(isLoggedIn, profileData = null) {
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const profileBox = document.getElementById('profile-box');
-  
-  if (isLoggedIn && profileData) {
-    // 로그인 상태: 로그인 버튼 숨기고 프로필 박스 표시
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    
-    if (profileBox) {
-      // 기본 아바타 URL
-      const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
-      const avatarUrl = profileData.avatar_url || defaultAvatar;
-      
-      profileBox.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
-          <img src="${avatarUrl}" 
-               alt="프로필" 
-               style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;"
-               onerror="this.src='${defaultAvatar}'">
-          <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
-          <button onclick="logout()" 
-                  style="background: linear-gradient(135deg, #ff4757, #ff3742); color: white; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(255,71,87,0.3);">
-            로그아웃
-          </button>
-        </div>
-      `;
-    }
-  } else {
-    // 로그아웃 상태: 로그인 버튼 표시하고 프로필 박스 숨기기
-    if (loginBtn) loginBtn.style.display = 'inline-block';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    if (profileBox) profileBox.innerHTML = '';
-  }
-}
-
 // 프로필 표시
 async function showUserProfile() {
   console.log('프로필 표시 시도');
