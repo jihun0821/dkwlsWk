@@ -29,7 +29,7 @@ body {
 .search-bar {
   flex: 1;
   margin-left: 240px; 
-  margin-right: 340px; 
+  margin-right: 420px; 
   padding: 15px;
   border-radius: 8px;
   border: none;
@@ -260,3 +260,249 @@ main {
   display: block;
   margin: 0 auto;
   }
+
+  .sports-navbar {
+    display: flex;
+    align-items: flex-end;
+    padding-left: 12vw;         /* ← 원하는 만큼 조정! */
+    height: 54px;
+    background-color: #272424;
+    gap: 16px; 
+  }
+  .sports-navbar .sports-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 10px 3px 10px;
+    position: relative;
+    transition: background 0.2s;
+    border-radius: 6px 6px 0 0;
+  }
+  .sports-navbar .sports-link:hover {
+    background: #212f8d;
+  }
+  .sports-navbar .sports-icon {
+    font-size: 22px;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.4);
+    font-weight: bold;
+  }
+  .modal-content {
+    background: #fff;
+    color: #222;
+    margin: 15% auto;
+    padding: 30px 40px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 2px 18px #0005;
+  }
+  .close {
+    position: absolute;
+    right: 18px;
+    top: 8px;
+    font-size: 22px;
+    color: #888;
+    cursor: pointer;
+  }
+/* ============== 20. 페이지네이션 ============== */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 60px;
+  margin-bottom: 30px;
+}
+
+.pagination-btn {
+  color: #2051ff;
+  border: 1px solid #2051ff;
+  background: white;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.pagination-btn:disabled {
+  color: #aaa;
+  border-color: #aaa;
+  cursor: not-allowed;
+}
+
+/* 테이블 표 */
+
+/* 2x2 배치를 위한 추가 스타일 */
+.group-tables {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 40px 50px; /* 행, 열 간격 */
+  justify-items: center;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.group-table-container {
+  min-width: 340px;
+  min-height: 210px;
+  background: #444;
+  border-radius: 14px;
+  padding: 18px 14px 10px 14px;
+  box-shadow: 0 2px 10px rgba(30, 58, 138, 0.09);
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.group-table-container h3 {
+  color: #3da5ff;
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 19px;
+  letter-spacing: 2px;
+}
+
+.group-table-container table {
+  width: 100%;
+  font-size: 15px;
+  margin: 0;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+.group-table-container th,
+.group-table-container td {
+  font-size: 15px;
+  padding: 10px 6px;
+  color: #fff;              
+  text-align: center;
+  background: transparent;
+}
+
+.group-table-container th {
+  font-weight: bold;
+  border-bottom: 2px solid #3da5ff;
+  color: #3da5ff;
+  background: transparent;
+}
+
+.group-table-container tr:not(:last-child) td {
+  border-bottom: 1px solid #555;
+}
+
+/* 반응형: 모바일에서는 1열로 */
+@media (max-width: 900px) {
+  .group-tables {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    gap: 28px 0;
+  }
+  .group-table-container {
+    min-width: 0;
+    width: 90vw;
+    max-width: 420px;
+  }
+}
+
+/* ============== bracket ============== */
+
+.bracket-container {
+  display: flex;
+  gap: 40px;
+  padding: 20px;
+  background: #444;
+  justify-content: center;
+  border-radius: 30px;
+}
+.stage {
+  min-width: 180px;
+}
+.stage-title {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.match {
+  background: #111111;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px #0001;
+  margin-bottom: 18px;
+  padding: 6px 10px;
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.team_table {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  margin: 2px 0;
+}
+.winner {
+  font-weight: bold;
+  color: #249e14;
+}
+.final {
+  background: #ffe480;
+  border-radius: 3px;
+  padding: 1px 4px;
+  display: inline-block;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.final-match {
+  border: 2px solid #ffd700;
+}
+.vs {
+  text-align: center;
+  font-weight: bold;
+  margin: 5px 0;
+}
+.date-info {
+  color: #888;
+  font-size: 11px;
+  margin-top: 2px;
+  text-align: right;
+}
+
+/* */
+.stage {
+  position: relative;
+}
+
+.match_table {
+  position: relative;
+  margin-bottom: 30px;
+  background-color: #2a2a2a;
+  border-radius: 10px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.match_table:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
