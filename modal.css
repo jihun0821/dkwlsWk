@@ -307,7 +307,7 @@
 /* ============== 프로필 박스 스타일 ============== */
 #profile-box {
   position: absolute;     /* absolute 제거 */
-  right: 300px;
+  right: 350px;
   top: 1px;
   transform: none;
   z-index: auto;
