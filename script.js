@@ -1,6 +1,5 @@
 
 // 테마 버튼
-const toggleThemeBtn = document.getElementById("toggleThemeBtn");
 const matchDetailsPanel = document.getElementById("matchDetailsPanel");
 const overlay = document.getElementById("overlay");
 const closePanelBtn = document.getElementById("closePanelBtn");
