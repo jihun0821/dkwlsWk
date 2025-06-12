@@ -132,7 +132,56 @@ async function saveProfile() {
     alert('회원가입 성공! 이메일 인증 후 로그인하세요.');
     
     // 프로필 UI 업데이트
-    showUserProfile();
+// 프로필 표시 (auth.js에서 수정)
+async function showUserProfile() {
+  console.log('프로필 표시 시도');
+  
+  try {
+    const user = auth.currentUser;
+    
+    if (!user) {
+      console.log('사용자 정보 없음');
+      // 로그아웃 상태일 때 UI 업데이트
+      updateUIForAuthState(false);
+      return;
+    }
+
+    console.log('현재 사용자:', user);
+
+    // Firestore에서 프로필 정보 가져오기
+    const docRef = doc(db, 'profiles', user.uid);
+    const docSnap = await getDoc(docRef);
+
+    let profileData;
+    
+    if (docSnap.exists()) {
+      profileData = docSnap.data();
+      console.log('프로필 데이터:', profileData);
+    } else {
+      // 프로필이 없는 경우 기본 프로필 사용
+      console.log('프로필 데이터 없음, 기본값 사용');
+      const nickname = user.displayName || user.email.split('@')[0];
+      profileData = {
+        nickname: nickname,
+        avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=667eea&color=fff&size=35&bold=true`
+      };
+    }
+
+    // 모든 모달 닫기
+    const authModal = document.getElementById('authModal');
+    const profileModal = document.getElementById('profileModal');
+    if (authModal) authModal.style.display = 'none';
+    if (profileModal) profileModal.style.display = 'none';
+
+    // UI 업데이트 - 로그인 상태
+    updateUIForAuthState(true, profileData);
+
+  } catch (error) {
+    console.error('프로필 표시 중 오류:', error);
+    // 오류 발생 시 로그아웃 상태로 UI 업데이트
+    updateUIForAuthState(false);
+  }
+}
 
   } catch (error) {
     console.error('프로필 저장 중 오류:', error);
