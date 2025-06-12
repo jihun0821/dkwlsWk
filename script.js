@@ -74,12 +74,6 @@ function toggleTheme() {
   showUserProfile();
 }
 
-toggleThemeBtn?.addEventListener("click", () => {
-    document.body.classList.toggle("light-mode");
-    localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
-    toggleThemeBtn.textContent = document.body.classList.contains("light-mode") ? "☀️" : "🌙";
-});
-
 // 로그인 여부 확인
 function isUserLoggedIn() {
     return !!localStorage.getItem("userEmail");
