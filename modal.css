@@ -317,10 +317,6 @@
   height: 100%;
 }
 
-#profile-box button {
-  margin-right: 0;
-}
-
 #profile-box div {
   display: flex;
   align-items: center;
@@ -369,7 +365,7 @@
   font-weight: bold;
   font-family: "Arial", sans-serif;
   transition: all 0.3s ease;
-  margin-right: 120px;
+  margin-right: 40px;
   box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
 }
 
