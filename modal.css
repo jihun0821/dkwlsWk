@@ -306,12 +306,12 @@
 
 /* ============== 프로필 박스 스타일 ============== */
 #profile-box {
-  position: static;
+  position: static;     /* absolute 제거 */
   right: unset;
   top: unset;
   transform: none;
   z-index: auto;
-  margin-left: 10px;
+  margin-left: 0;       /* 왼쪽에 최대한 붙임 */
   display: flex;
   align-items: center;
   height: 100%;
@@ -365,7 +365,7 @@
   font-weight: bold;
   font-family: "Arial", sans-serif;
   transition: all 0.3s ease;
-  margin-right: 40px;
+  margin-right: 20px;
   box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
 }
 
@@ -384,8 +384,9 @@
   #profile-box {
     position: static;
     transform: none;
-    margin-left: 10px;
+    margin-left: 0;
   }
+}
   
   #profile-box div {
     padding: 6px 10px;
