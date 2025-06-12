@@ -306,11 +306,19 @@
 
 /* ============== 프로필 박스 스타일 ============== */
 #profile-box {
-  position: absolute;
-  right: 60px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 100;
+  position: static;
+  right: unset;
+  top: unset;
+  transform: none;
+  z-index: auto;
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+#profile-box button {
+  margin-right: 0;
 }
 
 #profile-box div {
