@@ -506,14 +506,3 @@ main {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
-.login, .logout {
-  position: static !important;
-  margin-right: 10px !important;
-}
-#profile-box {
-  position: static !important;
-  margin-left: 10px !important;
-}
-.navbar {
-  position: relative;
-}
