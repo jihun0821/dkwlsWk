@@ -391,3 +391,4 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 window.logout = logout;
+window.showUserProfile = showUserProfile;
