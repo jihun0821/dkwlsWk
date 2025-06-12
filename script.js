@@ -36,6 +36,45 @@ window.onload = function () {
     }
 };
 
+function updateUIForAuthState(isLoggedIn, profileData = null) {
+  const profileBox = document.getElementById('profile-box');
+  const themeIcon = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+
+  if (isLoggedIn && profileData) {
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
+    const avatarUrl = profileData.avatar_url || defaultAvatar;
+    profileBox.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="${avatarUrl}" alt="프로필"
+          style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;"
+          onerror="this.src='${defaultAvatar}'">
+        <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
+        <button id="logoutBtn" type="button">로그아웃</button>
+        <button id="toggleThemeBtn" type="button">${themeIcon}</button>
+      </div>
+    `;
+    document.getElementById('logoutBtn').onclick = logout;
+    document.getElementById('toggleThemeBtn').onclick = toggleTheme;
+  } else {
+    profileBox.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button id="loginBtn" type="button">로그인</button>
+        <button id="toggleThemeBtn" type="button">${themeIcon}</button>
+      </div>
+    `;
+    document.getElementById('loginBtn').onclick = () => {
+      document.getElementById('authModal').style.display = 'flex';
+    };
+    document.getElementById('toggleThemeBtn').onclick = toggleTheme;
+  }
+}
+function toggleTheme() {
+  document.body.classList.toggle("light-mode");
+  localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
+  // UI 갱신(아이콘 즉시 변경)
+  showUserProfile();
+}
+
 toggleThemeBtn?.addEventListener("click", () => {
     document.body.classList.toggle("light-mode");
     localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
