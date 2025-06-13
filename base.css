@@ -29,7 +29,7 @@ body {
 .search-bar {
   flex: 1;
   margin-left: 240px; 
-  margin-right: 220px; /* 기존 420px에서 20px로 변경 */
+  margin-right: 200px; /* 기존 420px에서 20px로 변경 */
   padding: 15px;
   border-radius: 8px;
   border: none;
