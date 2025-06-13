@@ -1,5 +1,3 @@
-
-
 // 테마 버튼
 const matchDetailsPanel = document.getElementById("matchDetailsPanel");
 const overlay = document.getElementById("overlay");
@@ -100,15 +98,12 @@ function getVotingStats(matchId) {
 
     if (savedStats) return JSON.parse(savedStats);
 
-    const homeVotes = Math.floor(Math.random() * 30) + 10;
-    const drawVotes = Math.floor(Math.random() * 20) + 5;
-    const awayVotes = Math.floor(Math.random() * 25) + 8;
-
+    // 랜덤 값 대신 0으로 초기화
     const defaultStats = {
-        homeWin: homeVotes,
-        draw: drawVotes,
-        awayWin: awayVotes,
-        total: homeVotes + drawVotes + awayVotes
+        homeWin: 0,
+        draw: 0,
+        awayWin: 0,
+        total: 0
     };
 
     localStorage.setItem(statsKey, JSON.stringify(defaultStats));
@@ -127,6 +122,19 @@ function saveVote(matchId, voteType) {
 
 function renderVotingGraph(container, stats) {
     const totalVotes = stats.total;
+    
+    // 총 투표수가 0인 경우 처리
+    if (totalVotes === 0) {
+        container.innerHTML = `
+            <div class="voting-stats">
+                <div class="no-votes-message">
+                    <p>아직 투표가 없습니다.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
     const homePercent = Math.round((stats.homeWin / totalVotes) * 100);
     const drawPercent = Math.round((stats.draw / totalVotes) * 100);
     const awayPercent = Math.round((stats.awayWin / totalVotes) * 100);
