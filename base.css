@@ -31,7 +31,7 @@ body {
   align-items: center;
   justify-content: center;
   flex: 1;
-  gap: 18px; /* 서치바와 프로필 박스 사이 간격 */
+  gap: 80px; /* 서치바와 프로필 박스 사이 간격 */
 }
 
 .search-bar {
