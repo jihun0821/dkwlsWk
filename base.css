@@ -26,13 +26,15 @@ body {
 }
 
 .search-bar {
-  flex: 1;
+  width: 300px; /* flex: 1 대신 고정 너비로 변경 */
   margin-left: 240px; 
-  margin-right: 20px; /* 기존 420px에서 20px로 변경 */
+  margin-right: 20px;
   padding: 15px;
   border-radius: 8px;
   border: none;
   font-weight: bold;
+  height: 20px; /* 높이 설정 */
+  box-sizing: border-box; /* 패딩 포함한 전체 높이 */
 }
 
 .icons {
