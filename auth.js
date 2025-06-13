@@ -116,9 +116,7 @@ async function saveProfile() {
     });
 
     document.getElementById('profileModal').style.display = 'none';
-    
-    alert('회원가입 성공! 이메일 인증 후 로그인하세요.');
-    
+        
     // 프로필 UI 업데이트
     showUserProfile();
 
@@ -151,9 +149,7 @@ async function login(email, password) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    console.log('로그인 성공:', user);
-    alert('로그인 성공');
-    
+    console.log('로그인 성공:', user);    
     document.getElementById('authModal').style.display = 'none';
     
     showUserProfile();
@@ -240,7 +236,6 @@ async function logout() {
       updateUIForAuthState(false);
     }
     
-    alert('로그아웃되었습니다.');
   } catch (error) {
     console.error('로그아웃 오류:', error);
     alert('로그아웃 중 오류가 발생했습니다.');
