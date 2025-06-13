@@ -1,3 +1,4 @@
+
 function getMatchDetailsById(matchId) {
   const matchesData = {
         "1": {
@@ -572,8 +573,8 @@ function getMatchDetailsById(matchId) {
             id: "20",
             homeTeam: "C301",
             awayTeam: "C303",
-            homeScore: 0,
-            awayScore: 0,
+            homeScore: 3,
+            awayScore: 2,
             date: "2025-05-29",
             league: "호실축구",
             status: "scheduled",
@@ -712,7 +713,123 @@ function getMatchDetailsById(matchId) {
                     first: ["17", "18", "19"],
                 }
             }
-        }                         
+         },
+         "25": {
+             id: "25",
+             homeTeam: "C106",
+             awayTeam: "C302",
+             homeScore: 1,
+             awayScore: 0,
+             date: "2025-06-09",
+             league: "호실축구",
+             status: "finished",
+             stats: {
+                 homePossession: 50,
+                 awayPossession: 50,
+                 homeShots: 0,
+                 awayShots: 0
+             },
+             events: [],
+             lineups: {
+                 home: {
+                    third: ["1"],
+                    second: ["2", "3", "4", "5"],
+                    first: ["6", "7", "8"],
+                },
+                 away: {
+                    third: ["12"],
+                    second: ["13", "14", "15", "16"],
+                    first: ["17", "18", "19"],
+                }
+            }
+        },
+         "26": {
+            id: "26",
+            homeTeam: "C202",
+            awayTeam: "C301",
+            homeScore: 1,
+            awayScore: 5,
+            date: "2025-06-10",
+            league: "호실축구",
+            status: "finished",
+            stats: {
+                homePossession: 50,
+                awayPossession: 50,
+                homeShots: 0,
+                awayShots: 0
+            },
+            events: [],
+            lineups: {
+                home: {
+                    third: ["1"],
+                    second: ["2", "3", "4", "5"],
+                    first: ["6", "7", "8"],
+                },
+                away: {
+                    third: ["12"],
+                    second: ["13", "14", "15", "16"],
+                    first: ["17", "18", "19"],
+                }
+            }
+        },
+         "27": {
+            id: "27",
+            homeTeam: "C202",
+            awayTeam: "C302",
+            homeScore: 2,
+            awayScore: 3,
+            date: "2025-06-12",
+            league: "호실축구",
+            status: "finished",
+            stats: {
+                homePossession: 50,
+                awayPossession: 50,
+                homeShots: 0,
+                awayShots: 0
+            },
+            events: [],
+            lineups: {
+                home: {
+                    third: ["1"],
+                    second: ["2", "3", "4", "5"],
+                    first: ["6", "7", "8"],
+                },
+                away: {
+                    third: ["12"],
+                    second: ["13", "14", "15", "16"],
+                    first: ["17", "18", "19"],
+                }
+            }
+        },
+          "28": {
+            id: "28",
+            homeTeam: "C106",
+            awayTeam: "C301",
+            homeScore: 2,
+            awayScore: 2(3-0),
+            date: "2025-06-13",
+            league: "호실축구",
+            status: "finished",
+            stats: {
+                homePossession: 50,
+                awayPossession: 50,
+                homeShots: 0,
+                awayShots: 0
+            },
+            events: [],
+            lineups: {
+                home: {
+                    third: ["1"],
+                    second: ["2", "3", "4", "5"],
+                    first: ["6", "7", "8"],
+                },
+                away: {
+                    third: ["12"],
+                    second: ["13", "14", "15", "16"],
+                    first: ["17", "18", "19"],
+                }
+            }
+        }                                         
     }
 
     const defaultMatch = {
