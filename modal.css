@@ -309,7 +309,7 @@
 #profile-box {
   display: flex;
   align-items: center;
-  margin-left: 20px; /* 검색바와의 간격 */
+  margin-left: 1px; /* 검색바와의 간격 */
 }
 
 #profile-box div {
