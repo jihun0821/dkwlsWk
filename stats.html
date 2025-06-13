@@ -218,7 +218,53 @@
                   
       </section>
     </main>
+
+    <!-- 로그인/회원가입 모달 -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <span class="auth-modal-close" id="closeAuthModal">&times;</span>
+            <h2>로그인 / 회원가입</h2>
+            <div class="auth-form">
+                <input id="email" type="email" placeholder="이메일 (@hanilgo.cnehs.kr)" />
+                <input id="password" type="password" placeholder="비밀번호 (6자 이상)" />
+                <div class="auth-buttons">
+                    <button id="doLogin" class="auth-btn login-btn">로그인</button>
+                    <button id="doSignUp" class="auth-btn signup-btn">회원가입</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
+    <!-- 프로필 설정 모달 -->
+    <div id="profileModal" class="profile-modal">
+        <div class="profile-modal-content">
+            <span class="profile-modal-close" id="closeProfileModal">&times;</span>
+            <h2>프로필 설정</h2>
+            
+            <!-- 프로필 이미지 미리보기 영역 -->
+            <div class="profile-preview"></div>
+            
+            <!-- 닉네임 입력 -->
+            <input id="nickname" type="text" placeholder="닉네임 (2-20자)" maxlength="20" />
+            
+            <!-- 파일 업로드 -->
+            <div class="file-upload-wrapper">
+                <label for="avatar" class="file-upload-label">
+                    프로필 사진 선택 (선택사항)
+                </label>
+                <input id="avatar" type="file" accept="image/*" style="display: none;" />
+            </div>
+            
+            <!-- 버튼들 -->
+            <div class="modal-buttons">
+                <button id="saveProfileBtn" class="save-profile-btn">저장하고 가입</button>
+                <button class="cancel-btn" onclick="document.getElementById('profileModal').style.display='none'">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 스크립트는 Firebase SDK 로드 후에 실행 -->
+    <script type="module" src="auth.js"></script>    
     <script src="matchData.js"></script>
     <script src="script.js"></script>
   </body>
