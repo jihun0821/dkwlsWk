@@ -317,13 +317,11 @@
   align-items: center;
   gap: 10px;
   background: rgba(255, 255, 255, 0.1);
-  padding: 15px 12px;
-  border-radius: 8px; /* 검색바와 동일한 border-radius */
+  padding: 12px 8px;
+  border-radius: 20px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
-  height: 20px; /* 검색바와 동일한 높이 */
-  box-sizing: border-box; /* 패딩 포함한 전체 높이 */
 }
 
 #profile-box div:hover {
@@ -332,8 +330,8 @@
 }
 
 #profile-box img {
-  width: 28px; /* 높이에 맞춰 조금 작게 조정 */
-  height: 28px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
   border: 2px solid #fff;
   object-fit: cover;
@@ -355,20 +353,15 @@
   background: linear-gradient(135deg, #ca3e4a, #ee343d);
   color: white;
   border: none;
-  padding: 8px 16px; /* 높이에 맞춰 패딩 조정 */
-  border-radius: 8px; /* 검색바와 동일한 border-radius */
-  font-size: 14px; /* 폰트 크기 조정 */
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-size: 20px;
   cursor: pointer;
   font-weight: bold;
   font-family: "Arial", sans-serif;
   transition: all 0.3s ease;
   margin-right: 20px;
   box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
-  height: 20px; /* 검색바와 동일한 높이 */
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 #profile-box button:hover {
