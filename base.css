@@ -18,9 +18,8 @@ body {
   position: relative;
 }
 
-
 .logo-img {
-  height: 60px;  /* 원하는 크기로 조절 */
+  height: 60px;
   margin-right: 6px;
   vertical-align: middle;
   margin-left: 175px;
@@ -29,7 +28,7 @@ body {
 .search-bar {
   flex: 1;
   margin-left: 240px; 
-  margin-right: 420px; 
+  margin-right: 20px; /* 기존 420px에서 20px로 변경 */
   padding: 15px;
   border-radius: 8px;
   border: none;
@@ -42,7 +41,7 @@ body {
 }
 
 .icon {
-  margin-right: 120px; /* 왼쪽으로 붙이기 */
+  margin-right: 120px;
   cursor: pointer;
 }
 
