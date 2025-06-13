@@ -486,3 +486,30 @@ body.light-mode .profile-modal-close:hover {
   color: #2051ff;
   transform: scale(1.1);
 }
+
+/* 라이트 모드: 프로필 입력 필드들 */
+body.light-mode .profile-modal-content input[type="text"],
+body.light-mode .profile-modal-content input[type="email"],
+body.light-mode .profile-modal-content input[type="password"] {
+  width: 85%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f8f8f8;
+  color: #222;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.light-mode .profile-modal-content input[type="text"]:focus,
+body.light-mode .profile-modal-content input[type="email"]:focus,
+body.light-mode .profile-modal-content input[type="password"]:focus {
+  outline: none;
+  border-color: #2051ff;
+  box-shadow: 0 0 0 3px rgba(32, 81, 255, 0.13);
+}
+
+body.light-mode .profile-modal-content input::placeholder {
+  color: #aaa;
+}
