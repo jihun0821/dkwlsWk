@@ -309,7 +309,8 @@
 #profile-box {
   display: flex;
   align-items: center;
-  margin-left: 0; /* 불필요한 margin 제거 */
+  margin-left: 0;
+  height: 46px; /* 서치바와 동일한 높이로 맞춤 */
 }
 
 #profile-box div {
@@ -372,6 +373,38 @@
 
 #profile-box button:active {
   transform: translateY(0) scale(1.01);
+}
+
+#profile-box {
+  display: flex;
+  align-items: center;
+  margin-left: 0;
+  height: 46px; /* 서치바와 동일한 높이로 맞춤 */
+}
+#profile-box > div {
+  height: 46px;
+  min-height: 46px;
+  max-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+}
+#profile-box img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+#profile-box span {
+  font-size: 16px;
+  font-weight: bold;
+}
+#profile-box button {
+  height: 38px;
+  padding: 0 18px;
+  font-size: 16px;
+  border-radius: 8px;
 }
 
 /* 반응형 - 모바일에서 프로필 박스 조정 */
