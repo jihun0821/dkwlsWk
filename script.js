@@ -1,4 +1,3 @@
-
 // 테마 버튼
 const matchDetailsPanel = document.getElementById("matchDetailsPanel");
 const overlay = document.getElementById("overlay");
@@ -6,7 +5,7 @@ const closePanelBtn = document.getElementById("closePanelBtn");
 const panelContent = document.getElementById("panelContent");
 const panelTitle = document.getElementById("panelTitle");
 
-let currentPage = 6;
+let currentPage = 7;
 const matchesPerPage = 4;
 const totalPages = Math.ceil(Object.keys(getAllMatchData()).length / matchesPerPage);
 
@@ -248,7 +247,12 @@ function getAllMatchData() {
         "21": getMatchDetailsById("18"),
         "22": getMatchDetailsById("19"),
         "23": getMatchDetailsById("24"),
-        "24": getMatchDetailsById("20")
+        "24": getMatchDetailsById("20"),
+        "25": getMatchDetailsById("25"),
+        "26": getMatchDetailsById("26"),
+        "27": getMatchDetailsById("27"),
+        "28": getMatchDetailsById("28")
+
     };
     }
 
@@ -310,4 +314,3 @@ document.querySelector('.search-bar')?.addEventListener('input', function (e) {
 // 패널 닫기 버튼 및 오버레이 클릭 시 닫힘 처리
 closePanelBtn?.addEventListener("click", closePanel);
 overlay?.addEventListener("click", closePanel);
-
