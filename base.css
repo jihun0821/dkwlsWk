@@ -58,10 +58,10 @@ body {
     margin-right: 12px;
   }
   .navbar-center {
-    gap: 10px;
+    gap: 20px;
   }
   .search-bar {
-    width: 180px;
+    width: 190px;
     font-size: 14px;
     padding: 10px;
   }
