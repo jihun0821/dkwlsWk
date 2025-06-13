@@ -806,7 +806,7 @@ function getMatchDetailsById(matchId) {
             homeTeam: "C106",
             awayTeam: "C301",
             homeScore: 2,
-            awayScore: 2(3-0),
+            awayScore: 2,
             date: "2025-06-13",
             league: "호실축구",
             status: "finished",
