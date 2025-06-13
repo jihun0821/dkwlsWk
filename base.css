@@ -37,7 +37,7 @@ body {
 .search-bar {
   flex-grow: 1;
   min-width: 200px;
-  max-width: 500px; /* 원하면 최대폭 제한 */
+  max-width: 470px; /* 원하면 최대폭 제한 */
   padding: 15px;
   border-radius: 8px;
   border: none;
