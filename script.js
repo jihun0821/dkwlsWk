@@ -66,6 +66,7 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     document.getElementById('toggleThemeBtn').onclick = toggleTheme;
   }
 }
+
 function toggleTheme() {
   document.body.classList.toggle("light-mode");
   localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
@@ -78,46 +79,61 @@ function isUserLoggedIn() {
     return !!localStorage.getItem("userEmail");
 }
 
-// 쿠키
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
+// Firebase import 및 초기화는 auth.js에서 이미 처리됨
+// firestore 인스턴스 재사용
+const db = window.firebase.getFirestore();
+const auth = window.firebase.getAuth();
+
+// Firebase 투표 저장
+async function saveVoteToFirestore(matchId, voteType) {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
+  const voteSnap = await window.firebase.getDoc(voteRef);
+
+  // 이미 투표했으면 저장하지 않음
+  if (voteSnap.exists()) return null;
+
+  // 투표 저장
+  await window.firebase.setDoc(voteRef, {
+    matchId,
+    uid: user.uid,
+    voteType,
+    votedAt: new Date()
+  });
+  return true;
 }
 
-function setCookie(name, value, days) {
-    const expires = new Date(Date.now() + days*24*60*60*1000).toUTCString();
-    document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+// 투표 통계 수집
+async function getVotingStatsFromFirestore(matchId) {
+  const stats = { homeWin: 0, draw: 0, awayWin: 0, total: 0 };
+  const querySnapshot = await window.firebase.getDocs(
+    window.firebase.query(
+      window.firebase.collection(db, 'votes'),
+      window.firebase.where('matchId', '==', matchId)
+    )
+  );
+
+  querySnapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.voteType in stats) {
+      stats[data.voteType]++;
+      stats.total++;
+    }
+  });
+
+  return stats;
 }
 
-// 투표 통계
-function getVotingStats(matchId) {
-    const statsKey = `match_${matchId}_stats`;
-    const savedStats = localStorage.getItem(statsKey);
+// 유저가 이미 해당 경기에 투표했는지 확인
+async function hasUserVoted(matchId) {
+  const user = auth.currentUser;
+  if (!user) return false;
 
-    if (savedStats) return JSON.parse(savedStats);
-
-    // 랜덤 값 대신 0으로 초기화
-    const defaultStats = {
-        homeWin: 0,
-        draw: 0,
-        awayWin: 0,
-        total: 0
-    };
-
-    localStorage.setItem(statsKey, JSON.stringify(defaultStats));
-    return defaultStats;
-}
-
-function saveVote(matchId, voteType) {
-    const statsKey = `match_${matchId}_stats`;
-    const stats = getVotingStats(matchId);
-    stats[voteType]++;
-    stats.total++;
-    localStorage.setItem(statsKey, JSON.stringify(stats));
-    setCookie(`voted_${matchId}`, voteType, 30);
-    return stats;
+  const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
+  const voteSnap = await window.firebase.getDoc(voteRef);
+  return voteSnap.exists();
 }
 
 function renderVotingGraph(container, stats) {
@@ -172,55 +188,59 @@ function closePanel() {
     document.body.style.overflow = "";
 }
 
-function loadMatchDetails(matchId) {
-    const matchDetails = getMatchDetailsById(matchId);
-    panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
+// Firebase 기반 loadMatchDetails 함수 (중복 제거, 이것만 사용)
+async function loadMatchDetails(matchId) {
+  const matchDetails = getMatchDetailsById(matchId);
+  panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
 
-    const userVote = getCookie(`voted_${matchId}`);
-    const stats = getVotingStats(matchId);
+  const isLoggedIn = !!auth.currentUser;
+  const userVoted = isLoggedIn ? await hasUserVoted(matchId) : false;
+  const stats = await getVotingStatsFromFirestore(matchId);
 
-    let predictionHtml = "";
-
-    if (matchDetails.status === "scheduled") {
-        if (userVote || !isUserLoggedIn()) {
-            predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
-        } else {
-            predictionHtml = `
-                <h3>승부예측</h3>
-                <div class="prediction-btns">
-                    <button class="prediction-btn home-win" data-vote="homeWin">1</button>
-                    <button class="prediction-btn draw" data-vote="draw">X</button>
-                    <button class="prediction-btn away-win" data-vote="awayWin">2</button>
-                </div>`;
-        }
+  let predictionHtml = "";
+  if (matchDetails.status === "scheduled") {
+    if (!isLoggedIn || userVoted) {
+      predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
     } else {
-        predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+      predictionHtml = `
+        <h3>승부예측</h3>
+        <div class="prediction-btns">
+          <button class="prediction-btn home-win" data-vote="homeWin">1</button>
+          <button class="prediction-btn draw" data-vote="draw">X</button>
+          <button class="prediction-btn away-win" data-vote="awayWin">2</button>
+        </div>`;
     }
+  } else {
+    predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+  }
 
-    panelContent.innerHTML = `
-        <div class="match-date">${matchDetails.date}</div>
-        <div class="match-league">${matchDetails.league}</div>
-        <div class="match-score">
-            <div class="team-name">${matchDetails.homeTeam}</div>
-            <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
-            <div class="team-name">${matchDetails.awayTeam}</div>
-        </div>
-        <div class="prediction-container">${predictionHtml}</div>
-    `;
+  panelContent.innerHTML = `
+    <div class="match-date">${matchDetails.date}</div>
+    <div class="match-league">${matchDetails.league}</div>
+    <div class="match-score">
+      <div class="team-name">${matchDetails.homeTeam}</div>
+      <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
+      <div class="team-name">${matchDetails.awayTeam}</div>
+    </div>
+    <div class="prediction-container">${predictionHtml}</div>
+  `;
 
-    const statsContainer = panelContent.querySelector('#votingStats');
-    if (statsContainer) renderVotingGraph(statsContainer, stats);
+  const statsContainer = panelContent.querySelector('#votingStats');
+  if (statsContainer) renderVotingGraph(statsContainer, stats);
 
-    const buttons = panelContent.querySelectorAll('.prediction-btn');
-    buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const voteType = btn.getAttribute("data-vote");
-            const updated = saveVote(matchId, voteType);
-            const container = btn.closest('.prediction-container');
-            container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
-            renderVotingGraph(container.querySelector('#votingStats'), updated);
-        });
+  const buttons = panelContent.querySelectorAll('.prediction-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const voteType = btn.getAttribute("data-vote");
+      const success = await saveVoteToFirestore(matchId, voteType);
+      if (success) {
+        const updatedStats = await getVotingStatsFromFirestore(matchId);
+        const container = btn.closest('.prediction-container');
+        container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+        renderVotingGraph(container.querySelector('#votingStats'), updatedStats);
+      }
     });
+  });
 }
 
 function setupMatchClickListeners() {
@@ -262,9 +282,8 @@ function getAllMatchData() {
         "26": getMatchDetailsById("26"),
         "27": getMatchDetailsById("27"),
         "28": getMatchDetailsById("28")
-
     };
-    }
+}
 
 function renderMatches() {
     const matchContainer = document.querySelector("section.main");
@@ -305,6 +324,7 @@ prevBtn?.addEventListener('click', () => {
         renderMatches();
     }
 });
+
 nextBtn?.addEventListener('click', () => {
     if (currentPage < totalPages) {
         currentPage++;
