@@ -306,15 +306,9 @@
 
 /* ============== 프로필 박스 스타일 ============== */
 #profile-box {
-  position: absolute;     /* absolute 제거 */
-  right: 320px;
-  top: 1px;
-  transform: none;
-  z-index: auto;
-  margin-left: 0;       /* 왼쪽에 최대한 붙임 */
   display: flex;
   align-items: center;
-  height: 100%;
+  margin-left: 20px; /* 검색바와의 간격 */
 }
 
 #profile-box div {
@@ -382,11 +376,8 @@
 /* 반응형 - 모바일에서 프로필 박스 조정 */
 @media (max-width: 768px) {
   #profile-box {
-    position: static;
-    transform: none;
-    margin-left: 0;
+    margin-left: 10px;
   }
-}
   
   #profile-box div {
     padding: 6px 10px;
