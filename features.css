@@ -447,3 +447,23 @@ body.light-mode .auth-modal-content {
   position: relative;
 }
 
+body.light-mode #profile-box button {
+  background: linear-gradient(135deg, #ca3e4a, #ee343d);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-size: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: "Arial", sans-serif;
+  transition: all 0.3s ease;
+  margin-right: 20px;
+  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
+}
+
+body.light-mode #profile-box button:hover {
+  background: linear-gradient(135deg, #ff3742, #ff2635);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 4px 8px rgba(255, 71, 87, 0.4);
+}
