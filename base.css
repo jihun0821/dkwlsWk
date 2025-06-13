@@ -31,7 +31,7 @@ body {
   align-items: center;
   justify-content: center;
   flex: 1;
-  gap: 80px; /* 원하면 조정 */
+  gap: 100px; /* 원하면 조정 */
 }
 
 .search-bar {
