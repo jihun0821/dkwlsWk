@@ -200,14 +200,23 @@ async function saveProfile() {
 function updateUIForEmailVerification() {
   const saveBtn = document.getElementById('saveProfileBtn');
   const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+  const buttonContainer = saveBtn?.parentElement;
   
   if (saveBtn) {
     saveBtn.style.display = 'none';
   }
   
   if (checkVerificationBtn) {
-    checkVerificationBtn.style.display = 'block';
+    checkVerificationBtn.style.display = 'inline-block'; // block 대신 inline-block 사용
     checkVerificationBtn.disabled = false;
+    
+    // 버튼 컨테이너에 flex 스타일 적용 (나란히 배치)
+    if (buttonContainer) {
+      buttonContainer.style.display = 'flex';
+      buttonContainer.style.justifyContent = 'space-between';
+      buttonContainer.style.alignItems = 'center';
+      buttonContainer.style.gap = '10px';
+    }
   }
 }
 
