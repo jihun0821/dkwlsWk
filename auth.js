@@ -354,6 +354,35 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+
+if (checkVerificationBtn) {
+  checkVerificationBtn.onclick = async () => {
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert('로그인 상태가 아닙니다.');
+      return;
+    }
+
+    await user.reload(); // 사용자 정보 새로고침
+    const refreshedUser = auth.currentUser;
+
+    if (refreshedUser.emailVerified) {
+      alert('이메일 인증이 완료되었습니다. 계속 진행할 수 있습니다.');
+
+      const saveBtn = document.getElementById('saveProfileBtn');
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '저장하고 가입';
+        saveBtn.style.backgroundColor = ''; // 기본색으로 복구
+      }
+
+    } else {
+      alert('아직 이메일 인증이 완료되지 않았습니다.\n메일함에서 인증 링크를 클릭해주세요.');
+    }
+  };
+}
 
 
 // 전역 함수로 내보내기
