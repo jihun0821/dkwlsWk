@@ -328,17 +328,21 @@ window.onclick = (e) => {
   if (e.target === profileModal) profileModal.style.display = 'none';
 };
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   console.log('Auth 상태 변경:', user);
 
   if (user) {
-    if (!user.emailVerified) {
+    await user.reload(); // 사용자 정보 새로고침
+    const refreshedUser = auth.currentUser;
+
+    if (!refreshedUser.emailVerified) {
       const saveBtn = document.getElementById('saveProfileBtn');
       if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.textContent = '이메일 인증 후 계속';
-        saveBtn.style.backgroundColor = '#aaa'; // 선택 사항: 버튼을 흐리게
+        saveBtn.style.backgroundColor = '#aaa';
       }
+      console.log('이메일 미인증 상태입니다.');
       return;
     }
 
@@ -349,6 +353,7 @@ onAuthStateChanged(auth, (user) => {
     }
   }
 });
+
 
 
 // 전역 함수로 내보내기
