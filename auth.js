@@ -98,22 +98,26 @@ async function saveProfile() {
     }
 
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+const user = userCredential.user;
 
-    console.log('회원가입 성공:', user);
+console.log('회원가입 성공:', user);
 
-    await updateProfile(user, {
-      displayName: nickname,
-      photoURL: avatarUrl
-    });
+// (추가) 이메일 인증 메일 전송
+await window.firebase.sendEmailVerification(user);
+alert('이메일 인증 메일을 보냈습니다. 메일함을 확인해주세요.');
 
-    await setDoc(doc(db, 'profiles', user.uid), {
-      uid: user.uid,
-      email: email,
-      nickname: nickname,
-      avatar_url: avatarUrl,
-      created_at: new Date()
-    });
+await updateProfile(user, {
+  displayName: nickname,
+  photoURL: avatarUrl
+});
+
+await setDoc(doc(db, 'profiles', user.uid), {
+  uid: user.uid,
+  email: email,
+  nickname: nickname,
+  avatar_url: avatarUrl,
+  created_at: new Date()
+});
 
     document.getElementById('profileModal').style.display = 'none';
         
