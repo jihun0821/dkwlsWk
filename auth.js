@@ -1,7 +1,7 @@
 const { 
   initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
-  getFirestore, doc, setDoc, getDoc
+  getFirestore, doc, setDoc, getDoc, deleteUser
 } = window.firebase;
 
 // Firebase 설정
@@ -20,6 +20,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 console.log('Firebase 초기화 완료');
+
+// 임시 사용자 데이터 저장용 (이메일 인증 전)
+let tempUserData = null;
 
 // 이메일 도메인 검증
 function isHanilEmail(email) {
@@ -65,7 +68,61 @@ function showProfileModal() {
   }
 }
 
-// 프로필 저장 및 회원가입
+// 이메일 인증 확인 및 회원가입 완료
+async function completeSignup() {
+  const user = auth.currentUser;
+  
+  if (!user) {
+    alert('로그인 상태가 아닙니다.');
+    return;
+  }
+
+  // 사용자 정보 새로고침
+  await user.reload();
+  const refreshedUser = auth.currentUser;
+
+  if (!refreshedUser.emailVerified) {
+    alert('아직 이메일 인증이 완료되지 않았습니다.\n메일함에서 인증 링크를 클릭해주세요.');
+    return;
+  }
+
+  // 이메일 인증이 완료된 경우에만 데이터베이스에 저장
+  if (tempUserData) {
+    try {
+      // 프로필 업데이트
+      await updateProfile(refreshedUser, {
+        displayName: tempUserData.nickname,
+        photoURL: tempUserData.avatarUrl
+      });
+
+      // Firestore에 프로필 데이터 저장
+      await setDoc(doc(db, 'profiles', refreshedUser.uid), {
+        uid: refreshedUser.uid,
+        email: tempUserData.email,
+        nickname: tempUserData.nickname,
+        avatar_url: tempUserData.avatarUrl,
+        created_at: new Date()
+      });
+
+      alert('회원가입이 완료되었습니다!');
+      
+      // 임시 데이터 초기화
+      tempUserData = null;
+      
+      // 모달 닫기
+      document.getElementById('profileModal').style.display = 'none';
+      
+      // 사용자 프로필 표시
+      showUserProfile();
+      
+    } catch (error) {
+      console.error('회원가입 완료 중 오류:', error);
+      alert('회원가입 완료 중 오류가 발생했습니다.');
+    }
+  }
+}
+
+// 프로필 저장 및 회원가입 (이메일 인증 전)
 async function saveProfile() {
   const nickname = document.getElementById('nickname').value.trim();
   const saveBtn = document.getElementById('saveProfileBtn');
@@ -82,7 +139,7 @@ async function saveProfile() {
 
   if (saveBtn) {
     saveBtn.disabled = true;
-    saveBtn.textContent = '저장 중...';
+    saveBtn.textContent = '계정 생성 중...';
   }
 
   const email = document.getElementById('email').value;
@@ -97,42 +154,30 @@ async function saveProfile() {
       throw new Error('한일고 이메일(@hanilgo.cnehs.kr)만 가입할 수 있습니다.');
     }
 
+    // Firebase 계정 생성 (데이터베이스 저장 전)
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    console.log('회원가입 성공:', user);
+    console.log('계정 생성 성공:', user);
 
-    await updateProfile(user, {
-      displayName: nickname,
-      photoURL: avatarUrl
-    });
-
-    await setDoc(doc(db, 'profiles', user.uid), {
-      uid: user.uid,
+    // 임시 데이터 저장 (이메일 인증 후 실제 저장용)
+    tempUserData = {
       email: email,
       nickname: nickname,
-      avatar_url: avatarUrl,
-      created_at: new Date()
-    });
+      avatarUrl: avatarUrl
+    };
 
     // 이메일 인증 메일 발송
-    const { sendEmailVerification } = window.firebase;
-    if (sendEmailVerification) {
-      await sendEmailVerification(user);
-      alert('인증 이메일이 발송되었습니다. 이메일을 확인하고 인증을 완료해주세요.');
-    } else {
-      alert('인증 이메일 발송 기능을 불러오지 못했습니다. 관리자에게 문의하세요.');
-    }
+    await sendEmailVerification(user);
+    
+    alert('인증 이메일이 발송되었습니다.\n이메일을 확인하고 인증을 완료한 후 "인증 확인" 버튼을 클릭해주세요.');
 
-    // 회원가입 후 자동 로그인 상태 해제 (모달은 닫지 않음)
-    await signOut(auth);
-    // document.getElementById('profileModal').style.display = 'none';  // 이 줄을 주석처리 또는 삭제
-
-    // 안내 메시지만 띄우고, 모달은 열린 상태 유지
+    // UI 업데이트 - 인증 대기 상태로 변경
+    updateUIForEmailVerification();
 
   } catch (error) {
-    console.error('프로필 저장 중 오류:', error);
-    let errorMessage = '프로필 저장 중 오류가 발생했습니다.';
+    console.error('계정 생성 중 오류:', error);
+    let errorMessage = '계정 생성 중 오류가 발생했습니다.';
     
     if (error.code === 'auth/email-already-in-use') {
       errorMessage = '이미 사용 중인 이메일입니다.';
@@ -148,6 +193,21 @@ async function saveProfile() {
       saveBtn.disabled = false;
       saveBtn.textContent = '저장하고 가입';
     }
+  }
+}
+
+// 이메일 인증 대기 상태 UI 업데이트
+function updateUIForEmailVerification() {
+  const saveBtn = document.getElementById('saveProfileBtn');
+  const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+  
+  if (saveBtn) {
+    saveBtn.style.display = 'none';
+  }
+  
+  if (checkVerificationBtn) {
+    checkVerificationBtn.style.display = 'block';
+    checkVerificationBtn.disabled = false;
   }
 }
 
@@ -188,9 +248,6 @@ async function login(email, password) {
     alert(errorMessage);
   }
 }
-
-// 이하 기존 코드 동일...
-// (showUserProfile, logout, 이벤트 리스너 등 생략)
 
 // 프로필 표시
 async function showUserProfile() {
@@ -250,6 +307,9 @@ async function showUserProfile() {
 async function logout() {
   console.log('로그아웃 시도');
   try {
+    // 임시 데이터 초기화
+    tempUserData = null;
+    
     await signOut(auth);
     
     if (typeof updateUIForAuthState === 'function') {
@@ -299,6 +359,8 @@ if (closeAuthModal) {
 if (closeProfileModal) {
   closeProfileModal.onclick = () => {
     profileModal.style.display = 'none';
+    // 모달 닫을 때 임시 데이터도 초기화
+    tempUserData = null;
   };
 }
 
@@ -341,7 +403,11 @@ if (doSignUpBtn) {
 // 바깥 영역 클릭 시 모달 닫기
 window.onclick = (e) => {
   if (e.target === authModal) authModal.style.display = 'none';
-  if (e.target === profileModal) profileModal.style.display = 'none';
+  if (e.target === profileModal) {
+    profileModal.style.display = 'none';
+    // 모달 닫을 때 임시 데이터도 초기화
+    tempUserData = null;
+  }
 };
 
 onAuthStateChanged(auth, async (user) => {
@@ -352,13 +418,12 @@ onAuthStateChanged(auth, async (user) => {
     const refreshedUser = auth.currentUser;
 
     if (!refreshedUser.emailVerified) {
-      const saveBtn = document.getElementById('saveProfileBtn');
-      if (saveBtn) {
-        saveBtn.disabled = true;
-        saveBtn.textContent = '이메일 인증 후 계속';
-        saveBtn.style.backgroundColor = '#aaa';
-      }
       console.log('이메일 미인증 상태입니다.');
+      
+      // 이메일 미인증 상태에서는 프로필을 표시하지 않음
+      if (typeof updateUIForAuthState === 'function') {
+        updateUIForAuthState(false);
+      }
       return;
     }
 
@@ -373,33 +438,8 @@ onAuthStateChanged(auth, async (user) => {
 const checkVerificationBtn = document.getElementById('checkVerificationBtn');
 
 if (checkVerificationBtn) {
-  checkVerificationBtn.onclick = async () => {
-    const user = auth.currentUser;
-
-    if (!user) {
-      alert('로그인 상태가 아닙니다.');
-      return;
-    }
-
-    await user.reload(); // 사용자 정보 새로고침
-    const refreshedUser = auth.currentUser;
-
-    if (refreshedUser.emailVerified) {
-      alert('이메일 인증이 완료되었습니다. 계속 진행할 수 있습니다.');
-
-      const saveBtn = document.getElementById('saveProfileBtn');
-      if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.textContent = '저장하고 가입';
-        saveBtn.style.backgroundColor = ''; // 기본색으로 복구
-      }
-
-    } else {
-      alert('아직 이메일 인증이 완료되지 않았습니다.\n메일함에서 인증 링크를 클릭해주세요.');
-    }
-  };
+  checkVerificationBtn.onclick = completeSignup;
 }
-
 
 // 전역 함수로 내보내기
 window.logout = logout;
