@@ -7,7 +7,10 @@ const panelTitle = document.getElementById("panelTitle");
 
 let currentPage = 7;
 const matchesPerPage = 4;
-const totalPages = Math.ceil(Object.keys(getAllMatchData()).length / matchesPerPage);
+
+function getTotalPages() {
+    return Math.ceil(Object.keys(getAllMatchData()).length / matchesPerPage);
+}
 
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -311,25 +314,25 @@ function renderMatches() {
 
     pagination.insertAdjacentHTML("beforebegin", html);
     setupMatchClickListeners();
+    updateButtons(); // 페이지 버튼도 함께 갱신
 }
 
 function updateButtons() {
     prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.disabled = currentPage === getTotalPages();
 }
 
+// 페이지네이션 이벤트 (중복되지 않게 1회만!)
 prevBtn?.addEventListener('click', () => {
     if (currentPage > 1) {
         currentPage--;
-        updateButtons();
         renderMatches();
     }
 });
 
 nextBtn?.addEventListener('click', () => {
-    if (currentPage < totalPages) {
+    if (currentPage < getTotalPages()) {
         currentPage++;
-        updateButtons();
         renderMatches();
     }
 });
@@ -345,27 +348,3 @@ document.querySelector('.search-bar')?.addEventListener('input', function (e) {
 // 패널 닫기 버튼 및 오버레이 클릭 시 닫힘 처리
 closePanelBtn?.addEventListener("click", closePanel);
 overlay?.addEventListener("click", closePanel);
-
-prevBtn?.addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        updateButtons();
-        renderMatches();
-    }
-});
-
-nextBtn?.addEventListener('click', () => {
-    if (currentPage < totalPages) {
-        currentPage++;
-        updateButtons();
-        renderMatches();
-    }
-});
-
-document.querySelector('.search-bar')?.addEventListener('input', function (e) {
-    const keyword = e.target.value.toLowerCase();
-    document.querySelectorAll('section.main .match').forEach(match => {
-        match.style.display = match.textContent.toLowerCase().includes(keyword) ? 'block' : 'none';
-    });
-});
-
