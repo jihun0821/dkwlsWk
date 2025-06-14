@@ -98,31 +98,39 @@ async function saveProfile() {
     }
 
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-const user = userCredential.user;
+    const user = userCredential.user;
 
-console.log('회원가입 성공:', user);
+    console.log('회원가입 성공:', user);
 
-// (추가) 이메일 인증 메일 전송
-await window.firebase.sendEmailVerification(user);
-alert('이메일 인증 메일을 보냈습니다. 메일함을 확인해주세요.');
+    await updateProfile(user, {
+      displayName: nickname,
+      photoURL: avatarUrl
+    });
 
-await updateProfile(user, {
-  displayName: nickname,
-  photoURL: avatarUrl
-});
+    await setDoc(doc(db, 'profiles', user.uid), {
+      uid: user.uid,
+      email: email,
+      nickname: nickname,
+      avatar_url: avatarUrl,
+      created_at: new Date()
+    });
 
-await setDoc(doc(db, 'profiles', user.uid), {
-  uid: user.uid,
-  email: email,
-  nickname: nickname,
-  avatar_url: avatarUrl,
-  created_at: new Date()
-});
+    // 이메일 인증 메일 발송
+    const { sendEmailVerification } = window.firebase;
+    if (sendEmailVerification) {
+      await sendEmailVerification(user);
+      alert('인증 이메일이 발송되었습니다. 이메일을 확인하고 인증을 완료해주세요.');
+    } else {
+      alert('인증 이메일 발송 기능을 불러오지 못했습니다. 관리자에게 문의하세요.');
+    }
 
+    // 회원가입 후 자동 로그인 상태 해제 및 모달 닫기
+    await signOut(auth);
     document.getElementById('profileModal').style.display = 'none';
-        
-    // 프로필 UI 업데이트
-    showUserProfile();
+
+    // 안내 메시지
+    // 프로필 UI는 로그인 성공 후에만 보여줌 (이메일 인증 전엔 로그인 불가)
+    // showUserProfile();
 
   } catch (error) {
     console.error('프로필 저장 중 오류:', error);
@@ -153,6 +161,13 @@ async function login(email, password) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // 이메일 인증 여부 확인
+    if (!user.emailVerified) {
+      alert('이메일 인증이 필요합니다. 이메일을 확인하고 인증을 완료해주세요.');
+      await signOut(auth);
+      return;
+    }
+
     console.log('로그인 성공:', user);    
     document.getElementById('authModal').style.display = 'none';
     
@@ -175,6 +190,9 @@ async function login(email, password) {
     alert(errorMessage);
   }
 }
+
+// 이하 기존 코드 동일...
+// (showUserProfile, logout, 이벤트 리스너 등 생략)
 
 // 프로필 표시
 async function showUserProfile() {
