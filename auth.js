@@ -328,10 +328,16 @@ window.onclick = (e) => {
   if (e.target === profileModal) profileModal.style.display = 'none';
 };
 
-// Firebase Auth 상태 변경 리스너
 onAuthStateChanged(auth, (user) => {
   console.log('Auth 상태 변경:', user);
+
   if (user) {
+    if (!user.emailVerified) {
+      alert('이메일 인증을 완료해주세요.');
+      signOut(auth);
+      return;
+    }
+
     showUserProfile();
   } else {
     if (typeof updateUIForAuthState === 'function') {
