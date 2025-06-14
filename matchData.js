@@ -860,7 +860,69 @@ function getMatchDetailsById(matchId) {
                     first: ["17", "18", "19"],
                 }
             }
-        }                                         
+        },
+          "29": {
+            id: "29",
+            group: "??",
+            homeTeam: "???",
+            awayTeam: "???",
+            homeScore: 0,
+            awayScore: 0,
+            date: "2025-??-??",
+            league: "호실축구",
+            status: "scheduled",
+            stats: {
+                homePossession: 0,
+                awayPossession: 0,
+                homeShots: 0,
+                awayShots: 0
+            },
+            events: [
+            ],
+            lineups: {
+                home: {
+                    third: ["1"],
+                    second: ["2", "3", "4", "5"],
+                    first: ["6", "7", "8"],
+                },
+                away: {
+                    third: ["12"],
+                    second:["13", "14", "15", "16"],
+                    first: ["17", "18", "19"],
+                }
+            }
+        },
+          "30": {
+            id: "30",
+            group: "??",
+            homeTeam: "???",
+            awayTeam: "???",
+            homeScore: 0,
+            awayScore: 0,
+            date: "2025-??-??",
+            league: "호실축구",
+            status: "scheduled",
+            stats: {
+                homePossession: 0,
+                awayPossession: 0,
+                homeShots: 0,
+                awayShots: 0
+            },
+            events: [
+            ],
+            lineups: {
+                home: {
+                    third: ["1"],
+                    second: ["2", "3", "4", "5"],
+                    first: ["6", "7", "8"],
+                },
+                away: {
+                    third: ["12"],
+                    second:["13", "14", "15", "16"],
+                    first: ["17", "18", "19"],
+                }
+            }
+        }
     }
 
     const defaultMatch = {
