@@ -1,6 +1,6 @@
 const { 
   initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile,
+  signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
   getFirestore, doc, setDoc, getDoc
 } = window.firebase;
 
