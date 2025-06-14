@@ -333,8 +333,12 @@ onAuthStateChanged(auth, (user) => {
 
   if (user) {
     if (!user.emailVerified) {
-      alert('이메일 인증을 완료해주세요.');
-      signOut(auth);
+      const saveBtn = document.getElementById('saveProfileBtn');
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = '이메일 인증 후 계속';
+        saveBtn.style.backgroundColor = '#aaa'; // 선택 사항: 버튼을 흐리게
+      }
       return;
     }
 
@@ -345,6 +349,7 @@ onAuthStateChanged(auth, (user) => {
     }
   }
 });
+
 
 // 전역 함수로 내보내기
 window.logout = logout;
