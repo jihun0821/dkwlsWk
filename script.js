@@ -5,8 +5,8 @@ const closePanelBtn = document.getElementById("closePanelBtn");
 const panelContent = document.getElementById("panelContent");
 const panelTitle = document.getElementById("panelTitle");
 
-let currentPage = 7;
-const matchesPerPage = 4;
+let currentPage = 6;
+const matchesPerPage = 5;
 
 function getTotalPages() {
     return Math.ceil(Object.keys(getAllMatchData()).length / matchesPerPage);
