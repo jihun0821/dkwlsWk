@@ -12,6 +12,8 @@ const totalPages = Math.ceil(Object.keys(getAllMatchData()).length / matchesPerP
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
+let db, auth;
+
 window.onload = function () {
     const savedTheme = localStorage.getItem("theme");
     const body = document.body;
@@ -22,7 +24,16 @@ window.onload = function () {
         body.classList.remove("light-mode");
     }
 
-    // 프로필 박스(버튼 포함) 렌더링
+    // ✅ Firebase SDK 로드 후에 초기화
+    if (window.firebase && window.firebase.getFirestore && window.firebase.getAuth) {
+        db = window.firebase.getFirestore();
+        auth = window.firebase.getAuth();
+    } else {
+        console.error("Firebase SDK가 아직 로드되지 않았습니다.");
+        return;
+    }
+
+    // ✅ Firebase 초기화 이후 실행
     showUserProfile();
 
     const pagination = document.querySelector('.pagination-container');
@@ -74,15 +85,9 @@ function toggleTheme() {
   showUserProfile();
 }
 
-// 로그인 여부 확인
 function isUserLoggedIn() {
     return !!localStorage.getItem("userEmail");
 }
-
-// Firebase import 및 초기화는 auth.js에서 이미 처리됨
-// firestore 인스턴스 재사용
-const db = window.firebase.getFirestore();
-const auth = window.firebase.getAuth();
 
 // Firebase 투표 저장
 async function saveVoteToFirestore(matchId, voteType) {
@@ -92,10 +97,8 @@ async function saveVoteToFirestore(matchId, voteType) {
   const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
   const voteSnap = await window.firebase.getDoc(voteRef);
 
-  // 이미 투표했으면 저장하지 않음
   if (voteSnap.exists()) return null;
 
-  // 투표 저장
   await window.firebase.setDoc(voteRef, {
     matchId,
     uid: user.uid,
@@ -105,7 +108,6 @@ async function saveVoteToFirestore(matchId, voteType) {
   return true;
 }
 
-// 투표 통계 수집
 async function getVotingStatsFromFirestore(matchId) {
   const stats = { homeWin: 0, draw: 0, awayWin: 0, total: 0 };
   const querySnapshot = await window.firebase.getDocs(
@@ -126,7 +128,6 @@ async function getVotingStatsFromFirestore(matchId) {
   return stats;
 }
 
-// 유저가 이미 해당 경기에 투표했는지 확인
 async function hasUserVoted(matchId) {
   const user = auth.currentUser;
   if (!user) return false;
@@ -344,3 +345,27 @@ document.querySelector('.search-bar')?.addEventListener('input', function (e) {
 // 패널 닫기 버튼 및 오버레이 클릭 시 닫힘 처리
 closePanelBtn?.addEventListener("click", closePanel);
 overlay?.addEventListener("click", closePanel);
+
+prevBtn?.addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        updateButtons();
+        renderMatches();
+    }
+});
+
+nextBtn?.addEventListener('click', () => {
+    if (currentPage < totalPages) {
+        currentPage++;
+        updateButtons();
+        renderMatches();
+    }
+});
+
+document.querySelector('.search-bar')?.addEventListener('input', function (e) {
+    const keyword = e.target.value.toLowerCase();
+    document.querySelectorAll('section.main .match').forEach(match => {
+        match.style.display = match.textContent.toLowerCase().includes(keyword) ? 'block' : 'none';
+    });
+});
+
