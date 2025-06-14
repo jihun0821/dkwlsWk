@@ -124,13 +124,11 @@ async function saveProfile() {
       alert('인증 이메일 발송 기능을 불러오지 못했습니다. 관리자에게 문의하세요.');
     }
 
-    // 회원가입 후 자동 로그인 상태 해제 및 모달 닫기
+    // 회원가입 후 자동 로그인 상태 해제 (모달은 닫지 않음)
     await signOut(auth);
-    document.getElementById('profileModal').style.display = 'none';
+    // document.getElementById('profileModal').style.display = 'none';  // 이 줄을 주석처리 또는 삭제
 
-    // 안내 메시지
-    // 프로필 UI는 로그인 성공 후에만 보여줌 (이메일 인증 전엔 로그인 불가)
-    // showUserProfile();
+    // 안내 메시지만 띄우고, 모달은 열린 상태 유지
 
   } catch (error) {
     console.error('프로필 저장 중 오류:', error);
