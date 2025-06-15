@@ -9,31 +9,29 @@ class NoticeManager {
     }
 
     init() {
-    this.checkAdminStatus(); // 더 이상 await 안 붙임
-    this.loadNotices();
-    this.setupEventListeners();
-}
-
+        this.checkAdminStatus(); // 로그인 감지 후 관리자 확인
+        this.loadNotices();
+        this.setupEventListeners();
     }
 
-async checkAdminStatus() {
-    const auth = firebase.getAuth();
-    firebase.onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const db = firebase.getFirestore();
-            const adminDocRef = firebase.doc(db, "admins", user.email);
-            try {
-                const adminDoc = await firebase.getDoc(adminDocRef);
-                this.isAdmin = adminDoc.exists();
-                if (this.isAdmin) {
-                    document.getElementById('adminWriteBtn').style.display = 'block';
+    checkAdminStatus() {
+        const auth = firebase.getAuth();
+        firebase.onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const db = firebase.getFirestore();
+                const adminDocRef = firebase.doc(db, "admins", user.email);
+                try {
+                    const adminDoc = await firebase.getDoc(adminDocRef);
+                    this.isAdmin = adminDoc.exists();
+                    if (this.isAdmin) {
+                        document.getElementById('adminWriteBtn').style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error("관리자 권한 확인 실패:", error);
                 }
-            } catch (error) {
-                console.error("관리자 권한 확인 실패:", error);
             }
-        }
-    });
-}
+        });
+    }
 
 
     setupEventListeners() {
