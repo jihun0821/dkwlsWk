@@ -8,7 +8,7 @@ class NoticeManager {
         this.init();
     }
 
-    async init() {
+    init() {
     this.checkAdminStatus(); // 더 이상 await 안 붙임
     this.loadNotices();
     this.setupEventListeners();
