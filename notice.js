@@ -152,7 +152,8 @@ class NoticeManager {
 
     renderPagination() {
         const totalPages = Math.ceil(this.totalNotices / this.noticesPerPage);
-        const paginationContainer = document.getElementById('paginationContainer');
+        // 변경: 공지사항 고유 id로 선택
+        const paginationContainer = document.getElementById('noticePagination');
 
         if (totalPages <= 1) {
             paginationContainer.innerHTML = '';
