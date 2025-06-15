@@ -166,6 +166,7 @@
     text-align: center;
     padding: 60px 20px;
     color: #666;
+    min-height: 400px;
 }
 
 .empty-notice-icon {
