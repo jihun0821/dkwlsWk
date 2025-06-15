@@ -9,33 +9,32 @@ class NoticeManager {
     }
 
     async init() {
-        await this.checkAdminStatus();
-        await this.loadNotices();
-        this.setupEventListeners();
+    this.checkAdminStatus(); // 더 이상 await 안 붙임
+    this.loadNotices();
+    this.setupEventListeners();
+}
+
     }
 
-    async checkAdminStatus() {
-        if (window.firebase && window.firebase.getAuth) {
-            const auth = window.firebase.getAuth();
-            const user = auth.currentUser;
-
-            if (user) {
-                const db = firebase.getFirestore();
-                const adminDocRef = firebase.doc(db, "admins", user.email);
-
-                try {
-                    const adminDoc = await firebase.getDoc(adminDocRef);
-                    this.isAdmin = adminDoc.exists();
-
-                    if (this.isAdmin) {
-                        document.getElementById('adminWriteBtn').style.display = 'block';
-                    }
-                } catch (error) {
-                    console.error("관리자 권한 확인 실패:", error);
+async checkAdminStatus() {
+    const auth = firebase.getAuth();
+    firebase.onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const db = firebase.getFirestore();
+            const adminDocRef = firebase.doc(db, "admins", user.email);
+            try {
+                const adminDoc = await firebase.getDoc(adminDocRef);
+                this.isAdmin = adminDoc.exists();
+                if (this.isAdmin) {
+                    document.getElementById('adminWriteBtn').style.display = 'block';
                 }
+            } catch (error) {
+                console.error("관리자 권한 확인 실패:", error);
             }
         }
-    }
+    });
+}
+
 
     setupEventListeners() {
         document.getElementById('adminWriteBtn').addEventListener('click', () => {
