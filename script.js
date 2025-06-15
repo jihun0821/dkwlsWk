@@ -285,9 +285,7 @@ function getAllMatchData() {
         "25": getMatchDetailsById("25"),
         "26": getMatchDetailsById("26"),
         "27": getMatchDetailsById("27"),
-        "28": getMatchDetailsById("28"),
-        "29": getMatchDetailsById("0"),
-        "30": getMatchDetailsById("0")
+        "28": getMatchDetailsById("28")
     };
 }
 
