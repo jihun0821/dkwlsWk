@@ -110,8 +110,8 @@
     line-height: 1.4;
 }
 
-/* 페이지네이션 스타일 */
-.pagination-container {
+/* 공지사항 페이지네이션 스타일 (고유 클래스 추가) */
+.notice-pagination-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -120,7 +120,8 @@
     padding: 20px 0;
 }
 
-.pagination-btn, .page-number {
+.notice-pagination-container .pagination-btn,
+.notice-pagination-container .page-number {
     background-color: #444;
     color: #fff;
     border: 1px solid #555;
@@ -134,25 +135,26 @@
     text-align: center;
 }
 
-.pagination-btn:hover, .page-number:hover {
+.notice-pagination-container .pagination-btn:hover,
+.notice-pagination-container .page-number:hover {
     background-color: #555;
     border-color: #3da5ff;
 }
 
-.pagination-btn:disabled {
+.notice-pagination-container .pagination-btn:disabled {
     background-color: #222;
     color: #666;
     cursor: not-allowed;
     border-color: #333;
 }
 
-.page-number.active {
+.notice-pagination-container .page-number.active {
     background: linear-gradient(135deg, #3da5ff, #2051ff);
     border-color: #3da5ff;
     color: white;
 }
 
-.pagination-info {
+.notice-pagination-container .pagination-info {
     color: #aaa;
     font-size: 14px;
     margin: 0 15px;
@@ -224,19 +226,20 @@ body.light-mode .notice-content-preview {
     color: #666;
 }
 
-body.light-mode .pagination-btn, 
-body.light-mode .page-number {
+/* 공지사항 페이지네이션 라이트 모드 */
+body.light-mode .notice-pagination-container .pagination-btn, 
+body.light-mode .notice-pagination-container .page-number {
     background-color: #fff;
     color: #333;
     border-color: #ddd;
 }
 
-body.light-mode .pagination-btn:hover, 
-body.light-mode .page-number:hover {
+body.light-mode .notice-pagination-container .pagination-btn:hover, 
+body.light-mode .notice-pagination-container .page-number:hover {
     background-color: #f0f0f0;
     border-color: #007bff;
 }
 
-body.light-mode .page-number.active {
+body.light-mode .notice-pagination-container .page-number.active {
     background: linear-gradient(135deg, #007bff, #0056b3);
 }
