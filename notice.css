@@ -1,0 +1,242 @@
+/* 공지사항 전용 스타일 */
+.notice-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.notice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #444;
+}
+
+.notice-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #3da5ff;
+    margin: 0;
+}
+
+.write-notice-btn {
+    background: linear-gradient(135deg, #3da5ff, #2051ff);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: none; /* 기본적으로 숨김 */
+}
+
+.write-notice-btn:hover {
+    background: linear-gradient(135deg, #2051ff, #1a4bff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(32, 81, 255, 0.3);
+}
+
+.notice-list {
+    margin-bottom: 40px;
+}
+
+.notice-item {
+    background-color: #333;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-left: 4px solid #3da5ff;
+}
+
+.notice-item:hover {
+    background-color: #3a3a3a;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.notice-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.notice-item-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    margin: 0;
+    flex: 1;
+}
+
+.notice-badge {
+    background: linear-gradient(135deg, #ff4757, #ff3742);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 15px;
+}
+
+.notice-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #aaa;
+    margin-top: 10px;
+}
+
+.notice-author {
+    font-weight: bold;
+    color: #3da5ff;
+}
+
+.notice-date {
+    color: #888;
+}
+
+.notice-content-preview {
+    color: #ccc;
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* 페이지네이션 스타일 */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px;
+    padding: 20px 0;
+}
+
+.pagination-btn, .page-number {
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    min-width: 40px;
+    text-align: center;
+}
+
+.pagination-btn:hover, .page-number:hover {
+    background-color: #555;
+    border-color: #3da5ff;
+}
+
+.pagination-btn:disabled {
+    background-color: #222;
+    color: #666;
+    cursor: not-allowed;
+    border-color: #333;
+}
+
+.page-number.active {
+    background: linear-gradient(135deg, #3da5ff, #2051ff);
+    border-color: #3da5ff;
+    color: white;
+}
+
+.pagination-info {
+    color: #aaa;
+    font-size: 14px;
+    margin: 0 15px;
+}
+
+/* 빈 상태 */
+.empty-notice {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.empty-notice-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-notice-text {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.empty-notice-subtext {
+    font-size: 14px;
+    color: #888;
+}
+
+/* 관리자용 쓰기 버튼 (네비바에 추가) */
+.admin-write-btn {
+    background: linear-gradient(135deg, #3da5ff, #2051ff);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: none; /* 기본적으로 숨김 */
+    margin-left: 20px;
+}
+
+.admin-write-btn:hover {
+    background: linear-gradient(135deg, #2051ff, #1a4bff);
+    transform: translateY(-1px);
+}
+
+/* 라이트 모드 대응 */
+body.light-mode .notice-item {
+    background-color: #f8f9fa;
+    border-left-color: #007bff;
+    color: #333;
+}
+
+body.light-mode .notice-item:hover {
+    background-color: #e9ecef;
+}
+
+body.light-mode .notice-item-title {
+    color: #333;
+}
+
+body.light-mode .notice-author {
+    color: #007bff;
+}
+
+body.light-mode .notice-content-preview {
+    color: #666;
+}
+
+body.light-mode .pagination-btn, 
+body.light-mode .page-number {
+    background-color: #fff;
+    color: #333;
+    border-color: #ddd;
+}
+
+body.light-mode .pagination-btn:hover, 
+body.light-mode .page-number:hover {
+    background-color: #f0f0f0;
+    border-color: #007bff;
+}
+
+body.light-mode .page-number.active {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
