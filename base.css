@@ -90,7 +90,7 @@ main {
   display: flex;
   padding: 40px 20px 20px 20px; /* 상단 패딩을 0으로 */
   gap: 20px;
-  min-height: 800px;
+  min-height: 700px;
 }
 
 /* ============== 4. 사이드바 영역 ============== */
