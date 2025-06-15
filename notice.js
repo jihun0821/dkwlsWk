@@ -150,48 +150,49 @@ class NoticeManager {
         this.renderPagination();
     }
 
-    renderPagination() {
-        const totalPages = Math.ceil(this.totalNotices / this.noticesPerPage);
-        // 변경: 공지사항 고유 id로 선택
-        const paginationContainer = document.getElementById('noticePagination');
+// notice.js의 renderPagination 함수 수정
+renderPagination() {
+    const totalPages = Math.ceil(this.totalNotices / this.noticesPerPage);
+    // ✅ 클래스명을 완전히 분리 - pagination-container 제거
+    const paginationContainer = document.getElementById('noticePagination');
 
-        if (totalPages <= 1) {
-            paginationContainer.innerHTML = '';
-            return;
-        }
-
-        let paginationHTML = `
-            <button class="pagination-btn" ${this.currentPage === 1 ? 'disabled' : ''} onclick="noticeManager.goToPage(${this.currentPage - 1})">
-                이전
-            </button>
-        `;
-
-        // 페이지 번호 (최대 5개씩 표시)
-        const startPage = Math.max(1, this.currentPage - 2);
-        const endPage = Math.min(totalPages, startPage + 4);
-
-        for (let i = startPage; i <= endPage; i++) {
-            paginationHTML += `
-                <button class="page-number ${i === this.currentPage ? 'active' : ''}" onclick="noticeManager.goToPage(${i})">
-                    ${i}
-                </button>
-            `;
-        }
-
-        paginationHTML += `
-            <button class="pagination-btn" ${this.currentPage === totalPages ? 'disabled' : ''} onclick="noticeManager.goToPage(${this.currentPage + 1})">
-                다음
-            </button>
-        `;
-
-        paginationHTML += `
-            <span class="pagination-info">
-                ${this.currentPage} / ${totalPages} 페이지 (총 ${this.totalNotices}개)
-            </span>
-        `;
-
-        paginationContainer.innerHTML = paginationHTML;
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
     }
+
+    let paginationHTML = `
+        <button class="notice-pagination-btn" ${this.currentPage === 1 ? 'disabled' : ''} onclick="noticeManager.goToPage(${this.currentPage - 1})">
+            이전
+        </button>
+    `;
+
+    // 페이지 번호 (최대 5개씩 표시)
+    const startPage = Math.max(1, this.currentPage - 2);
+    const endPage = Math.min(totalPages, startPage + 4);
+
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+            <button class="notice-page-number ${i === this.currentPage ? 'active' : ''}" onclick="noticeManager.goToPage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+
+    paginationHTML += `
+        <button class="notice-pagination-btn" ${this.currentPage === totalPages ? 'disabled' : ''} onclick="noticeManager.goToPage(${this.currentPage + 1})">
+            다음
+        </button>
+    `;
+
+    paginationHTML += `
+        <span class="notice-pagination-info">
+            ${this.currentPage} / ${totalPages} 페이지 (총 ${this.totalNotices}개)
+        </span>
+    `;
+
+    paginationContainer.innerHTML = paginationHTML;
+}
 
     goToPage(page) {
         const totalPages = Math.ceil(this.totalNotices / this.noticesPerPage);
