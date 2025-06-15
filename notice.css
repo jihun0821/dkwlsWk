@@ -110,7 +110,7 @@
     line-height: 1.4;
 }
 
-/* 공지사항 페이지네이션 스타일 (고유 클래스 추가) */
+/* 공지사항 페이지네이션 스타일 - 클래스명 완전 분리 */
 .notice-pagination-container {
     display: flex;
     justify-content: center;
@@ -120,8 +120,8 @@
     padding: 20px 0;
 }
 
-.notice-pagination-container .pagination-btn,
-.notice-pagination-container .page-number {
+.notice-pagination-btn,
+.notice-page-number {
     background-color: #444;
     color: #fff;
     border: 1px solid #555;
@@ -135,30 +135,31 @@
     text-align: center;
 }
 
-.notice-pagination-container .pagination-btn:hover,
-.notice-pagination-container .page-number:hover {
+.notice-pagination-btn:hover,
+.notice-page-number:hover {
     background-color: #555;
     border-color: #3da5ff;
 }
 
-.notice-pagination-container .pagination-btn:disabled {
+.notice-pagination-btn:disabled {
     background-color: #222;
     color: #666;
     cursor: not-allowed;
     border-color: #333;
 }
 
-.notice-pagination-container .page-number.active {
+.notice-page-number.active {
     background: linear-gradient(135deg, #3da5ff, #2051ff);
     border-color: #3da5ff;
     color: white;
 }
 
-.notice-pagination-container .pagination-info {
+.notice-pagination-info {
     color: #aaa;
     font-size: 14px;
     margin: 0 15px;
 }
+
 
 /* 빈 상태 */
 .empty-notice {
@@ -226,20 +227,20 @@ body.light-mode .notice-content-preview {
     color: #666;
 }
 
-/* 공지사항 페이지네이션 라이트 모드 */
-body.light-mode .notice-pagination-container .pagination-btn, 
-body.light-mode .notice-pagination-container .page-number {
+body.light-mode .notice-pagination-btn, 
+body.light-mode .notice-page-number {
     background-color: #fff;
     color: #333;
     border-color: #ddd;
 }
 
-body.light-mode .notice-pagination-container .pagination-btn:hover, 
-body.light-mode .notice-pagination-container .page-number:hover {
+body.light-mode .notice-pagination-btn:hover, 
+body.light-mode .notice-page-number:hover {
     background-color: #f0f0f0;
     border-color: #007bff;
 }
 
-body.light-mode .notice-pagination-container .page-number.active {
+body.light-mode .notice-page-number.active {
     background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
 }
