@@ -4,7 +4,6 @@ const {
   getFirestore, doc, setDoc, getDoc, deleteUser
 } = window.firebase;
 
-// Firebase 설정
 const firebaseConfig = {
   apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
   authDomain: "hsp-auth-22845.firebaseapp.com",
@@ -14,17 +13,14 @@ const firebaseConfig = {
   appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
 };
 
-// Firebase 초기화
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 console.log('Firebase 초기화 완료');
 
-// 임시 사용자 데이터 저장용 (이메일 인증 전)
 let tempUserData = null;
 
-// 이메일 도메인 검증
 function isHanilEmail(email) {
   return email.endsWith('@hanilgo.cnehs.kr');  
 }
