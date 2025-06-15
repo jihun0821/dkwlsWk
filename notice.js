@@ -195,7 +195,6 @@ class NoticeManager {
             document.getElementById('noticeForm').reset();
             document.getElementById('writeNoticeModal').style.display = 'none';
 
-            alert('공지사항이 등록되었습니다.');
             await this.loadNotices();
         } catch (error) {
             console.error('공지사항 저장 오류:', error);
@@ -206,7 +205,7 @@ class NoticeManager {
 
 // 공지사항 상세보기 (나중에 실제 구현 가능)
 function openNoticeDetail(noticeId) {
-    alert(`공지사항 ${noticeId}번의 상세보기 기능은 준비 중입니다.`);
+    alert('상세보기 기능은 준비 중입니다.');
 }
 
 // 초기화
