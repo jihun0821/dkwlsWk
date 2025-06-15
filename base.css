@@ -508,3 +508,61 @@ main {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
+
+/* 개인정보 처리방침 영역 스타일 (다크 모드 기본) */
+.privacy-policy {
+  background-color: #232323;
+  color: #eee;
+  padding: 28px 34px;
+  border-radius: 18px;
+  margin-top: 20px;
+  max-width: 800px;
+  font-size: 15px;
+  line-height: 1.8;
+  box-shadow: 0 2px 12px #0003;
+}
+
+.privacy-policy h3 {
+  color: #8ecfff;
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+.privacy-policy strong {
+  color: #b6e3ff;
+  font-weight: bold;
+}
+
+@media (max-width: 900px) {
+  .privacy-policy {
+    padding: 16px 8vw;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .privacy-policy {
+    padding: 10px 2vw;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .privacy-policy h3 {
+    font-size: 17px;
+  }
+}
+
+/* 라이트 모드 지원 */
+body.light-mode .privacy-policy {
+  background-color: #f9fafd;
+  color: #222;
+  box-shadow: 0 2px 14px #b3d2ff33;
+  border: 1px solid #ddefff;
+}
+
+body.light-mode .privacy-policy h3 {
+  color: #2051ff;
+}
+
+body.light-mode .privacy-policy strong {
+  color: #2051ff;
+}
