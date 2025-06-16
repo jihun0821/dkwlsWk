@@ -384,9 +384,9 @@ function renderPanelTabs(matchDetails, matchId) {
 // 라인업 렌더링 (학년별)
 function renderLineup(match) {
   const groupLabel = (idx) => ["1학년", "2학년", "3학년"][idx];
-  function players(list) {
-    return list.map((n) => `<div class="player">${escapeHtml(n)}</div>`).join("");
-  }
+function players(list) {
+  return `<div class="players-container">${list.map((n) => `<div class="player">${escapeHtml(n)}</div>`).join("")}</div>`;
+}
   function sideBlock(side, data) {
     return `
       <div class="lineup-team lineup-${side}">
