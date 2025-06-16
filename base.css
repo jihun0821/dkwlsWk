@@ -566,3 +566,50 @@ body.light-mode .privacy-policy h3 {
 body.light-mode .privacy-policy strong {
   color: #2051ff;
 }
+
+/* 푸터 스타일 (개인정보 처리방침 링크만!) */
+.custom-footer {
+  width: 100%;
+  margin: 0 auto;
+  padding: 26px 0 14px 0;
+  background: none;
+  text-align: center;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.footer-link {
+  color: #333;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color .18s;
+  cursor: pointer;
+  font-family: 'Pretendard', 'Arial', sans-serif;
+}
+
+.footer-link:hover,
+.footer-link:focus {
+  color: #1e45f1;
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .custom-footer {
+    font-size: 13px;
+    padding: 13px 0 7px 0;
+  }
+}
+
+/* 라이트 모드 지원 */
+body.light-mode .custom-footer {
+  background: none;
+}
+
+body.light-mode .footer-link {
+  color: #333;
+}
+
+body.light-mode .footer-link:hover,
+body.light-mode .footer-link:focus {
+  color: #2051ff;
+}
