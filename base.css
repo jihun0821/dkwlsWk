@@ -667,18 +667,17 @@ body.light-mode .tab.active {
   align-items: center;
   justify-content: center;
   min-height: 220px;
-  position: relative;
-  width: 100%;
-  max-width: 600px; /* 라인업 전체 폭 제한 */
-  margin: 0 auto;   /* 가운데 정렬 */
+  width: 100%;              /* 패널 내부에 맞춤 */
+  max-width: 100%;          /* 패널 내부에 맞춤 */
+  margin: 0 auto;
   padding: 12px 0 16px 0;
   box-sizing: border-box;
-  overflow: visible; /* 탈출 방지 */
+  overflow: visible;
 }
 .lineup-bg {
   position: absolute;
-  width: 100%;
-  max-width: 600px;
+  width: 100%;              /* 패널 내부에 맞춤 */
+  max-width: 100%;
   height: 220px;
   background: linear-gradient(135deg, #2051ff33 0%, #5e91ff11 100%);
   border-radius: 25px;
@@ -687,6 +686,7 @@ body.light-mode .tab.active {
   border: 1px solid #3254c8;
   opacity: 0.5;
   box-sizing: border-box;
+  pointer-events: none;
 }
 body.light-mode .lineup-bg {
   background: linear-gradient(135deg, #f1f6ff 0%, #e7edff 100%);
@@ -695,8 +695,8 @@ body.light-mode .lineup-bg {
 }
 .lineup-sides {
   display: flex;
-  width: 100%;
-  max-width: 600px;
+  width: 100%;             /* 패널 내부에 맞춤 */
+  max-width: 100%;
   justify-content: space-between;
   align-items: flex-start;
   z-index: 2;
@@ -705,7 +705,8 @@ body.light-mode .lineup-bg {
   box-sizing: border-box;
 }
 .lineup-team {
-  min-width: 110px;
+  min-width: 80px;
+  max-width: 40%;          /* 패널의 40%를 넘지 않음 */
   background: rgba(40,40,40,0.90);
   border-radius: 14px;
   padding: 14px 8px 10px 8px;
@@ -715,8 +716,8 @@ body.light-mode .lineup-bg {
   box-shadow: 0 2px 8px #0003;
   border: 1px solid #2051ff33;
   box-sizing: border-box;
-  max-width: 180px;
   overflow-x: auto;
+  overflow-y: visible;
 }
 body.light-mode .lineup-team {
   background: #f7faffcc;
@@ -775,8 +776,8 @@ body.light-mode .vs-label { color: #2051ff; }
     min-width: 0;
   }
   .lineup-team {
-    min-width: 80px;
-    max-width: 44vw;
+    min-width: 60px;
+    max-width: 48vw;
     padding: 7px 4px;
   }
   .vs-label {
