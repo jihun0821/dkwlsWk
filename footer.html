@@ -26,7 +26,7 @@
         getFirestore,
         doc, setDoc, getDoc, deleteDoc,
         collection, query, where, getDocs, orderBy, limit, startAfter,
-        addDoc, serverTimestamp
+        addDoc, serverTimestamp, onSnapshot 
       } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
       window.firebase = {
@@ -40,6 +40,7 @@
         updateProfile,
         getFirestore,
         doc,
+        onSnapshot ,
         setDoc,
         getDoc,
         deleteDoc,
