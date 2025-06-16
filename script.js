@@ -345,6 +345,250 @@ document.querySelector('.search-bar')?.addEventListener('input', function (e) {
     });
 });
 
+// ... (기존 코드 유지)
+
+// 경기 상세정보 패널에 탭 UI, 라인업, 채팅 기능 추가
+
+// HTML 이스케이프
+function escapeHtml(text) {
+  if (!text) return "";
+  return text.replace(/[&<>"'`]/g, s => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+    "`": "&#96;"
+  }[s]));
+}
+
+function renderPanelTabs(matchDetails, matchId) {
+  return `
+    <div class="tab-container">
+      <div class="tabs">
+        <div class="tab active" data-tab="lineup">라인업</div>
+        <div class="tab" data-tab="chat">채팅</div>
+      </div>
+      <div class="tab-contents">
+        <div class="tab-content lineup-content active">
+          ${renderLineup(matchDetails)}
+        </div>
+        <div class="tab-content chat-content">
+          ${renderChatBox(matchId)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// 라인업 렌더링 (학년별)
+function renderLineup(match) {
+  const groupLabel = (idx) => ["1학년", "2학년", "3학년"][idx];
+  function players(list) {
+    return list.map((n) => `<div class="player">${escapeHtml(n)}</div>`).join("");
+  }
+  function sideBlock(side, data) {
+    return `
+      <div class="lineup-team lineup-${side}">
+        <div class="lineup-group"><span class="position-label">3학년</span>${players(data.third || [])}</div>
+        <div class="lineup-group"><span class="position-label">2학년</span>${players(data.second || [])}</div>
+        <div class="lineup-group"><span class="position-label">1학년</span>${players(data.first || [])}</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="lineup-field">
+      <div class="lineup-bg"></div>
+      <div class="lineup-sides">
+        ${sideBlock("home", match.lineups.home)}
+        <div class="vs-label">VS</div>
+        ${sideBlock("away", match.lineups.away)}
+      </div>
+    </div>
+  `;
+}
+
+// 채팅 박스 렌더링
+function renderChatBox(matchId) {
+  return `
+    <div class="chat-messages" id="chatMessages"></div>
+    <form class="chat-form" id="chatForm">
+      <input type="text" id="chatInput" autocomplete="off" maxlength="120" placeholder="메시지를 입력하세요" />
+      <button type="submit" id="sendChatBtn">전송</button>
+    </form>
+    <div class="chat-login-notice" style="display:none;">
+      <button class="login-btn" onclick="document.getElementById('authModal').style.display='flex'">로그인 후 채팅하기</button>
+    </div>
+  `;
+}
+
+// 채팅 Firestore 경로
+function chatCollection(matchId) {
+  return window.firebase.collection(db, 'match_chats', matchId, 'messages');
+}
+
+// 패널 탭 동작 및 기능 연결
+function setupPanelTabs(matchId) {
+  const tabs = document.querySelectorAll('.tab');
+  const contents = document.querySelectorAll('.tab-content');
+  tabs.forEach(tab => {
+    tab.onclick = () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      const idx = Array.from(tabs).indexOf(tab);
+      contents[idx].classList.add('active');
+      if (tab.dataset.tab === "chat") {
+        document.querySelector('.chat-content').style.display = "block";
+        setupChat(matchId);
+      }
+    };
+  });
+}
+
+// 채팅 기능
+function setupChat(matchId) {
+  const chatBox = document.getElementById('chatMessages');
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const loginNotice = document.querySelector('.chat-login-notice');
+  chatBox.innerHTML = "";
+
+  if (!auth.currentUser) {
+    loginNotice.style.display = "block";
+    chatForm.style.display = "none";
+    chatBox.innerHTML = "<p style='text-align:center;color:#aaa;'>로그인 후 채팅을 이용할 수 있습니다.</p>";
+    return;
+  } else {
+    loginNotice.style.display = "none";
+    chatForm.style.display = "flex";
+  }
+
+  // 실시간 리스너
+  if (window.chatUnsubscribe) window.chatUnsubscribe();
+  window.chatUnsubscribe = window.firebase.getDocs(
+    window.firebase.query(
+      chatCollection(matchId),
+      window.firebase.where('matchId', '==', matchId)
+    )
+  ).then(() => {
+    // 실시간 리스너는 addSnapshotListener 써야 하지만 CDN SDK로는 직접 불가 → 아래 코드 참고용, 실제 Firestore SDK에선 onSnapshot 사용
+    // 이 예시는 실제 배포시 아래 주석 참고해서 교체 필요
+  });
+
+  // 아래는 예시, 실제 Firestore JS SDK v10+에서는 onSnapshot 사용
+  // import { onSnapshot, ... } from 'firebase/firestore';
+  // onSnapshot(chatCollection(matchId), (snapshot) => { ... });
+
+  // 임시: 3초마다 리로드(실제 서비스시 onSnapshot으로 변경)
+  if (window.chatInterval) clearInterval(window.chatInterval);
+  window.chatInterval = setInterval(() => {
+    window.firebase.getDocs(chatCollection(matchId)).then(snapshot => {
+      let html = '';
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const isMe = msg.uid === auth.currentUser.uid;
+        html += `
+          <div class="chat-msg${isMe ? " me" : ""}">
+            <span class="chat-nick">${escapeHtml(msg.nickname)}</span>
+            <span class="chat-text">${escapeHtml(msg.text)}</span>
+            <span class="chat-time">${msg.time ? new Date(msg.time.seconds * 1000).toLocaleTimeString() : ""}</span>
+          </div>
+        `;
+      });
+      chatBox.innerHTML = html;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  }, 3000);
+
+  // 메시지 전송
+  chatForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+    const user = auth.currentUser;
+    if (!user) return;
+    const profileSnap = await window.firebase.getDoc(window.firebase.doc(db, 'profiles', user.uid));
+    const nickname = profileSnap.exists() ? profileSnap.data().nickname : user.email.split('@')[0];
+    await window.firebase.setDoc(
+      window.firebase.doc(chatCollection(matchId), Date.now().toString() + "_" + user.uid),
+      {
+        matchId,
+        uid: user.uid,
+        nickname,
+        text,
+        time: new Date()
+      }
+    );
+    chatInput.value = "";
+    setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+  };
+}
+
+// 경기 상세정보 패널 오픈 함수 수정
+async function loadMatchDetails(matchId) {
+  const matchDetails = getMatchDetailsById(matchId);
+  panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
+
+  // 투표 기존 코드
+  const isLoggedIn = !!auth.currentUser;
+  const userVoted = isLoggedIn ? await hasUserVoted(matchId) : false;
+  const stats = await getVotingStatsFromFirestore(matchId);
+
+  let predictionHtml = "";
+  if (matchDetails.status === "scheduled") {
+    if (!isLoggedIn || userVoted) {
+      predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+    } else {
+      predictionHtml = `
+        <h3>승부예측</h3>
+        <div class="prediction-btns">
+          <button class="prediction-btn home-win" data-vote="homeWin">1</button>
+          <button class="prediction-btn draw" data-vote="draw">X</button>
+          <button class="prediction-btn away-win" data-vote="awayWin">2</button>
+        </div>`;
+    }
+  } else {
+    predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+  }
+
+  panelContent.innerHTML = `
+    <div class="match-date">${matchDetails.date}</div>
+    <div class="match-league">${matchDetails.league}</div>
+    <div class="match-score">
+      <div class="team-name">${matchDetails.homeTeam}</div>
+      <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
+      <div class="team-name">${matchDetails.awayTeam}</div>
+    </div>
+    <div class="prediction-container">${predictionHtml}</div>
+    <hr>
+    ${renderPanelTabs(matchDetails, matchId)}
+  `;
+
+  // 투표
+  const statsContainer = panelContent.querySelector('#votingStats');
+  if (statsContainer) renderVotingGraph(statsContainer, stats);
+
+  const buttons = panelContent.querySelectorAll('.prediction-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const voteType = btn.getAttribute("data-vote");
+      const success = await saveVoteToFirestore(matchId, voteType);
+      if (success) {
+        const updatedStats = await getVotingStatsFromFirestore(matchId);
+        const container = btn.closest('.prediction-container');
+        container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+        renderVotingGraph(container.querySelector('#votingStats'), updatedStats);
+      }
+    });
+  });
+
+  // 탭 동작 연결
+  setupPanelTabs(matchId);
+}
+
+// ... (기존 코드 유지)
+
 // 패널 닫기 버튼 및 오버레이 클릭 시 닫힘 처리
 closePanelBtn?.addEventListener("click", closePanel);
 overlay?.addEventListener("click", closePanel);
