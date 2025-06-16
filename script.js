@@ -456,7 +456,7 @@ function setupPanelTabs(matchId) {
   }
 }
 
-// 채팅 기능
+// 채팅 기능 (실시간 반영)
 function setupChat(matchId) {
   const chatBox = document.getElementById('chatMessages');
   const chatForm = document.getElementById('chatForm');
@@ -474,26 +474,19 @@ function setupChat(matchId) {
     chatForm.style.display = "flex";
   }
 
-  // 실시간 리스너
+  // 기존 setInterval로 불러오는 부분 삭제하고, onSnapshot으로 실시간 반영
   if (window.chatUnsubscribe) window.chatUnsubscribe();
-  window.chatUnsubscribe = window.firebase.getDocs(
+
+  // Firestore의 onSnapshot 메서드로 실시간 수신
+  // SDK v10+ 기준, import 필요: onSnapshot
+  // window.firebase.onSnapshot이 있는지 확인(없으면 import 문 추가 필요)
+  // 아래는 CDN 환경 가정, window.firebase에 onSnapshot이 연결되어 있다고 가정
+  window.chatUnsubscribe = window.firebase.onSnapshot(
     window.firebase.query(
       chatCollection(matchId),
       window.firebase.where('matchId', '==', matchId)
-    )
-  ).then(() => {
-    // 실시간 리스너는 addSnapshotListener 써야 하지만 CDN SDK로는 직접 불가 → 아래 코드 참고용, 실제 Firestore SDK에선 onSnapshot 사용
-    // 이 예시는 실제 배포시 아래 주석 참고해서 교체 필요
-  });
-
-  // 아래는 예시, 실제 Firestore JS SDK v10+에서는 onSnapshot 사용
-  // import { onSnapshot, ... } from 'firebase/firestore';
-  // onSnapshot(chatCollection(matchId), (snapshot) => { ... });
-
-  // 임시: 3초마다 리로드(실제 서비스시 onSnapshot으로 변경)
-  if (window.chatInterval) clearInterval(window.chatInterval);
-  window.chatInterval = setInterval(() => {
-    window.firebase.getDocs(chatCollection(matchId)).then(snapshot => {
+    ),
+    (snapshot) => {
       let html = '';
       snapshot.forEach(doc => {
         const msg = doc.data();
@@ -508,8 +501,8 @@ function setupChat(matchId) {
       });
       chatBox.innerHTML = html;
       chatBox.scrollTop = chatBox.scrollHeight;
-    });
-  }, 3000);
+    }
+  );
 
   // 메시지 전송
   chatForm.onsubmit = async (e) => {
@@ -534,6 +527,7 @@ function setupChat(matchId) {
     setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
   };
 }
+
 
 // 경기 상세정보 패널 오픈 함수 수정
 async function loadMatchDetails(matchId) {
