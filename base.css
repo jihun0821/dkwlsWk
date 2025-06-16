@@ -669,18 +669,24 @@ body.light-mode .tab.active {
   min-height: 220px;
   position: relative;
   width: 100%;
+  max-width: 600px; /* 라인업 전체 폭 제한 */
+  margin: 0 auto;   /* 가운데 정렬 */
   padding: 12px 0 16px 0;
+  box-sizing: border-box;
+  overflow: visible; /* 탈출 방지 */
 }
 .lineup-bg {
   position: absolute;
-  width: 97%;
+  width: 100%;
+  max-width: 600px;
   height: 220px;
   background: linear-gradient(135deg, #2051ff33 0%, #5e91ff11 100%);
   border-radius: 25px;
   z-index: 1;
-  top: 0; left: 1.5%;
+  top: 0; left: 0;
   border: 1px solid #3254c8;
   opacity: 0.5;
+  box-sizing: border-box;
 }
 body.light-mode .lineup-bg {
   background: linear-gradient(135deg, #f1f6ff 0%, #e7edff 100%);
@@ -690,11 +696,13 @@ body.light-mode .lineup-bg {
 .lineup-sides {
   display: flex;
   width: 100%;
+  max-width: 600px;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   z-index: 2;
   position: relative;
   gap: 8vw;
+  box-sizing: border-box;
 }
 .lineup-team {
   min-width: 110px;
@@ -706,6 +714,9 @@ body.light-mode .lineup-bg {
   gap: 9px;
   box-shadow: 0 2px 8px #0003;
   border: 1px solid #2051ff33;
+  box-sizing: border-box;
+  max-width: 180px;
+  overflow-x: auto;
 }
 body.light-mode .lineup-team {
   background: #f7faffcc;
@@ -717,6 +728,7 @@ body.light-mode .lineup-team {
   flex-direction: row;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 .position-label {
   font-size: 14px;
@@ -738,6 +750,7 @@ body.light-mode .position-label { color: #2051ff; }
   font-weight: bold;
   box-shadow: 0 1px 4px #2051ff22;
   transition: background 0.2s, color 0.2s;
+  margin-bottom: 4px;
 }
 body.light-mode .player {
   background: #eaf3fe;
@@ -752,8 +765,27 @@ body.light-mode .player {
   font-weight: bold;
   margin: 0 15px;
   letter-spacing: 1px;
+  align-self: center;
 }
 body.light-mode .vs-label { color: #2051ff; }
+
+@media (max-width: 700px) {
+  .lineup-field, .lineup-bg, .lineup-sides {
+    max-width: 98vw;
+    min-width: 0;
+  }
+  .lineup-team {
+    min-width: 80px;
+    max-width: 44vw;
+    padding: 7px 4px;
+  }
+  .vs-label {
+    margin: 0 5px;
+    font-size: 16px;
+  }
+}
+
+/* 기존 스타일 유지 */
 
 /* 채팅창 UI */
 .chat-content {
@@ -922,4 +954,21 @@ body.light-mode .chat-msg {
 body.light-mode .chat-msg.me {
   --bubble-bg: #2051ff;
   --bubble-color: #fff;
+}
+
+
+@media (max-width: 700px) {
+  .lineup-field, .lineup-bg, .lineup-sides {
+    max-width: 98vw;
+    min-width: 0;
+  }
+  .lineup-team {
+    min-width: 80px;
+    max-width: 44vw;
+    padding: 7px 4px;
+  }
+  .vs-label {
+    margin: 0 5px;
+    font-size: 16px;
+  }
 }
