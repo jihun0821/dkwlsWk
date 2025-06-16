@@ -746,7 +746,7 @@ body.light-mode .footer-link:focus {
 .chat-msg {
   background: #2e3545;
   color: #fff;
-  padding: 7px 12px;
+  padding: 7px 12px 22px 12px;   /* 아래 패딩을 늘려서 시간 표시 공간 확보 */
   border-radius: 16px;
   max-width: 80%;
   margin-bottom: 3px;
@@ -756,6 +756,7 @@ body.light-mode .footer-link:focus {
   align-self: flex-start;
   word-break: break-word;
   position: relative;
+  min-height: 38px;
 }
 .chat-msg.me {
   background: #2051ff;
@@ -770,14 +771,21 @@ body.light-mode .footer-link:focus {
 }
 .chat-text {
   font-size: 15px;
-  margin-bottom: 2px;
+  margin-bottom: 0; /* 시간과 간격이 생기도록 */
 }
+/* 시간 표시를 말풍선 아래에 고정 (absolute → static) */
 .chat-time {
   font-size: 11px;
   color: #b1c4e7;
-  position: absolute;
-  bottom: 5px;
-  right: 12px;
+  margin-top: 2px;
+  align-self: flex-end;
+  position: static;
+  bottom: auto;
+  right: auto;
+  padding-left: 8px;
+  padding-right: 2px;
+  white-space: nowrap;
+  /* 필요시 opacity: 0.8; */
 }
 .chat-form {
   display: flex;
@@ -824,6 +832,8 @@ body.light-mode .footer-link:focus {
   .tab-content, .chat-content, .lineup-field { padding: 0; }
   .lineup-bg { height: 150px; }
   .chat-messages { height: 130px; font-size: 13px; }
+  .chat-msg { min-height: 32px; padding-bottom: 19px; }
+  .chat-time { font-size: 10px;}
   .tabs .tab { font-size: 14px; padding: 8px 8px; }
   .lineup-team { min-width: 80px; padding: 7px 4px; }
 }
