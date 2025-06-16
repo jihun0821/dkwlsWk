@@ -427,23 +427,33 @@ function chatCollection(matchId) {
   return window.firebase.collection(db, 'match_chats', matchId, 'messages');
 }
 
-// 패널 탭 동작 및 기능 연결
+// 패널 탭 동작 및 기능 연결 (수정된 버전)
 function setupPanelTabs(matchId) {
   const tabs = document.querySelectorAll('.tab');
   const contents = document.querySelectorAll('.tab-content');
-  tabs.forEach(tab => {
+  
+  tabs.forEach((tab, index) => {
     tab.onclick = () => {
+      // 모든 탭과 콘텐츠에서 active 클래스 제거
       tabs.forEach(t => t.classList.remove('active'));
       contents.forEach(c => c.classList.remove('active'));
+      
+      // 클릭된 탭과 해당 콘텐츠에 active 클래스 추가
       tab.classList.add('active');
-      const idx = Array.from(tabs).indexOf(tab);
-      contents[idx].classList.add('active');
+      contents[index].classList.add('active');
+      
+      // 채팅 탭이 활성화된 경우 채팅 기능 초기화
       if (tab.dataset.tab === "chat") {
-        document.querySelector('.chat-content').style.display = "block";
         setupChat(matchId);
       }
     };
   });
+  
+  // 기본적으로 첫 번째 탭(라인업)을 활성화
+  if (tabs.length > 0 && contents.length > 0) {
+    tabs[0].classList.add('active');
+    contents[0].classList.add('active');
+  }
 }
 
 // 채팅 기능
