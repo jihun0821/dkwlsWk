@@ -613,3 +613,217 @@ body.light-mode .footer-link:hover,
 body.light-mode .footer-link:focus {
   color: #2051ff;
 }
+
+/* --- 기존 스타일 유지 --- */
+
+/* 탭 UI */
+.tab-container {
+  margin-top: 25px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #444;
+}
+
+.tab {
+  padding: 10px 22px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #bbb;
+  border-radius: 10px 10px 0 0;
+  background: none;
+  border: none;
+  transition: background 0.18s, color 0.18s;
+}
+
+.tab.active {
+  color: #2051ff;
+  background: #232323;
+  border-bottom: 2px solid #2051ff;
+}
+
+.tab-content {
+  padding: 22px 0 0 0;
+  display: none;
+  animation: fadeInTab 0.5s;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeInTab {
+  from { opacity: 0; transform: translateY(16px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+/* 라인업 UI */
+.lineup-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  position: relative;
+}
+.lineup-bg {
+  position: absolute;
+  width: 95%;
+  height: 220px;
+  background: linear-gradient(135deg, #2051ff55 0%, #5e91ff33 100%);
+  border-radius: 25px;
+  z-index: 1;
+  top: 0; left: 2.5%;
+}
+.lineup-sides {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+  position: relative;
+}
+.lineup-team {
+  min-width: 110px;
+  background: rgba(40,40,40,0.9);
+  border-radius: 13px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.lineup-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+.position-label {
+  font-size: 14px;
+  color: #7abfff;
+  margin-right: 6px;
+  font-weight: bold;
+  width: 52px;
+  text-align: right;
+}
+.player {
+  background: #2051ff;
+  color: #fff;
+  border-radius: 8px;
+  padding: 4px 10px;
+  margin-right: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+.vs-label {
+  font-size: 18px;
+  color: #aaa;
+  font-weight: bold;
+  margin: 0 15px;
+}
+
+/* 채팅창 UI */
+.chat-content {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.chat-messages {
+  height: 200px;
+  background: #161d2a;
+  border-radius: 10px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  font-size: 15px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 2px 8px #0002;
+}
+.chat-msg {
+  background: #2e3545;
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 16px;
+  max-width: 80%;
+  margin-bottom: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: flex-start;
+  word-break: break-word;
+  position: relative;
+}
+.chat-msg.me {
+  background: #2051ff;
+  align-self: flex-end;
+  color: #fff;
+}
+.chat-nick {
+  font-size: 12px;
+  color: #7abfff;
+  font-weight: bold;
+  margin-bottom: 1px;
+}
+.chat-text {
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+.chat-time {
+  font-size: 11px;
+  color: #b1c4e7;
+  position: absolute;
+  bottom: 5px;
+  right: 12px;
+}
+.chat-form {
+  display: flex;
+  gap: 7px;
+}
+#chatInput {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #345ece;
+  font-size: 15px;
+  outline: none;
+}
+#sendChatBtn {
+  background: #2051ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  transition: background 0.16s;
+}
+#sendChatBtn:hover {
+  background: #1537a6;
+}
+.chat-login-notice {
+  margin-top: 10px;
+  text-align: center;
+}
+.chat-login-notice .login-btn {
+  background: #2051ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 700px) {
+  .tab-content, .chat-content, .lineup-field { padding: 0; }
+  .lineup-bg { height: 150px; }
+  .chat-messages { height: 130px; font-size: 13px; }
+  .tabs .tab { font-size: 14px; padding: 8px 8px; }
+  .lineup-team { min-width: 80px; padding: 7px 4px; }
+}
