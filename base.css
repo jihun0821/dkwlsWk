@@ -704,13 +704,12 @@ body.light-mode .lineup-bg {
     radial-gradient(circle at 50% 50%, transparent 60px, rgba(0,0,0,0.03) 61px, transparent 62px);
 }
 
-
 /* 팀별 라인업 컨테이너 */
 .lineup-sides {
   position: relative;
   display: flex;
   justify-content: space-between;
-  align-items: center;  /* 변경: stretch → center */
+  align-items: stretch;
   padding: 30px 20px;
   min-height: 300px;
   z-index: 2;
@@ -733,7 +732,6 @@ body.light-mode .lineup-bg {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
-
 
 body.light-mode .lineup-team {
   background: rgba(255, 255, 255, 0.9);
@@ -833,33 +831,28 @@ body.light-mode .player:hover {
 
 /* VS 라벨 */
 .vs-label {
-  position: relative; /* 변경: absolute → relative */
-  top: auto;
-  left: auto;
-  transform: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 24px;
   font-weight: bold;
   color: #e2e8f0;
-  background: rgba(26, 32, 44, 0.95);
+  background: rgba(26, 32, 44, 0.9);
   padding: 12px 20px;
   border-radius: 50px;
   border: 2px solid #4a5568;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   letter-spacing: 2px;
   z-index: 3;
   backdrop-filter: blur(10px);
-  min-width: 56px;
-  margin: 0 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 body.light-mode .vs-label {
   color: #2d3748;
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid #cbd5e0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 2px 8px #b3d2ff33;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* 팀별 구분을 위한 추가 스타일 */
@@ -910,7 +903,6 @@ body.light-mode .vs-label {
   
   .lineup-sides {
     flex-direction: column;
-    align-items: stretch;
     gap: 20px;
     padding: 20px 15px;
     min-height: auto;
@@ -921,18 +913,13 @@ body.light-mode .vs-label {
   }
   
   .vs-label {
+    position: static;
+    transform: none;
     align-self: center;
-    margin: 10px 0;
     font-size: 20px;
     padding: 8px 16px;
-    position: static;
-    top: auto;
-    left: auto;
-    transform: none;
+    margin: 10px 0;
   }
-}
-
-/* ... (이하 기존 코드 유지) ... */
   
   .lineup-group {
     flex-direction: column; /* 작을 땐 다시 세로 정렬 */
