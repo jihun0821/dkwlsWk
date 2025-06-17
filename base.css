@@ -930,8 +930,6 @@ body.light-mode .vs-label {
     transform: none;
   }
 }
-
-/* ... (이하 기존 코드 유지) ... */
   
   .lineup-group {
     flex-direction: column; /* 작을 땐 다시 세로 정렬 */
@@ -951,13 +949,6 @@ body.light-mode .vs-label {
 }
 
 @media (max-width: 480px) {
-  .lineup-sides {
-    padding: 15px 10px;
-  }
-  
-  .lineup-team {
-    padding: 12px 8px;
-  }
   
   .players-container {
     flex-wrap: wrap; /* 작은 화면에서는 다시 줄 바꿈 허용 */
