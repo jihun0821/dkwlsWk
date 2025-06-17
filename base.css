@@ -745,9 +745,9 @@ body.light-mode .lineup-team:hover {
 /* 학년별 그룹 */
 .lineup-group {
   display: flex;
-  flex-direction: column;
+  align-items: center; /* 라벨과 선수 박스 수직 정렬 */
   margin-bottom: 20px;
-  gap: 10px;
+  gap: 12px; /* 라벨과 선수 간 간격 */
 }
 
 .lineup-group:last-child {
@@ -777,9 +777,9 @@ body.light-mode .position-label {
 /* 선수들 컨테이너 */
 .players-container {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  justify-content: center;
+  flex-wrap: nowrap; /* 줄 바꿈 금지 */
+  justify-content: flex-start;
 }
 
 /* 개별 선수 */
@@ -921,8 +921,10 @@ body.light-mode .vs-label {
   }
   
   .lineup-group {
-    margin-bottom: 16px;
+    flex-direction: column; /* 작을 땐 다시 세로 정렬 */
+    align-items: flex-start;
   }
+
   
   .position-label {
     font-size: 13px;
@@ -945,7 +947,7 @@ body.light-mode .vs-label {
   }
   
   .players-container {
-    gap: 6px;
+    flex-wrap: wrap; /* 작은 화면에서는 다시 줄 바꿈 허용 */
   }
   
   .player {
