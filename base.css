@@ -713,8 +713,8 @@ body.light-mode .lineup-bg {
   padding: 30px 20px;
   min-height: 300px;
   z-index: 2;
-  gap: 40px;
-}
+  gap: 100px; /* 기존보다 넓은 간격 */
+}}
 
 /* 각 팀 라인업 */
 .lineup-team {
@@ -919,6 +919,7 @@ body.light-mode .vs-label {
     font-size: 20px;
     padding: 8px 16px;
     margin: 10px 0;
+    z-index: 1; /* 텍스트가 위에 겹치지 않도록 낮추기 */
   }
   
   .lineup-group {
