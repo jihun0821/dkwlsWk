@@ -78,9 +78,12 @@ if (form) {
 }
 document.addEventListener('DOMContentLoaded', function () {
   // 예측 영역 노출 제어
-  function showPredictionSection(isLoggedIn) {
-    document.getElementById('prediction-section').style.display = isLoggedIn ? 'block' : 'none';
-  }
+function showPredictionSection(isLoggedIn) {
+  ['prediction-form-section', 'my-prediction-section', 'prediction-bar-section'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isLoggedIn ? 'block' : 'none';
+  });
+}
 
   // 로그인 상태 연동
   if (window.auth) {
