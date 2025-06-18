@@ -761,3 +761,41 @@ body.light-mode .player-assists { color: #2051ff; }
     gap: 10px 0;
   }
 }
+
+/* 메인 큰 3박스 공통 스타일 (겹치지 않게 아래와 같이) */
+.main-predict-box {
+  background: #f3f9ff;
+  border-radius: 22px;
+  box-shadow: 0 2px 18px #b3d2ff44;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto 36px auto;
+  padding: 34px 36px 28px 36px;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* 각 섹션별로 필요시 추가 여백/정렬 */
+#prediction-form-section {
+  margin-top: 8px;
+}
+
+#my-prediction-section {
+  margin-top: 0;
+  margin-bottom: 0;
+  /* 필요시 폼과 결과를 비슷하게 보이게 조정 */
+}
+
+#prediction-bar-section {
+  margin-bottom: 0;
+  /* 4개 박스 컨테이너는 기존 소형화 CSS 사용 */
+}
+
+/* 반응형 */
+@media (max-width: 900px) {
+  .main-predict-box {
+    padding: 16px 3vw 12px 3vw;
+    border-radius: 14px;
+    max-width: 99vw;
+  }
+}
