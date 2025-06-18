@@ -21,7 +21,11 @@
     sendEmailVerification,
     signOut, 
     onAuthStateChanged, 
-    updateProfile 
+    updateProfile,
+    collection, 
+    getDocs, 
+    query, 
+    where // ← 이 네 줄 추가!
   } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
   import { 
     getFirestore, 
@@ -44,7 +48,11 @@
     doc,
     setDoc,
     getDoc,
-    onSnapshot 
+    onSnapshot,
+    collection, 
+    getDocs, 
+    query, 
+    where // ← 이 네 줄 추가!
   };
 </script>
 </head>
