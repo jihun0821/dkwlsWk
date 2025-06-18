@@ -1,7 +1,7 @@
 // prediction.js
 async function fetchPredictionStats() {
   const db = window.firebase.getFirestore();
-  const predictionsCol = window.firebase.collection(db, "predictions");
+  const predictionsCol = window.firebase.collection(db, "semester_predictions");
   const snapshot = await window.firebase.getDocs(predictionsCol);
 
   // 득점왕/도움왕/우승팀별 집계 객체
