@@ -82,7 +82,7 @@ body.light-mode .stats-section b { color: #2051ff; }
   padding: 25px 25px 25px 80px;
   box-shadow: none;
   width: auto;
-  max-width: none;
+  max-width: 800px;
 }
 body.light-mode .main-predict-box,
 body.light-mode .main-compact-stats {
