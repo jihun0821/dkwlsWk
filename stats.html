@@ -11,48 +11,22 @@
     <link rel="stylesheet" href="stats.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
     
-    <!-- Firebase SDK CDN -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
   import { 
-    getAuth, 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword,
-    sendEmailVerification,
-    signOut, 
-    onAuthStateChanged, 
-    updateProfile,
-    collection, 
-    getDocs, 
-    query, 
-    where // ← 이 네 줄 추가!
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    sendEmailVerification, signOut, onAuthStateChanged, updateProfile 
   } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
   import { 
-    getFirestore, 
-    doc, 
-    setDoc, 
-    getDoc,
-    onSnapshot 
+    getFirestore, doc, setDoc, getDoc, onSnapshot,
+    collection, getDocs, query, where // ← ★이건 firestore에서만 import!
   } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
   window.firebase = {
-    initializeApp,
-    getAuth,
-    sendEmailVerification,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    updateProfile,
-    getFirestore,
-    doc,
-    setDoc,
-    getDoc,
-    onSnapshot,
-    collection, 
-    getDocs, 
-    query, 
-    where // ← 이 네 줄 추가!
+    initializeApp, getAuth, sendEmailVerification, createUserWithEmailAndPassword,
+    signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
+    getFirestore, doc, setDoc, getDoc, onSnapshot,
+    collection, getDocs, query, where // ← 여기도 추가
   };
 </script>
 </head>
@@ -207,8 +181,7 @@
     </div>
 
     <!-- 스크립트는 Firebase SDK 로드 후에 실행 -->
-    <script type="module" src="auth.js"></script>    
-    <script src="matchData.js"></script>
-    <script src="prediction.js"></script>
-    <script src="script.js"></script>
+  <script src="auth.js"></script>
+  <script src="prediction.js"></script>
+  <script src="script.js"></script>
   </body>
