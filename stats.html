@@ -109,120 +109,82 @@
         <a href="standing_table.html"><h3>순위/대진표</h3></a>
     </div>
 
-    <main>
-      <section class="main">
-        <section class="stats-section">
-          <h2>득점 TOP 4</h2>
-          <div class="top3-container">
-            <div class="top-card_first">
-              <div class="rank-badge">🥇 1위</div>
-              <div class="player-name">김한솔</div>
-              <div class="player-team">C301</div>
-              <div class="player-goals">11골</div>
-            </div>
-          
-            <div class="top-card_second">
-              <div class="rank-badge">🥈 2위</div>
-              <div class="player-name">문지훈</div>
-              <div class="player-team">C204</div>
-              <div class="player-goals">10골</div>
-            </div>
-
-            <div class="top-card_third">
-              <div class="rank-badge">🥉 3위</div>
-              <div class="player-name">성준용</div>
-              <div class="player-team">C???</div>
-              <div class="player-goals">9골</div>
-            </div>
-
-            <div class="top-card_fourth">
-              <div class="rank-badge"> 4위</div>
-              <div class="player-name">금담인</div>
-              <div class="player-team">C???</div>
-              <div class="player-goals">6골</div>
-            </div>
-
-            <div class="top-card_fifth">
-              <a href="https://docs.google.com/spreadsheets/d/1FMbES_cQjVVZ_Mv7RmuQYS4AJFlDvA5K7HfadLSnaZs/edit?gid=0#gid=0" class="other-name">기타 참고</a>
-            </div>
-          </div>
-        
-          <div>
-          <h2>어시스트 TOP 4</h2>
-            <div class="assist3-container">
-            <div class="assist-card_first">
-              <div class="rank-badge">🥇 1위</div>
-              <div class="player-name">정성훈</div>
-              <div class="player-team">C???</div>
-              <div class="player-assists">4도움</div>
-            </div>
-
-            <div class="assist-card_second">
-              <div class="rank-badge">🥈 2위</div>
-              <div class="player-name">금담인, 김한솔 외 1명</div>
-              <div class="player-team">C???, C??? 외 1호실</div>
-              <div class="player-assists">3도움</div>
-            </div>
-
-            <div class="assist-card_third">
-              <div class="rank-badge">🥉 3위</div>
-              <div class="player-name">김한울, 문지훈 외 9명</div>
-              <div class="player-team">C???, C204 외 9호실</div>
-              <div class="player-assists">2도움</div>
-            </div>
-
-          <div class="assist-card_fourth">
-            <div class="rank-badge"> 4위</div>
-            <div class="player-name">김예준, 민선호 외 13명</div>
-            <div class="player-team">C???, C??? 외 13호실</div>
-            <div class="player-assists">1도움</div>
-          </div>
-
-          <div class="assist-card_fifth">
-            <a href="https://docs.google.com/spreadsheets/d/1FMbES_cQjVVZ_Mv7RmuQYS4AJFlDvA5K7HfadLSnaZs/edit?gid=0#gid=0" class="other-name">기타 참고</a>
-          </div>
+<main>
+  <section class="main">
+    <section id="prediction-form-section" class="main-predict-box">
+      <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
+      <form id="predictionForm">
+        <label>
+          득점왕 예측:
+          <input type="text" name="topScorer" required placeholder="예: 김한솔" maxlength="20">
+        </label>
+        <label>
+          도움왕 예측:
+          <input type="text" name="topAssist" required placeholder="예: 정성훈" maxlength="20">
+        </label>
+        <label>
+          우승팀 예측:
+          <input type="text" name="championTeam" required placeholder="예: C301" maxlength="10">
+        </label>
+        <button type="submit">예측 제출</button>
+      </form>
+    </section>
+    
+    <section id="my-prediction-section" class="main-predict-box">
+      <h3>나의 예측</h3>
+      <div id="myPredictionResult"></div>
+    </section>
+    
+    <section id="prediction-bar-section" class="main-predict-box">
+      <div class="prediction-bar-charts-container">
+        <div class="bar-chart-box" id="chart-topScorer">
+          <h4>득점왕 예측</h4>
+          <div class="bar-group"></div>
         </div>
-
-        <div>
-          <h2>자책골 TOP 4</h2>
-          <div class="own-container">
-            <div class="own-card_first">
-              <div class="rank-badge">🥇 1위</div>
-              <div class="player-name">김민수, 박범준</div>
-              <div class="player-team">C101, C???</div>
-              <div class="player-assists">1골</div>
-            </div>
-
-            <div class="own-card_second">
-              <div class="rank-badge">🥈 2위</div>
-              <div class="player-name">없음</div>
-              <div class="player-team">없음</div>
-              <div class="player-assists">없음</div>
-            </div>
-
-            <div class="own-card_third">
-              <div class="rank-badge">🥉 3위</div>
-              <div class="player-name">없음</div>
-              <div class="player-team">없음</div>
-              <div class="player-assists">없음</div>
-            </div>
-
-            <div class="own-card_fourth">
-              <div class="rank-badge">4위</div>
-              <div class="player-name">없음</div>
-              <div class="player-team">없음</div>
-              <div class="player-assists">없음</div>
-            </div>
-
-            <div class="own-card_fifth">
-              <a href="https://docs.google.com/spreadsheets/d/1FMbES_cQjVVZ_Mv7RmuQYS4AJFlDvA5K7HfadLSnaZs/edit?gid=0#gid=0" class="other-name">기타 참고</a>
-            </div>
+        <div class="bar-chart-box" id="chart-topAssist">
+          <h4>도움왕 예측</h4>
+          <div class="bar-group"></div>
         </div>
+        <div class="bar-chart-box" id="chart-championTeam">
+          <h4>우승팀 예측</h4>
+          <div class="bar-group"></div>
         </div>
-        </section>
-                  
-      </section>
-    </main>
+        <div class="bar-chart-box" id="chart-participants">
+          <h4>참여자 수</h4>
+          <div class="participant-count"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 한줄에 나열하는 주요 스탯/호실 결과 -->
+    <section class="main-compact-stats">
+      <div class="compact-block">
+        <h3>득점 TOP 3 (1학기)</h3>
+        <ul>
+          <li>🥇 김한솔 (C301) - 11골</li>
+          <li>🥈 문지훈 (C204) - 10골</li>
+          <li>🥉 성준용 (C???) - 9골</li>
+        </ul>
+      </div>
+      <div class="compact-block">
+        <h3>어시스트 TOP 3 (1학기)</h3>
+        <ul>
+          <li>🥇 정성훈 (C???) - 4도움</li>
+          <li>🥈 금담인, 김한솔 외 1명 - 3도움</li>
+          <li>🥉 김한울, 문지훈 외 9명 - 2도움</li>
+        </ul>
+      </div>
+      <div class="compact-block">
+        <h3>1학기 호실축구 결과</h3>
+        <ol>
+          <li>🥇 <span style="color:#2051ff;font-weight:bold;">106호</span> (1위 🥇)</li>
+          <li>🥈 <span style="color:#2051ff;font-weight:bold;">301호</span> (2위 🥈)</li>
+          <li>🥉 <span style="color:#2051ff;font-weight:bold;">302호</span> (3위 🥉)</li>
+        </ol>
+      </div>
+    </section>
+  </section>
+</main>
 
     <!-- 로그인/회원가입 모달 -->
     <div id="authModal" class="auth-modal">
