@@ -77,8 +77,8 @@ body.light-mode .stats-section b { color: #2051ff; }
 .main-compact-stats {
   background: #272424;
   border-radius: 30px;
-  margin-left: 230px;
-  margin-right: 130px;
+  margin-left: 250px;
+  margin-right: 150px;
   padding: 25px 25px 25px 80px;
   box-shadow: none;
   width: auto;
