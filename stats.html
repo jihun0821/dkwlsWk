@@ -114,24 +114,30 @@
 <main>
   <section class="main">
 <!-- 2학기 예측 폼 -->
-<section id="prediction-section" style="display:none;">
-  <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
-  <form id="predictionForm">
-    <label>
-      득점왕 예측:
-      <input type="text" name="topScorer" required placeholder="예: 김한솔" maxlength="20">
-    </label>
-    <label>
-      도움왕 예측:
-      <input type="text" name="topAssist" required placeholder="예: 정성훈" maxlength="20">
-    </label>
-    <label>
-      우승팀 예측:
-      <input type="text" name="championTeam" required placeholder="예: C106" maxlength="10">
-    </label>
-    <button type="submit">예측 제출</button>
-  </form>
-  <div id="myPredictionResult"></div>
+<section id="prediction-section" style="display:flex;gap:32px;">
+  <div style="flex:1;">
+    <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
+    <form id="predictionForm">
+      <label>
+        득점왕 예측:
+        <input type="text" name="topScorer" required placeholder="예: 김한솔" maxlength="20">
+      </label>
+      <label>
+        도움왕 예측:
+        <input type="text" name="topAssist" required placeholder="예: 정성훈" maxlength="20">
+      </label>
+      <label>
+        우승팀 예측:
+        <input type="text" name="championTeam" required placeholder="예: C301" maxlength="10">
+      </label>
+      <button type="submit">예측 제출</button>
+    </form>
+    <div id="myPredictionResult" style="margin-top:12px; color:#69f;"></div>
+  </div>
+  <div style="flex:1;">
+    <h3>실시간 예측 집계</h3>
+    <div id="predictionStatsGraph"></div>
+  </div>
 </section>
 
 <!-- 한줄에 나열하는 주요 스탯/호실 결과 -->
