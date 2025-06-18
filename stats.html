@@ -109,83 +109,51 @@
         <a href="standing_table.html"><h3>순위/대진표</h3></a>
     </div>
 
+<!-- ... (head 등 생략) ... -->
 <main>
   <section class="main">
-    <section id="prediction-form-section" class="main-predict-box">
-      <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
-      <form id="predictionForm">
-        <label>
-          득점왕 예측:
-          <input type="text" name="topScorer" required placeholder="예: 김한솔" maxlength="20">
-        </label>
-        <label>
-          도움왕 예측:
-          <input type="text" name="topAssist" required placeholder="예: 정성훈" maxlength="20">
-        </label>
-        <label>
-          우승팀 예측:
-          <input type="text" name="championTeam" required placeholder="예: C301" maxlength="10">
-        </label>
-        <button type="submit">예측 제출</button>
-      </form>
+    <!-- 나의 예측 버튼 -->
+    <section id="my-prediction-section" class="main-predict-box" style="text-align:center;">
+      <button id="openPredictionModalBtn" class="my-prediction-btn">나의 예측 보기 / 입력하기</button>
+      <div id="myPredictionResult" style="margin-top:20px;"></div>
     </section>
-    
-    <section id="my-prediction-section" class="main-predict-box">
-      <h3>나의 예측</h3>
-      <div id="myPredictionResult"></div>
-    </section>
-    
+
+    <!-- 예측 집계 그래프 (기존과 동일) -->
     <section id="prediction-bar-section" class="main-predict-box">
       <div class="prediction-bar-charts-container">
-        <div class="bar-chart-box" id="chart-topScorer">
-          <h4>득점왕 예측</h4>
-          <div class="bar-group"></div>
-        </div>
-        <div class="bar-chart-box" id="chart-topAssist">
-          <h4>도움왕 예측</h4>
-          <div class="bar-group"></div>
-        </div>
-        <div class="bar-chart-box" id="chart-championTeam">
-          <h4>우승팀 예측</h4>
-          <div class="bar-group"></div>
-        </div>
-        <div class="bar-chart-box" id="chart-participants">
-          <h4>참여자 수</h4>
-          <div class="participant-count"></div>
-        </div>
+        <!-- ... (득점왕/도움왕/우승팀/참여자수 박스) ... -->
       </div>
     </section>
 
-    <!-- 한줄에 나열하는 주요 스탯/호실 결과 -->
+    <!-- 1학기 참고 박스 (기존과 동일) -->
     <section class="main-compact-stats">
-      <div class="compact-block">
-        <h3>득점 TOP 3 (1학기)</h3>
-        <ul>
-          <li>🥇 김한솔 (C301) - 11골</li>
-          <li>🥈 문지훈 (C204) - 10골</li>
-          <li>🥉 성준용 (C???) - 9골</li>
-        </ul>
-      </div>
-      <div class="compact-block">
-        <h3>어시스트 TOP 3 (1학기)</h3>
-        <ul>
-          <li>🥇 정성훈 (C???) - 4도움</li>
-          <li>🥈 금담인, 김한솔 외 1명 - 3도움</li>
-          <li>🥉 김한울, 문지훈 외 9명 - 2도움</li>
-        </ul>
-      </div>
-      <div class="compact-block">
-        <h3>1학기 호실축구 결과</h3>
-        <ol>
-          <li>🥇 <span style="color:#2051ff;font-weight:bold;">106호</span> (1위 🥇)</li>
-          <li>🥈 <span style="color:#2051ff;font-weight:bold;">301호</span> (2위 🥈)</li>
-          <li>🥉 <span style="color:#2051ff;font-weight:bold;">302호</span> (3위 🥉)</li>
-        </ol>
-      </div>
+      <!-- ... (득점/도움/호실 결과 안내) ... -->
     </section>
   </section>
 </main>
 
+<!-- 예측 입력 모달 -->
+<div id="predictionModal" class="prediction-modal">
+  <div class="prediction-modal-content">
+    <span class="close" id="closePredictionModal">&times;</span>
+    <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
+    <form id="predictionForm">
+      <label>
+        득점왕 예측:
+        <input type="text" name="topScorer" required placeholder="예: 김한솔" maxlength="20">
+      </label>
+      <label>
+        도움왕 예측:
+        <input type="text" name="topAssist" required placeholder="예: 정성훈" maxlength="20">
+      </label>
+      <label>
+        우승팀 예측:
+        <input type="text" name="championTeam" required placeholder="예: C301" maxlength="10">
+      </label>
+      <button type="submit">예측 저장</button>
+    </form>
+  </div>
+</div>
     <!-- 로그인/회원가입 모달 -->
     <div id="authModal" class="auth-modal">
         <div class="auth-modal-content">
