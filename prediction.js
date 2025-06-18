@@ -240,10 +240,16 @@ async function loadMyPrediction() {
 // -------------------- 폼 제출 --------------------
 document.addEventListener('DOMContentLoaded', function () {
   // 로그인 상태에 따라 예측영역 노출
-  function showPredictionSection(isLoggedIn) {
-    document.getElementById('prediction-section').style.display = isLoggedIn ? 'flex' : 'none';
-  }
-
+function showPredictionSection(isLoggedIn) {
+  [
+    'prediction-form-section', 
+    'my-prediction-section', 
+    'prediction-bar-section'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isLoggedIn ? 'block' : 'none';
+  });
+}
   // 로그인 상태 연동
   if (window.auth) {
     window.firebase.onAuthStateChanged(window.auth, user => {
