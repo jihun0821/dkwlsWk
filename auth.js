@@ -449,3 +449,6 @@ if (checkVerificationBtn) {
 // 전역 함수로 내보내기
 window.logout = logout;
 window.showUserProfile = showUserProfile;
+
+window.auth = auth;
+window.db = db;
