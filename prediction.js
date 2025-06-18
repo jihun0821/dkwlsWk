@@ -278,3 +278,76 @@ document.addEventListener('DOMContentLoaded', function () {
   // 페이지 진입 시 집계 그래프 표시
   showPredictionStatsGraph();
 });
+
+// 사용 전: fetchPredictionStats 함수 필요(예측 집계, prediction.js 참고)
+
+async function renderAllPredictionBarCharts() {
+  const containerIds = [
+    {key: "topScorer", title: "득점왕 예측", emoji: "⚽"},
+    {key: "topAssist", title: "도움왕 예측", emoji: "🎯"},
+    {key: "championTeam", title: "우승팀 예측", emoji: "🏆"}
+  ];
+
+  // prediction.js의 fetchPredictionStats() 함수 활용
+  const { stats, total } = await fetchPredictionStats();
+
+  containerIds.forEach(({key, title, emoji}) => {
+    const chartBox = document.getElementById('chart-' + key);
+    if (!chartBox) return;
+    const barGroup = chartBox.querySelector('.bar-group');
+    barGroup.innerHTML = makeBarChart(stats[key], total, title, emoji);
+  });
+
+  // 참여자수(총 예측자)
+  const partBox = document.getElementById('chart-participants');
+  if (partBox) {
+    partBox.querySelector('.participant-count').innerHTML = `<span>${total}</span>명`;
+  }
+}
+
+// 막대 차트 생성기(1~3위+기타)
+function makeBarChart(statObj, total, title, emoji) {
+  if (!statObj || total === 0) return `<div style="color:#bbb;text-align:center;">아직 예측이 없습니다.</div>`;
+  // 득표순으로 정렬
+  const sorted = Object.entries(statObj).sort((a,b)=>b[1]-a[1]);
+  const top3 = sorted.slice(0,3);
+  const etcVotes = sorted.slice(3).reduce((sum, [_, cnt])=>sum+cnt,0);
+
+  // 최대값(1위) 기준 width
+  const maxVotes = top3.length>0 ? top3[0][1] : 1;
+  let html = "";
+  const barColorClass = i => ["bar-rank-1","bar-rank-2","bar-rank-3"][i] || "bar-etc";
+  const rankLabel = i => ["🥇","🥈","🥉"][i] || "기타";
+
+  top3.forEach(([name, cnt], i) => {
+    html += `
+      <div class="bar-item ${barColorClass(i)}">
+        <span class="bar-rank-label">${rankLabel(i)}</span>
+        <span class="bar-label">${emoji} ${name}</span>
+        <div class="bar-bg">
+          <div class="bar-fg" style="width:${(cnt/maxVotes*100).toFixed(1)}%"></div>
+          <span class="bar-value">${cnt}명</span>
+        </div>
+        <span class="bar-percent">${((cnt/total)*100).toFixed(1)}%</span>
+      </div>
+    `;
+  });
+  if (etcVotes > 0) {
+    html += `
+      <div class="bar-item bar-etc">
+        <span class="bar-rank-label">기타</span>
+        <span class="bar-label">${emoji} 기타</span>
+        <div class="bar-bg">
+          <div class="bar-fg" style="width:${(etcVotes/maxVotes*100).toFixed(1)}%"></div>
+          <span class="bar-value">${etcVotes}명</span>
+        </div>
+        <span class="bar-percent">${((etcVotes/total)*100).toFixed(1)}%</span>
+      </div>
+    `;
+  }
+  return html;
+}
+
+// 실행/갱신
+document.addEventListener('DOMContentLoaded', renderAllPredictionBarCharts);
+window.renderAllPredictionBarCharts = renderAllPredictionBarCharts;
