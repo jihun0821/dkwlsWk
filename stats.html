@@ -121,8 +121,8 @@
 
 <main>
   <section class="main">
-<section id="prediction-section" style="display:flex;gap:32px;">
-  <div style="flex:1;">
+<section id="prediction-section" class="prediction-flex-section">
+  <div class="prediction-left">
     <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
     <form id="predictionForm">
       <label>
@@ -139,12 +139,9 @@
       </label>
       <button type="submit">예측 제출</button>
     </form>
-<div id="myPredictionResult" style="margin-top:12px; display:none;"></div>  
-  <div style="flex:1;">
-    <h3>실시간 예측 집계</h3>
-    <div id="predictionStatsGraph"></div>
-      <!-- 차트 컨테이너 (예측 결과 4개 박스) -->
-<div class="prediction-bar-charts-container">
+    <div id="myPredictionResult"></div>
+  <div class="prediction-right">
+    <div class="prediction-bar-charts-container">
   <div class="bar-chart-box" id="chart-topScorer">
     <h4>득점왕 예측</h4>
     <div class="bar-group"></div>
