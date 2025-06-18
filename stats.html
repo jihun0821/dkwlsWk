@@ -113,55 +113,54 @@
 
 <main>
   <section class="main">
-    <!-- 2학기 예측 영역 (로그인한 경우만 표시) -->
-    <section id="prediction-section" style="display:none;">
-      <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
-      <form id="predictionForm">
-        <label>
-          득점왕 예측:
-          <input type="text" name="topScorer" required placeholder="예: 김한솔" maxlength="20">
-        </label>
-        <label>
-          도움왕 예측:
-          <input type="text" name="topAssist" required placeholder="예: 정성훈" maxlength="20">
-        </label>
-        <label>
-          우승팀 예측:
-          <input type="text" name="championTeam" required placeholder="예: C301" maxlength="10">
-        </label>
-        <button type="submit">예측 제출</button>
-      </form>
-      <div id="myPredictionResult" style="margin-top:12px; color:#69f;"></div>
-    </section>
+<!-- 2학기 예측 폼 -->
+<section id="prediction-section" style="display:none;">
+  <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
+  <form id="predictionForm">
+    <label>
+      득점왕 예측:
+      <input type="text" name="topScorer" required placeholder="예: 김한솔" maxlength="20">
+    </label>
+    <label>
+      도움왕 예측:
+      <input type="text" name="topAssist" required placeholder="예: 정성훈" maxlength="20">
+    </label>
+    <label>
+      우승팀 예측:
+      <input type="text" name="championTeam" required placeholder="예: C106" maxlength="10">
+    </label>
+    <button type="submit">예측 제출</button>
+  </form>
+  <div id="myPredictionResult"></div>
+</section>
 
-    <!-- 득점·어시 TOP3 + 1학기 호실축구 결과 -->
-    <section class="stats-section" style="display:flex;align-items:flex-start;gap:32px;">
-      <!-- TOP3 영역을 작게 -->
-      <div style="flex:1;">
-        <h3 style="font-size:1.2em;">득점 TOP 3 (1학기)</h3>
-        <ul style="font-size:0.95em;">
-          <li>🥇 김한솔 (C301) - 11골</li>
-          <li>🥈 문지훈 (C204) - 10골</li>
-          <li>🥉 성준용 (C???) - 9골</li>
-        </ul>
-        <h3 style="font-size:1.2em;">어시스트 TOP 3 (1학기)</h3>
-        <ul style="font-size:0.95em;">
-          <li>🥇 정성훈 (C???) - 4도움</li>
-          <li>🥈 금담인, 김한솔 외 1명 - 3도움</li>
-          <li>🥉 김한울, 문지훈 외 9명 - 2도움</li>
-        </ul>
-      </div>
-      <!-- 1학기 호실축구 결과 -->
-      <div style="flex:1;">
-        <h3>1학기 호실축구 결과</h3>
-        <ol style="font-size:1.1em;">
-          <li><b>106호</b> (1위 🥇)</li>
-          <li><b>301호</b> (2위 🥈)</li>
-          <li><b>302호</b> (3위 🥉)</li>
-        </ol>
-      </div>
-    </section>
-    <!-- ...기존 주요스탯/자책골 등 기존 내용은 아래에 위치... -->
+<!-- 한줄에 나열하는 주요 스탯/호실 결과 -->
+<section class="main-compact-stats">
+  <div class="compact-block">
+    <h3>득점 TOP 3 (1학기)</h3>
+    <ul>
+      <li>🥇 김한솔 (C301) - 11골</li>
+      <li>🥈 문지훈 (C204) - 10골</li>
+      <li>🥉 성준용 (C???) - 9골</li>
+    </ul>
+  </div>
+  <div class="compact-block">
+    <h3>어시스트 TOP 3 (1학기)</h3>
+    <ul>
+      <li>🥇 정성훈 (C???) - 4도움</li>
+      <li>🥈 금담인, 김한솔 외 1명 - 3도움</li>
+      <li>🥉 김한울, 문지훈 외 9명 - 2도움</li>
+    </ul>
+  </div>
+  <div class="compact-block">
+    <h3>1학기 호실축구 결과</h3>
+    <ol>
+      <li>🥇 <span style="color:#2051ff;font-weight:bold;">106호</span> (1위 🥇)</li>
+      <li>🥈 <span style="color:#2051ff;font-weight:bold;">301호</span> (2위 🥈)</li>
+      <li>🥉 <span style="color:#2051ff;font-weight:bold;">302호</span> (3위 🥉)</li>
+    </ol>
+  </div>
+</section>
   </section>
 </main>
 
