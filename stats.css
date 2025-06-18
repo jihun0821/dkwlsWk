@@ -1,140 +1,192 @@
-/* ============== 스탯 페이지 리셋 및 공통 ============== */
-.stats-section {
-  margin-bottom: 38px;
-  padding: 28px 26px;
-  background-color: #232323;
-  border-radius: 22px;
-  box-shadow: 0 2px 12px #0004;
-  display: flex;
-  gap: 48px;
-  align-items: flex-start;
-}
-body.light-mode .stats-section {
-  background-color: #f9fafd;
-  box-shadow: 0 2px 12px #b3d2ff33;
-}
-
-/* 타이틀 */
-.stats-section h3, .stats-section h2 {
-  margin: 0 0 14px 0;
-  font-size: 1.17em;
-  font-weight: bold;
-  color: #3da5ff;
-  letter-spacing: 1px;
-}
-body.light-mode .stats-section h3,
-body.light-mode .stats-section h2 { color: #2051ff; }
-
-/* 랭킹 리스트 */
-.stats-section ul, .stats-section ol {
-  list-style: none;
-  padding: 0 0 0 2px;
-  margin: 0 0 18px 0;
-}
-.stats-section li {
-  margin-bottom: 8px;
-  font-size: 1em;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: #fff;
-}
-body.light-mode .stats-section li { color: #222; }
-
-/* 순위 아이콘 */
-.stats-section li::before {
-  display: inline-block;
-  font-size: 1.04em;
-}
-.stats-section li:nth-child(1)::before { content: "🥇"; }
-.stats-section li:nth-child(2)::before { content: "🥈"; }
-.stats-section li:nth-child(3)::before { content: "🥉"; }
-.stats-section li:nth-child(n+4)::before { content: ""; }
-
-.stats-section ol { padding-left: 18px; }
-.stats-section ol li { margin-bottom: 7px; color: #eee; }
-body.light-mode .stats-section ol li { color: #333; }
-
-.stats-section b { color: #ffd700; }
-body.light-mode .stats-section b { color: #2051ff; }
-
-/* TOP3/팀결과 컬럼 레이아웃 */
-.stats-section > div {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* 예측 폼 영역 */
+/* ============== 예측 폼(2학기) ============== */
 #prediction-section {
-  margin-bottom: 32px;
-  margin-top: 12px;
-  background: #222;
-  border-radius: 18px;
-  box-shadow: 0 2px 8px #0002;
-  padding: 24px 18px 14px 18px;
-  max-width: 520px;
+  margin: 0 auto 34px auto;
+  background: #f3f9ff;
+  border-radius: 22px;
+  box-shadow: 0 2px 18px #b3d2ff44;
+  padding: 44px 44px 34px 44px;
+  max-width: 620px;
   width: 100%;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 body.light-mode #prediction-section {
-  background: #f3f9ff;
-  box-shadow: 0 2px 8px #b3d2ff22;
+  background: #eaf1ff;
+  box-shadow: 0 2px 18px #b3d2ff66;
 }
 #prediction-section h2 {
-  font-size: 1.13em;
-  color: #3da5ff;
-  margin: 0 0 12px 0;
+  font-size: 1.33em;
+  color: #2051ff;
+  margin-bottom: 28px;
+  font-weight: bold;
+  text-align: left;
 }
-body.light-mode #prediction-section h2 { color: #2051ff; }
 #prediction-section form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 22px;
 }
 #prediction-section label {
-  font-size: 1em;
-  color: #b6e0fe;
-  margin-bottom: 2px;
+  font-size: 1.11em;
+  color: #2051ff;
   font-weight: bold;
+  margin-bottom: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 body.light-mode #prediction-section label { color: #2051ff; }
 #prediction-section input[type="text"] {
-  border: 1px solid #444;
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 1em;
-  background: #181b21;
-  color: #fff;
-  margin-top: 2px;
-  margin-bottom: 4px;
+  border: 1.7px solid #b0d3ff;
+  border-radius: 10px;
+  padding: 18px 14px;
+  font-size: 1.13em;
+  background: #fff;
+  color: #222;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 410px;
+  transition: border 0.15s;
+}
+#prediction-section input[type="text"]:focus {
+  border-color: #2051ff;
+  outline: none;
 }
 body.light-mode #prediction-section input[type="text"] {
   background: #fff;
-  border: 1px solid #b0d3ff;
+  border: 1.7px solid #2051ff70;
   color: #222;
 }
 #prediction-section button[type="submit"] {
-  margin-top: 10px;
-  padding: 10px 0;
+  margin-top: 22px;
+  padding: 22px 0;
   background: #2051ff;
   color: #fff;
   border: none;
-  border-radius: 7px;
+  border-radius: 13px;
   font-weight: bold;
-  font-size: 1em;
+  font-size: 1.15em;
   transition: background 0.18s;
   cursor: pointer;
+  letter-spacing: 1px;
+  width: 100%;
+  max-width: 420px;
+  align-self: flex-start;
 }
 #prediction-section button[type="submit"]:hover {
   background: #1131a7;
 }
 #myPredictionResult {
-  margin-top: 10px;
-  color: #b6e0fe;
-  font-size: 1em;
+  margin-top: 18px;
+  color: #2051ff;
+  font-size: 1.11em;
+  font-weight: bold;
 }
 body.light-mode #myPredictionResult { color: #2051ff; }
 
-/* --------------------- 박스형 카드 --------------------- */
+/* ============== 한줄 스탯들 ============== */
+.main-compact-stats {
+  display: flex;
+  gap: 48px;
+  margin: 0 auto 36px auto;
+  padding: 38px 36px 32px 36px;
+  background: #f7f7f9;
+  border-radius: 22px;
+  box-shadow: 0 2px 12px #0002;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 1120px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+body.light-mode .main-compact-stats {
+  background: #f7faff;
+  box-shadow: 0 2px 12px #b3d2ff22;
+}
+.compact-block {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 10px;
+}
+.compact-block h3 {
+  color: #2051ff;
+  font-size: 1.11em;
+  margin-bottom: 12px;
+  font-weight: bold;
+  text-align: left;
+  letter-spacing: 0.5px;
+}
+body.light-mode .compact-block h3 { color: #2051ff; }
+.compact-block ul, .compact-block ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.compact-block li {
+  margin-bottom: 9px;
+  font-size: 1.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.55;
+}
+body.light-mode .compact-block li { color: #222; }
+.compact-block ol li {
+  font-size: 1.02em;
+  font-weight: bold;
+}
+.compact-block span {
+  font-weight: bold;
+  color: #2051ff;
+}
+body.light-mode .compact-block span { color: #2051ff; }
+
+/* 순위 아이콘 */
+.compact-block li::before {
+  display: inline-block;
+  font-size: 1.04em;
+}
+.compact-block ul li:nth-child(1)::before,
+.compact-block ol li:nth-child(1)::before { content: "🥇"; }
+.compact-block ul li:nth-child(2)::before,
+.compact-block ol li:nth-child(2)::before { content: "🥈"; }
+.compact-block ul li:nth-child(3)::before,
+.compact-block ol li:nth-child(3)::before { content: "🥉"; }
+.compact-block ul li:nth-child(n+4)::before,
+.compact-block ol li:nth-child(n+4)::before { content: ""; }
+
+/* 반응형 */
+@media (max-width: 1100px) {
+  .main-compact-stats {
+    gap: 16px;
+    padding: 18px 3vw;
+    max-width: 98vw;
+  }
+}
+@media (max-width: 800px) {
+  .main-compact-stats {
+    flex-direction: column;
+    gap: 22px;
+    padding: 12px 1vw;
+  }
+  .compact-block {
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 0 2vw;
+  }
+  #prediction-section {
+    padding: 18px 2vw 13px 2vw;
+    max-width: 98vw;
+  }
+  #prediction-section button[type="submit"] {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* 기존 주요스탯/어시/자책골 등 카드형 요소는 아래처럼 유지/축약(라이트 모드 포함) */
 .top3-container, .assist3-container, .own-container {
   display: flex;
   gap: 24px;
@@ -157,6 +209,7 @@ body.light-mode #myPredictionResult { color: #2051ff; }
   flex-direction: column;
   align-items: center;
   font-size: 1em;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 body.light-mode .top-card_first,
 body.light-mode .top-card_second,
@@ -175,6 +228,7 @@ body.light-mode .own-card_fourth,
 body.light-mode .own-card_fifth {
   background: #e9f4ff;
   box-shadow: 0 2px 10px #b3d2ff22;
+  color: #2051ff;
 }
 
 /* 랭크 뱃지 컬러 */
@@ -192,7 +246,6 @@ body.light-mode .own-card_fifth {
 .assist-card_third .rank-badge, .own-card_third .rank-badge { color: #aeeaff; }
 .assist-card_fourth .rank-badge, .own-card_fourth .rank-badge { color: #fff; }
 
-/* 이름, 팀, 골/도움 */
 .player-name, .other-name {
   font-size: 15px;
   font-weight: bold;
@@ -223,13 +276,8 @@ body.light-mode .player-assists { color: #2051ff; }
   text-decoration: underline;
 }
 
-/* -------------------- 반응형 디자인 -------------------- */
+/* 반응형 카드 */
 @media (max-width: 900px) {
-  .stats-section { flex-direction: column; gap: 24px; padding: 16px 8vw; }
-  .stats-section > div { width: 100%; }
-}
-@media (max-width: 600px) {
-  .stats-section { padding: 10px 2vw; border-radius: 12px; }
   .top3-container, .assist3-container, .own-container {
     flex-direction: column;
     gap: 10px;
@@ -244,5 +292,4 @@ body.light-mode .player-assists { color: #2051ff; }
     width: 92vw;
     max-width: 320px;
   }
-  #prediction-section { padding: 14px 2vw; font-size: 0.98em; border-radius: 10px; }
 }
