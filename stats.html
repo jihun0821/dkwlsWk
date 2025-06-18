@@ -11,24 +11,38 @@
     <link rel="stylesheet" href="stats.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
     
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import { 
-    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    sendEmailVerification, signOut, onAuthStateChanged, updateProfile 
-  } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-  import { 
-    getFirestore, doc, setDoc, getDoc, onSnapshot,
-    collection, getDocs, query, where // ← ★이건 firestore에서만 import!
-  } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { 
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      sendEmailVerification, signOut, onAuthStateChanged, updateProfile 
+    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { 
+      getFirestore, doc, setDoc, getDoc, onSnapshot,
+      collection, getDocs, query, where
+    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-  window.firebase = {
-    initializeApp, getAuth, sendEmailVerification, createUserWithEmailAndPassword,
-    signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
-    getFirestore, doc, setDoc, getDoc, onSnapshot,
-    collection, getDocs, query, where // ← 여기도 추가
-  };
-</script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
+      authDomain: "hsp-auth-22845.firebaseapp.com",
+      projectId: "hsp-auth-22845",
+      storageBucket: "hsp-auth-22845.appspot.com",
+      messagingSenderId: "1034282361573",
+      appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    window.firebase = {
+      initializeApp, getAuth, sendEmailVerification, createUserWithEmailAndPassword,
+      signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
+      getFirestore, doc, setDoc, getDoc, onSnapshot,
+      collection, getDocs, query, where
+    };
+    window.db = db;
+    window.auth = auth;
+  </script>
 </head>
 <body>
 <header class="navbar">
