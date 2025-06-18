@@ -72,16 +72,27 @@ body.light-mode .stats-section b { color: #2051ff; }
   min-height: calc(100vh - 200px);
 }
 
+/* ======= 메인박스 크기를 인덱스 메인박스(.main)와 맞춤 ======= */
+.main-predict-box,
+.main-compact-stats {
+  background: #272424;
+  border-radius: 30px;
+  margin-left: 230px;
+  margin-right: 130px;
+  padding: 25px 25px 25px 80px;
+  box-shadow: none;
+  width: auto;
+  max-width: none;
+}
+body.light-mode .main-predict-box,
+body.light-mode .main-compact-stats {
+  background: #f9fafd;
+  box-shadow: 0 2px 14px #b3d2ff33;
+}
+
 /* 각 섹션 간격 줄이기 */
 .main-predict-box {
-  background: #f3f9ff;
-  border-radius: 22px;
-  box-shadow: 0 2px 18px #b3d2ff44;
-  width: 100%;
-  margin: 0 auto 24px auto;
-  padding: 28px 32px 24px 32px;
-  box-sizing: border-box;
-  display: block;
+  margin-bottom: 24px;
 }
 
 body.light-mode .main-predict-box {
@@ -93,14 +104,10 @@ body.light-mode .main-predict-box {
 .main-compact-stats {
   display: flex;
   gap: 32px;
-  margin: 0 auto 28px auto;
-  padding: 32px 28px;
-  background: #f7f7f9;
-  border-radius: 22px;
-  box-shadow: 0 2px 12px #0002;
+  margin-bottom: 28px;
   justify-content: center;
   align-items: flex-start;
-  width: 100%;
+  width: auto;
   transition: background 0.2s, box-shadow 0.2s;
 }
 body.light-mode .main-compact-stats {
@@ -410,6 +417,16 @@ body.light-mode #myPredictionResult { color: #2051ff; }
 }
 
 /* ===================== 반응형 디자인 ===================== */
+@media (max-width: 1400px) {
+  .main-predict-box,
+  .main-compact-stats {
+    margin-left: 8vw;
+    margin-right: 6vw;
+    padding-left: 4vw;
+    padding-right: 4vw;
+  }
+}
+
 @media (max-width: 1100px) {
   .main {
     padding: 16px 12px 32px 12px;
@@ -425,6 +442,14 @@ body.light-mode #myPredictionResult { color: #2051ff; }
 }
 
 @media (max-width: 900px) {
+  .main-predict-box,
+  .main-compact-stats {
+    margin-left: 12px;
+    margin-right: 12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 18px;
+  }
   .main-compact-stats { 
     flex-direction: column; 
     gap: 24px; 
