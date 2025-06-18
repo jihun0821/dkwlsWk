@@ -239,3 +239,68 @@
     max-width: 320px;
   }
 }
+
+.main-predict-box {
+  background: #232323;
+  border-radius: 22px;
+  box-shadow: 0 2px 12px #0004;
+  margin-bottom: 24px;
+  padding: 28px 32px 24px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+body.light-mode .main-predict-box {
+  background: #ebe8e8;
+  box-shadow: 0 2px 12px #b3d2ff33;
+}
+
+/* 폼 내부 요소 여백 등 */
+#predictionForm label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: bold;
+  color: #3da5ff;
+}
+#predictionForm input[type="text"] {
+  width: 100%;
+  padding: 12px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #3da5ff99;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  font-size: 15px;
+  background: #191b20;
+  color: #fff;
+}
+body.light-mode #predictionForm input[type="text"] {
+  background: #fff;
+  color: #222;
+  border: 1.5px solid #2051ff66;
+}
+#predictionForm button[type="submit"] {
+  background: #2051ff;
+  color: #fff;
+  border: none;
+  border-radius: 13px;
+  padding: 14px 0;
+  margin-top: 12px;
+  width: 100%;
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+#predictionForm button[type="submit"]:hover {
+  background: #1131a7;
+}
+
+/* 내 예측 결과 */
+#myPredictionResult {
+  color: #3da5ff;
+  font-weight: bold;
+  font-size: 1.13em;
+  line-height: 1.6;
+}
+body.light-mode #myPredictionResult { color: #2051ff; }
