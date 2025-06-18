@@ -508,3 +508,159 @@ body.light-mode .player-assists { color: #2051ff; }
     padding: 16px 2vw 18px 2vw;
   }
 }
+
+
+/* ====== 기존 코드 위에 그대로, 아래만 "그래프 내용물 축소+정렬"로 덮어쓰기 ====== */
+.prediction-bar-charts-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  width: 100%;
+  max-width: 940px;
+  margin: 20px auto 0 auto;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+/* 박스 자체 크기는 살짝만 줄이고, 내부 내용(막대, 폰트, 여백) 위주로 축소 */
+.bar-chart-box {
+  flex: 1 1 210px;
+  min-width: 170px;
+  max-width: 235px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 3px 14px #b3d2ff22, 0 1.5px 4px #2051ff08;
+  padding: 14px 8px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 140px;
+  box-sizing: border-box;
+}
+
+.bar-chart-box h4 {
+  margin: 0 0 10px 0;
+  font-size: 1em;
+  font-weight: 700;
+  color: #2051ff;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* 그래프 그룹(전체 막대) */
+.bar-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 0;
+}
+
+/* 개별 막대 */
+.bar-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  font-size: 0.93em;
+  min-height: 17px;
+}
+
+.bar-rank-label {
+  font-size: 1em;
+  width: 22px;
+  text-align: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.bar-label {
+  flex: 1 1 40px;
+  font-size: 0.97em;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 막대 그래프 본체 */
+.bar-bg {
+  flex: 3 1 35px;
+  background: #e8f1ff;
+  border-radius: 8px;
+  height: 13px;
+  position: relative;
+  overflow: hidden;
+  margin: 0 2px;
+  min-width: 24px;
+}
+.bar-fg {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  border-radius: 8px;
+  height: 100%;
+  transition: width 0.5s;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.bar-rank-1 .bar-fg { background: linear-gradient(90deg,#2051ff,#3da5ff 90%);}
+.bar-rank-2 .bar-fg { background: linear-gradient(90deg,#3bb6ff,#9bd4ff 90%);}
+.bar-rank-3 .bar-fg { background: linear-gradient(90deg,#ffd700,#ffe066 90%);}
+.bar-etc .bar-fg   { background: linear-gradient(90deg,#b8b9be,#d4d7dd 90%);}
+.bar-value {
+  font-weight: 700;
+  color: #2051ff;
+  font-size: 0.92em;
+  margin-right: 3px;
+  z-index: 1;
+  text-shadow: 0 1px 2px #fff8;
+}
+.bar-percent {
+  width: 31px;
+  font-size: 0.92em;
+  text-align: right;
+  color: #555;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* 참여자수 폰트/여백 축소 */
+.participant-count {
+  width: 100%;
+  font-size: 1em;
+  font-weight: bold;
+  color: #2051ff;
+  text-align: center;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* ====== 반응형(모바일) ====== */
+@media (max-width: 1100px) {
+  .prediction-bar-charts-container {
+    max-width: 99vw;
+    gap: 8px;
+    padding: 0 2vw;
+  }
+  .bar-chart-box {
+    min-width: 110px;
+    max-width: 99vw;
+    padding: 7px 2vw 7px 2vw;
+  }
+}
+@media (max-width: 700px) {
+  .prediction-bar-charts-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 0 2vw;
+  }
+  .bar-chart-box {
+    width: 98vw;
+    min-width: unset;
+    padding: 7px 2vw 7px 2vw;
+  }
+}
