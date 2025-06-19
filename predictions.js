@@ -39,6 +39,8 @@ const categoryTitles = {
     assist: '🅰️ 도움왕 예측'
 };
 
+// ... 기존 코드 유지
+
 // 예측 모달 열기
 function openPredictionModal(category) {
     if (!currentUser) {
@@ -51,47 +53,32 @@ function openPredictionModal(category) {
     
     const modal = document.getElementById('predictionModal');
     const title = document.getElementById('modal-title');
-    const optionsContainer = document.getElementById('prediction-options');
+    // 입력창 컨테이너와 인풋
+    const inputContainer = document.getElementById('prediction-input-container');
+    const inputBox = document.getElementById('prediction-input');
     const submitBtn = document.getElementById('submit-prediction');
-    
+
     title.textContent = categoryTitles[category];
     
-    // 옵션 생성
-    optionsContainer.innerHTML = '';
-    predictionOptions[category].forEach(option => {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'prediction-option';
-        optionDiv.textContent = option;
-        optionDiv.onclick = () => selectOption(optionDiv, option);
-        optionsContainer.appendChild(optionDiv);
-    });
-    
+    // 입력창 초기화 및 표시
+    inputBox.value = '';
+    inputContainer.style.display = 'block';
     submitBtn.disabled = true;
     modal.style.display = 'block';
+
+    // 입력 변화 감지해서 버튼 활성화
+    inputBox.oninput = function() {
+        if (inputBox.value.trim().length > 0) {
+            selectedOption = inputBox.value.trim();
+            submitBtn.disabled = false;
+        } else {
+            selectedOption = null;
+            submitBtn.disabled = true;
+        }
+    };
 }
 
-// 옵션 선택
-function selectOption(element, option) {
-    // 기존 선택 해제
-    document.querySelectorAll('.prediction-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
-    
-    // 새 선택 적용
-    element.classList.add('selected');
-    selectedOption = option;
-    
-    document.getElementById('submit-prediction').disabled = false;
-}
-
-// 예측 모달 닫기
-function closePredictionModal() {
-    document.getElementById('predictionModal').style.display = 'none';
-    currentCategory = null;
-    selectedOption = null;
-}
-
-// 예측 제출
+// 예측 제출 함수는 input에서 값 받아옴 (selectedOption 사용)
 async function submitPrediction() {
     if (!currentUser || !currentCategory || !selectedOption) {
         return;
@@ -102,7 +89,7 @@ async function submitPrediction() {
         const userEmail = currentUser.email;
         const timestamp = new Date().toISOString();
         
-        // 사용자 예측 저장
+        // 사용자 예측 저장 (나머지 로직 동일)
         await window.firebase.setDoc(
             window.firebase.doc(db, 'predictions', userEmail),
             {
@@ -114,7 +101,7 @@ async function submitPrediction() {
             { merge: true }
         );
         
-        // 전체 통계 업데이트
+        // 전체 통계 업데이트 (이름/팀/입력값 기준)
         const statsRef = window.firebase.doc(db, 'prediction_stats', currentCategory);
         const statsDoc = await window.firebase.getDoc(statsRef);
         
@@ -154,6 +141,8 @@ async function submitPrediction() {
         alert('예측 저장에 실패했습니다. 다시 시도해주세요.');
     }
 }
+
+// ... 나머지 함수는 그대로 (옵션 생성, selectOption 등은 더 이상 필요 없음)
 
 // 사용자 예측 표시 업데이트
 function updateUserPredictionDisplay(category, choice) {
