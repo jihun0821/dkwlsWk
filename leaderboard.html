@@ -139,7 +139,7 @@
                 
                 <div class="category-card">
                     <h3>🅰️ 도움왕</h3>
-                    <p style="color: #666; margin-bottom: 15px;">누가 가장 많은 어시스트를 기록할까요?</p>
+                    <p style="color: #666; margin-bottom: 15px;">누가 가장 많은 도움을 기록할까요?</p>
                     <button class="prediction-btn" onclick="openPredictionModal('assist')">예측하기</button>
                     <div id="assist-prediction" class="user-prediction" style="display: none;"></div>
                 </div>
@@ -211,8 +211,10 @@
     <div class="prediction-modal-content">
         <span class="prediction-modal-close" onclick="closePredictionModal()">&times;</span>
         <h2 id="modal-title" class="modal-title"></h2>
-        <div id="prediction-options" class="prediction-options"></div>
-        <button id="submit-prediction" class="submit-prediction" onclick="submitPrediction()">예측 제출</button>
+        <div id="prediction-input-container" style="margin-bottom: 20px; display:none;">
+            <input type="text" id="prediction-input" class="prediction-input" placeholder="예측을 입력하세요" />        
+        </div>
+        <button id="submit-prediction" class="submit-prediction" onclick="submitPrediction()" disabled>예측 제출</button>
     </div>
 </div>
 
