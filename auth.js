@@ -1,7 +1,11 @@
-const { 
-  initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
-  getFirestore, doc, setDoc, getDoc, deleteUser
+if (!window.firebase) {
+  console.error('window.firebase is undefined! firebase 초기화가 먼저 실행되어야 합니다.');
+} else {
+  // 구조분해는 필요한 것만
+  const {
+    initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
+    getFirestore, doc, setDoc, getDoc, deleteUser
 } = window.firebase;
 
 const firebaseConfig = {
@@ -13,11 +17,9 @@ const firebaseConfig = {
   appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-console.log('Firebase 초기화 완료');
+const { getAuth, getFirestore } = window.firebase;
+const auth = window.auth;
+const db = window.db;
 
 let tempUserData = null;
 
