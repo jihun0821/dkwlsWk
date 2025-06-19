@@ -11,41 +11,42 @@
     <link rel="stylesheet" href="stats.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
     
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { 
-      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-      sendEmailVerification, signOut, onAuthStateChanged, updateProfile 
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { 
-      getFirestore, doc, setDoc, getDoc, onSnapshot,
-      collection, getDocs, query, where
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    <!-- Firebase SDK CDN -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    signOut, 
+    onAuthStateChanged, 
+    updateProfile 
+  } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+  import { 
+    getFirestore, 
+    doc, 
+    setDoc, 
+    getDoc,
+    onSnapshot 
+  } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
-      authDomain: "hsp-auth-22845.firebaseapp.com",
-      projectId: "hsp-auth-22845",
-      storageBucket: "hsp-auth-22845.appspot.com",
-      messagingSenderId: "1034282361573",
-      appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    window.firebase = {
-      initializeApp, getAuth, sendEmailVerification, createUserWithEmailAndPassword,
-      signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
-      getFirestore, doc, setDoc, getDoc, onSnapshot,
-      collection, getDocs, query, where
-    };
-    window.db = db;
-    window.auth = auth;
-  </script>
-  <script src="auth.js"></script>
-  <script src="prediction.js"></script>
-  <script src="script.js"></script>
+  window.firebase = {
+    initializeApp,
+    getAuth,
+    sendEmailVerification,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    updateProfile,
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    onSnapshot 
+  };
+</script>
 </head>
 <body>
 <header class="navbar">
@@ -108,51 +109,121 @@
         <a href="standing_table.html"><h3>순위/대진표</h3></a>
     </div>
 
-<!-- ... (head 등 생략) ... -->
-<main>
-  <section class="main">
-    <!-- 나의 예측 버튼 -->
-    <section id="my-prediction-section" class="main-predict-box" style="text-align:center;">
-      <button id="openPredictionModalBtn" class="my-prediction-btn">나의 예측 보기 / 입력하기</button>
-      <div id="myPredictionResult" style="margin-top:20px;"></div>
-    </section>
+    <main>
+      <section class="main">
+        <section class="stats-section">
+          <h2>득점 TOP 4</h2>
+          <div class="top3-container">
+            <div class="top-card_first">
+              <div class="rank-badge">🥇 1위</div>
+              <div class="player-name">김한솔</div>
+              <div class="player-team">C301</div>
+              <div class="player-goals">11골</div>
+            </div>
+          
+            <div class="top-card_second">
+              <div class="rank-badge">🥈 2위</div>
+              <div class="player-name">문지훈</div>
+              <div class="player-team">C204</div>
+              <div class="player-goals">10골</div>
+            </div>
 
-    <!-- 예측 집계 그래프 (기존과 동일) -->
-    <section id="prediction-bar-section" class="main-predict-box">
-      <div id="predictionStatsGraph"></div>
-        <!-- ... (득점왕/도움왕/우승팀/참여자수 박스) ... -->
-      </div>
-    </section>
+            <div class="top-card_third">
+              <div class="rank-badge">🥉 3위</div>
+              <div class="player-name">성준용</div>
+              <div class="player-team">C???</div>
+              <div class="player-goals">9골</div>
+            </div>
 
-    <!-- 1학기 참고 박스 (기존과 동일) -->
-    <section class="main-compact-stats">
-      <!-- ... (득점/도움/호실 결과 안내) ... -->
-    </section>
-  </section>
-</main>
+            <div class="top-card_fourth">
+              <div class="rank-badge"> 4위</div>
+              <div class="player-name">금담인</div>
+              <div class="player-team">C???</div>
+              <div class="player-goals">6골</div>
+            </div>
 
-<!-- 예측 입력 모달 -->
-<div id="predictionModal" class="prediction-modal">
-  <div class="prediction-modal-content">
-    <span class="close" id="closePredictionModal">&times;</span>
-    <h2>2학기 득점왕/도움왕/우승팀 예측</h2>
-    <form id="predictionForm">
-      <label>
-        득점왕 예측:
-        <input type="text" name="topScorer" required placeholder="예: 김한솔" maxlength="20">
-      </label>
-      <label>
-        도움왕 예측:
-        <input type="text" name="topAssist" required placeholder="예: 정성훈" maxlength="20">
-      </label>
-      <label>
-        우승팀 예측:
-        <input type="text" name="championTeam" required placeholder="예: C301" maxlength="10">
-      </label>
-      <button type="submit">예측 저장</button>
-    </form>
-  </div>
-</div>
+            <div class="top-card_fifth">
+              <a href="https://docs.google.com/spreadsheets/d/1FMbES_cQjVVZ_Mv7RmuQYS4AJFlDvA5K7HfadLSnaZs/edit?gid=0#gid=0" class="other-name">기타 참고</a>
+            </div>
+          </div>
+        
+          <div>
+          <h2>어시스트 TOP 4</h2>
+            <div class="assist3-container">
+            <div class="assist-card_first">
+              <div class="rank-badge">🥇 1위</div>
+              <div class="player-name">정성훈</div>
+              <div class="player-team">C???</div>
+              <div class="player-assists">4도움</div>
+            </div>
+
+            <div class="assist-card_second">
+              <div class="rank-badge">🥈 2위</div>
+              <div class="player-name">금담인, 김한솔 외 1명</div>
+              <div class="player-team">C???, C??? 외 1호실</div>
+              <div class="player-assists">3도움</div>
+            </div>
+
+            <div class="assist-card_third">
+              <div class="rank-badge">🥉 3위</div>
+              <div class="player-name">김한울, 문지훈 외 9명</div>
+              <div class="player-team">C???, C204 외 9호실</div>
+              <div class="player-assists">2도움</div>
+            </div>
+
+          <div class="assist-card_fourth">
+            <div class="rank-badge"> 4위</div>
+            <div class="player-name">김예준, 민선호 외 13명</div>
+            <div class="player-team">C???, C??? 외 13호실</div>
+            <div class="player-assists">1도움</div>
+          </div>
+
+          <div class="assist-card_fifth">
+            <a href="https://docs.google.com/spreadsheets/d/1FMbES_cQjVVZ_Mv7RmuQYS4AJFlDvA5K7HfadLSnaZs/edit?gid=0#gid=0" class="other-name">기타 참고</a>
+          </div>
+        </div>
+
+        <div>
+          <h2>자책골 TOP 4</h2>
+          <div class="own-container">
+            <div class="own-card_first">
+              <div class="rank-badge">🥇 1위</div>
+              <div class="player-name">김민수, 박범준</div>
+              <div class="player-team">C101, C???</div>
+              <div class="player-assists">1골</div>
+            </div>
+
+            <div class="own-card_second">
+              <div class="rank-badge">🥈 2위</div>
+              <div class="player-name">없음</div>
+              <div class="player-team">없음</div>
+              <div class="player-assists">없음</div>
+            </div>
+
+            <div class="own-card_third">
+              <div class="rank-badge">🥉 3위</div>
+              <div class="player-name">없음</div>
+              <div class="player-team">없음</div>
+              <div class="player-assists">없음</div>
+            </div>
+
+            <div class="own-card_fourth">
+              <div class="rank-badge">4위</div>
+              <div class="player-name">없음</div>
+              <div class="player-team">없음</div>
+              <div class="player-assists">없음</div>
+            </div>
+
+            <div class="own-card_fifth">
+              <a href="https://docs.google.com/spreadsheets/d/1FMbES_cQjVVZ_Mv7RmuQYS4AJFlDvA5K7HfadLSnaZs/edit?gid=0#gid=0" class="other-name">기타 참고</a>
+            </div>
+        </div>
+        </div>
+        </section>
+                  
+      </section>
+    </main>
+
     <!-- 로그인/회원가입 모달 -->
     <div id="authModal" class="auth-modal">
         <div class="auth-modal-content">
@@ -197,4 +268,8 @@
         </div>
     </div>
 
+    <!-- 스크립트는 Firebase SDK 로드 후에 실행 -->
+    <script type="module" src="auth.js"></script>    
+    <script src="matchData.js"></script>
+    <script src="script.js"></script>
   </body>
