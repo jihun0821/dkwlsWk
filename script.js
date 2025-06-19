@@ -17,7 +17,7 @@ const nextBtn = document.getElementById('nextBtn');
 
 let db, auth;
 
-window.onload = function () {
+window.onload = async function () {
     const savedTheme = localStorage.getItem("theme");
     const body = document.body;
 
@@ -27,7 +27,7 @@ window.onload = function () {
         body.classList.remove("light-mode");
     }
 
-    // ✅ Firebase SDK 로드 후에 초기화
+    // Firebase SDK 로드 및 초기화
     if (window.firebase && window.firebase.getFirestore && window.firebase.getAuth) {
         db = window.firebase.getFirestore();
         auth = window.firebase.getAuth();
@@ -36,8 +36,8 @@ window.onload = function () {
         return;
     }
 
-    // ✅ Firebase 초기화 이후 실행
-    showUserProfile();
+    // ✅ Firestore에서 프로필 불러오기
+    await showUserProfile();
 
     const pagination = document.querySelector('.pagination-container');
     if (pagination) {
