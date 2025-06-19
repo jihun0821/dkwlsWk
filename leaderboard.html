@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>한일픽</title>
+    <title>한일픽 : 리더보드</title>
     <link rel="stylesheet" href="base.css">
     <link rel="stylesheet" href="matches.css">
     <link rel="stylesheet" href="features.css">
     <link rel="stylesheet" href="modal.css">
+    <link rel="stylesheet" href="predictions.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
     
     <!-- Firebase SDK CDN -->
@@ -24,7 +25,7 @@
   import {
     getFirestore,
     doc, setDoc, getDoc, onSnapshot,
-    collection, query, where, getDocs  // ✅ 추가
+    collection, query, where, getDocs, updateDoc, arrayUnion
   } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
   window.firebase = {
@@ -44,9 +45,12 @@
     query,
     where,
     getDocs,
-    onSnapshot
+    onSnapshot,
+    updateDoc,
+    arrayUnion
   };
 </script>
+
 
 </head>
 <body>
@@ -58,115 +62,163 @@
     <input type="text" class="search-bar" placeholder="경기 검색" autocomplete="off" name="search">
     <div id="profile-box"></div>
   </div>
-    </header>
+</header>
 
-    <nav class="sports-navbar">
-        <a class="sports-link active" href="index.html">
-            <span class="sports-icon">⚽</span>
-            Football
-        </a>
-        <a class="sports-link" href="#" id="moreLink">
-            <span class="sports-icon">⋯</span>
-            More
-        </a>
-    </nav>
+<nav class="sports-navbar">
+    <a class="sports-link active" href="index.html">
+        <span class="sports-icon">⚽</span>
+        Football
+    </a>
+    <a class="sports-link" href="#" id="moreLink">
+        <span class="sports-icon">⋯</span>
+        More
+    </a>
+</nav>
 
-    <div id="moreModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeMoreModal">&times;</span>
-            <p>더 많은 종목을 추가할 예정입니다</p>
-        </div>
+<div id="moreModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeMoreModal">&times;</span>
+        <p>더 많은 종목을 추가할 예정입니다</p>
     </div>
+</div>
 
-    <div class="sidebar_1">
-        <a href="schedule.html"><h3>경기일정</h3></a>
-    </div>
+<div class="sidebar_1">
+    <a href="schedule.html"><h3>경기일정</h3></a>
+</div>
 
-    <div class="sidebar_2">
-        <a href="stats.html"><h3>주요스탯</h3></a>
-    </div>
+<div class="sidebar_2">
+    <a href="stats.html"><h3>주요스탯</h3></a>
+</div>
 
-    <div class="sidebar_3">
-        <a href="leaderboard.html"><h3>리더보드</h3></a>
-    </div>
+<div class="sidebar_3">
+    <a href="leaderboard.html"><h3>리더보드</h3></a>
+</div>
 
-    <div class="sidebar_4">
-        <a href="notice.html"><h3>공지사항</h3></a>
-    </div>
+<div class="sidebar_4">
+    <a href="notice.html"><h3>공지사항</h3></a>
+</div>
 
-    <div class="sidebar_5">
-        <a href="https://www.hanilians.xyz/"><h3>한일리안</h3></a>
-    </div>
+<div class="sidebar_5">
+    <a href="https://www.hanilians.xyz/"><h3>한일리안</h3></a>
+</div>
 
-    <div class="sidebar_6">
-        <a href="https://cafe.naver.com/browns28nd"><h3>네이버카페</h3></a>
-    </div>
+<div class="sidebar_6">
+    <a href="https://cafe.naver.com/browns28nd"><h3>네이버카페</h3></a>
+</div>
 
-    <div class="sidebar_7">
-        <a href="https://docs.google.com/spreadsheets/d/1peyUAAQmKqi1Hf9MTjRqLGeQnujYLLoyslRpPP3l94Y/edit?gid=0#gid=0"><h3>운동장 예약</h3></a>
-    </div>
+<div class="sidebar_7">
+    <a href="https://docs.google.com/spreadsheets/d/1peyUAAQmKqi1Hf9MTjRqLGeQnujYLLoyslRpPP3l94Y/edit?gid=0#gid=0"><h3>운동장 예약</h3></a>
+</div>
 
-    <div class="sidebar_8">
-        <a href="standing_table.html"><h3>순위/대진표</h3></a>
-    </div>
+<div class="sidebar_8">
+    <a href="standing_table.html"><h3>순위/대진표</h3></a>
+</div>
 
-  <main>
+<main>
     <section class="main">
-    </section>
-  </main>
-
-    <footer class="custom-footer">
-    <a class="footer-link" href="footer.html">개인정보 처리방침</a>
-    </footer>
-
-      <!-- 로그인/회원가입 모달 -->
-    <div id="authModal" class="auth-modal">
-        <div class="auth-modal-content">
-            <span class="auth-modal-close" id="closeAuthModal">&times;</span>
-            <h2>로그인 / 회원가입</h2>
-            <div class="auth-form">
-                <input id="email" type="email" placeholder="이메일 (@hanilgo.cnehs.kr)" autocomplete="username" name="email" />
-                <input id="password" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" name="password" />
-                <div class="auth-buttons">
-                    <button id="doLogin" class="auth-btn login-btn">로그인</button>
-                    <button id="doSignUp" class="auth-btn signup-btn">회원가입</button>
+        <div class="prediction-section">
+            <div class="prediction-header">
+                <h2>⚽ 승부예측</h2>
+                <p style="color: #666;">득점왕, 우승팀, 도움왕을 예측해보세요!</p>
+            </div>
+            
+            <div class="prediction-categories">
+                <div class="category-card">
+                    <h3>🥅 득점왕</h3>
+                    <p style="color: #666; margin-bottom: 15px;">누가 가장 많은 골을 넣을까요?</p>
+                    <button class="prediction-btn" onclick="openPredictionModal('scorer')">예측하기</button>
+                    <div id="scorer-prediction" class="user-prediction" style="display: none;"></div>
+                </div>
+                
+                <div class="category-card">
+                    <h3>🏆 우승팀</h3>
+                    <p style="color: #666; margin-bottom: 15px;">어느 팀이 우승할까요?</p>
+                    <button class="prediction-btn" onclick="openPredictionModal('champion')">예측하기</button>
+                    <div id="champion-prediction" class="user-prediction" style="display: none;"></div>
+                </div>
+                
+                <div class="category-card">
+                    <h3>🅰️ 도움왕</h3>
+                    <p style="color: #666; margin-bottom: 15px;">누가 가장 많은 어시스트를 기록할까요?</p>
+                    <button class="prediction-btn" onclick="openPredictionModal('assist')">예측하기</button>
+                    <div id="assist-prediction" class="user-prediction" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <!-- 차트 섹션 -->
+            <div id="charts-container">
+                <div class="chart-container">
+                    <div class="chart-title">🥅 득점왕 예측 현황</div>
+                    <div id="scorer-chart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">🏆 우승팀 예측 현황</div>
+                    <div id="champion-chart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">🅰️ 도움왕 예측 현황</div>
+                    <div id="assist-chart"></div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- 프로필 설정 모달 -->
-    <div id="profileModal" class="profile-modal">
-        <div class="profile-modal-content">
-            <span class="profile-modal-close" id="closeProfileModal">&times;</span>
-            <h2>프로필 설정</h2>
-            
-            <!-- 프로필 이미지 미리보기 영역 -->
-            <div class="profile-preview"></div>
-            
-            <!-- 닉네임 입력 -->
-            <input id="nickname" type="text" placeholder="닉네임 (2-20자)" maxlength="20" />
-            
-            <!-- 파일 업로드 -->
-            <div class="file-upload-wrapper">
-                <label for="avatar" class="file-upload-label">
-                    프로필 사진 선택 (선택사항)
-                </label>
-                <input id="avatar" type="file" accept="image/*" style="display: none;" />
-            </div>
-            
-            <!-- 버튼들 -->
-            <div class="modal-buttons">
-                <button id="saveProfileBtn" class="save-profile-btn">저장하고 가입</button>
-                <button class="cancel-btn" onclick="document.getElementById('profileModal').style.display='none'">취소</button>
-                <button id="checkVerificationBtn">이메일 인증 확인</button>
+    </section>
+</main>
+
+<footer class="custom-footer">
+    <a class="footer-link" href="footer.html">개인정보 처리방침</a>
+</footer>
+
+<!-- 기존 모달들 -->
+<div id="authModal" class="auth-modal">
+    <div class="auth-modal-content">
+        <span class="auth-modal-close" id="closeAuthModal">&times;</span>
+        <h2>로그인 / 회원가입</h2>
+        <div class="auth-form">
+            <input id="email" type="email" placeholder="이메일 (@hanilgo.cnehs.kr)" autocomplete="username" name="email" />
+            <input id="password" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" name="password" />
+            <div class="auth-buttons">
+                <button id="doLogin" class="auth-btn login-btn">로그인</button>
+                <button id="doSignUp" class="auth-btn signup-btn">회원가입</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- 스크립트는 Firebase SDK 로드 후에 실행 -->
-    <script type="module" src="auth.js"></script>
-    <script src="matchData.js"></script>
-    <script src="script.js"></script>
+<div id="profileModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <span class="profile-modal-close" id="closeProfileModal">&times;</span>
+        <h2>프로필 설정</h2>
+        <div class="profile-preview"></div>
+        <input id="nickname" type="text" placeholder="닉네임 (2-20자)" maxlength="20" />
+        <div class="file-upload-wrapper">
+            <label for="avatar" class="file-upload-label">
+                프로필 사진 선택 (선택사항)
+            </label>
+            <input id="avatar" type="file" accept="image/*" style="display: none;" />
+        </div>
+        <div class="modal-buttons">
+            <button id="saveProfileBtn" class="save-profile-btn">저장하고 가입</button>
+            <button class="cancel-btn" onclick="document.getElementById('profileModal').style.display='none'">취소</button>
+            <button id="checkVerificationBtn">이메일 인증 확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 예측 모달 -->
+<div id="predictionModal" class="prediction-modal">
+    <div class="prediction-modal-content">
+        <span class="prediction-modal-close" onclick="closePredictionModal()">&times;</span>
+        <h2 id="modal-title" class="modal-title"></h2>
+        <div id="prediction-options" class="prediction-options"></div>
+        <button id="submit-prediction" class="submit-prediction" onclick="submitPrediction()">예측 제출</button>
+    </div>
+</div>
+
+<script type="module" src="auth.js"></script>
+<script src="matchData.js"></script>
+<script src="script.js"></script>
+<script src="predictions.js"></script>
 </body>
 </html>
