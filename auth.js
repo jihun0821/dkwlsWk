@@ -17,7 +17,6 @@ const firebaseConfig = {
   appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
 };
 
-const { getAuth, getFirestore } = window.firebase;
 const auth = window.auth;
 const db = window.db;
 
