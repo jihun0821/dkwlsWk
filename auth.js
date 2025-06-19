@@ -452,4 +452,4 @@ window.logout = logout;
 window.showUserProfile = showUserProfile;
 
 window.auth = auth;
-window.db = db;
+window.db = db;}
