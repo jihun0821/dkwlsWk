@@ -52,14 +52,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second:["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -82,14 +82,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -112,14 +112,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -141,14 +141,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -170,14 +170,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -201,14 +201,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -232,14 +232,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second:["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -262,14 +262,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -292,14 +292,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -321,14 +321,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -350,14 +350,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -381,14 +381,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -412,14 +412,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second:["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -442,14 +442,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -472,14 +472,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -501,14 +501,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -530,14 +530,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -559,14 +559,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -588,14 +588,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -618,14 +618,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -647,14 +647,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -676,14 +676,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -705,14 +705,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -734,14 +734,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
          },
@@ -761,16 +761,16 @@ function getMatchDetailsById(matchId) {
                  awayShots: 0
              },
              events: [],
-             lineups: {
-                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+            lineups: {
+                home: {
+                    third: [],
+                    second: [],
+                    first: [],
                 },
-                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                away: {
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -792,14 +792,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -821,14 +821,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -850,14 +850,14 @@ function getMatchDetailsById(matchId) {
             events: [],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second: ["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -881,14 +881,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second:["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
@@ -912,14 +912,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second:["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         }
