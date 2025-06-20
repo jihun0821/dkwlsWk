@@ -239,3 +239,21 @@
     cursor: not-allowed;
     transform: none;
 }
+
+.prediction-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    outline: none;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.prediction-input:focus {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+}
+
