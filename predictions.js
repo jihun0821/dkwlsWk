@@ -256,3 +256,15 @@ window.onclick = function(event) {
         closePredictionModal();
     }
 }
+
+function closePredictionModal() {
+    const modal = document.getElementById('predictionModal');
+    if (modal) {
+        modal.style.display = 'none';
+        const inputBox = document.getElementById('prediction-input');
+        if (inputBox) inputBox.value = '';
+        const submitBtn = document.getElementById('submit-prediction');
+        if (submitBtn) submitBtn.disabled = true;
+    }
+}
+window.closePredictionModal = closePredictionModal;
