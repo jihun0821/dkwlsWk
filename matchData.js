@@ -21,14 +21,14 @@ function getMatchDetailsById(matchId) {
             ],
             lineups: {
                 home: {
-                    third: ["1"],
-                    second: ["2", "3", "4", "5", "9", "10", "11"],
-                    first: ["6", "7", "8"],
+                    third: [],
+                    second: [],
+                    first: [],
                 },
                 away: {
-                    third: ["12"],
-                    second:["13", "14", "15", "16"],
-                    first: ["17", "18", "19"],
+                    third: [],
+                    second:[],
+                    first: [],
                 }
             }
         },
