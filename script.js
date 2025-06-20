@@ -219,19 +219,22 @@ async function loadMatchDetails(matchId) {
     predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
   }
 
-  panelContent.innerHTML = `
-    <div class="match-date">${matchDetails.date}</div>
-    <div class="match-league">${matchDetails.league}</div>
-    <div class="match-score">
-      <div class="team-name">${matchDetails.homeTeam}</div>
-      <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
-      <div class="team-name">${matchDetails.awayTeam}</div>
-    </div>
-    <div class="prediction-container">${predictionHtml}</div>
-  `;
+panelContent.innerHTML = `
+  <div class="match-date">${matchDetails.date}</div>
+  <div class="match-league">${matchDetails.league}</div>
+  <div class="match-score">
+    <div class="team-name">${matchDetails.homeTeam}</div>
+    <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
+    <div class="team-name">${matchDetails.awayTeam}</div>
+  </div>
+  <div class="prediction-container">${predictionHtml}</div>
+  ${renderPanelTabs(matchDetails, matchId)}
+`;
 
-  const statsContainer = panelContent.querySelector('#votingStats');
-  if (statsContainer) renderVotingGraph(statsContainer, stats);
+const statsContainer = panelContent.querySelector('#votingStats');
+if (statsContainer) renderVotingGraph(statsContainer, stats);
+
+setupPanelTabs(matchId); // 탭 이벤트 연결!
 
   const buttons = panelContent.querySelectorAll('.prediction-btn');
   buttons.forEach(btn => {
