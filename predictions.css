@@ -257,3 +257,118 @@
     background-color: #f8f9ff;
 }
 
+/* 라이트 모드: predictions.css 스타일 오버라이드 */
+
+body.light-mode .prediction-section {
+  background: #f0f0f0;
+  color: #121212;
+}
+
+body.light-mode .prediction-header {
+  color: #121212;
+}
+
+body.light-mode .prediction-header h2 {
+  color: #121212;
+}
+
+body.light-mode .category-card {
+  background: #ffffff;
+  color: #222;
+}
+
+body.light-mode .category-card h3 {
+  color: #2051ff;
+}
+
+body.light-mode .prediction-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+body.light-mode .prediction-btn:hover {
+  box-shadow: 0 5px 15px rgba(32, 81, 255, 0.2);
+}
+
+body.light-mode .user-prediction {
+  background: #e0f7fa;
+    color: #2e7d32;
+}
+
+body.light-mode .chart-container {
+  background: #ffffff;
+  color: #121212;
+}
+
+body.light-mode .chart-title {
+  color: #121212;
+}
+
+body.light-mode .chart-fill {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+body.light-mode .rank-badge {
+  background: #ffd700;
+  color: #333;
+}
+
+body.light-mode .rank-badge.second {
+  background: #c0c0c0;
+}
+
+body.light-mode .rank-badge.third {
+  background: #cd7f32;
+  color: white;
+}
+
+body.light-mode .prediction-modal-content {
+  background-color: #ffffff;
+  color: #121212;
+}
+
+body.light-mode .prediction-modal-close {
+  color: #888;
+}
+
+body.light-mode .modal-title {
+  color: #2051ff;
+}
+
+body.light-mode .prediction-option {
+  background: #ffffff;
+  color: #121212;
+  border-color: #ccc;
+}
+
+body.light-mode .prediction-option:hover {
+  background: #e6edff;
+  border-color: #2051ff;
+}
+
+body.light-mode .prediction-option.selected {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+body.light-mode .submit-prediction {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+body.light-mode .submit-prediction:hover {
+  box-shadow: 0 5px 15px rgba(32, 81, 255, 0.2);
+}
+
+body.light-mode .prediction-input {
+  background-color: #ffffff;
+  border-color: #ccc;
+  color: #121212;
+}
+
+body.light-mode .prediction-input:focus {
+  border-color: #2051ff;
+  background-color: #f8f9ff;
+}
