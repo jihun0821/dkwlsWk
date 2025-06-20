@@ -22,7 +22,7 @@ function getMatchDetailsById(matchId) {
             lineups: {
                 home: {
                     third: ["1"],
-                    second: ["2", "3", "4", "5"],
+                    second: ["2", "3", "4", "5", "9", "10", "11"],
                     first: ["6", "7", "8"],
                 },
                 away: {
