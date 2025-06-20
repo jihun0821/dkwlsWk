@@ -1203,3 +1203,32 @@ body.light-mode .chat-msg.me {
   --bubble-bg: #2051ff;
   --bubble-color: #fff;
 }
+
+ .top-notice {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #661111;
+    color: white;
+    padding: 10px 20px;
+    z-index: 10000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+  }
+
+  .notice-message a {
+    color: #ffd9d9;
+    text-decoration: underline;
+    margin-left: 5px;
+  }
+
+  .close-notice {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+  }
