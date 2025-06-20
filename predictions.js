@@ -78,7 +78,6 @@ function openPredictionModal(category) {
     };
 }
 
-// 예측 제출 함수는 input에서 값 받아옴 (selectedOption 사용)
 async function submitPrediction() {
     if (!currentUser || !currentCategory || !selectedOption) {
         return;
@@ -88,10 +87,41 @@ async function submitPrediction() {
         const db = window.firebase.getFirestore();
         const userEmail = currentUser.email;
         const timestamp = new Date().toISOString();
-        
-        // 사용자 예측 저장 (나머지 로직 동일)
+
+        // 기존 선택 불러오기
+        const userPredictionsRef = window.firebase.doc(db, 'predictions', userEmail);
+        const userDoc = await window.firebase.getDoc(userPredictionsRef);
+        let previousChoice = null;
+        if (userDoc.exists() && userDoc.data()[currentCategory]) {
+            previousChoice = userDoc.data()[currentCategory].choice;
+        }
+
+        // 만약 기존 선택과 같으면 아무 것도 하지 않음
+        if (previousChoice === selectedOption) {
+            alert('이미 동일한 예측을 하셨습니다!');
+            closePredictionModal();
+            return;
+        }
+
+        // 통계 업데이트
+        const statsRef = window.firebase.doc(db, 'prediction_stats', currentCategory);
+        const statsDoc = await window.firebase.getDoc(statsRef);
+
+        let currentStats = {};
+        if (statsDoc.exists()) {
+            currentStats = statsDoc.data();
+        }
+
+        // 기존 선택이 있었다면 감소
+        if (previousChoice && currentStats[previousChoice]) {
+            currentStats[previousChoice] = Math.max(0, (currentStats[previousChoice] || 0) - 1);
+        }
+        // 새 선택 증가
+        currentStats[selectedOption] = (currentStats[selectedOption] || 0) + 1;
+
+        // 1. 유저별 예측값 덮어쓰기
         await window.firebase.setDoc(
-            window.firebase.doc(db, 'predictions', userEmail),
+            userPredictionsRef,
             {
                 [currentCategory]: {
                     choice: selectedOption,
@@ -100,40 +130,15 @@ async function submitPrediction() {
             },
             { merge: true }
         );
-        
-        // 전체 통계 업데이트 (이름/팀/입력값 기준)
-        const statsRef = window.firebase.doc(db, 'prediction_stats', currentCategory);
-        const statsDoc = await window.firebase.getDoc(statsRef);
-        
-        let currentStats = {};
-        if (statsDoc.exists()) {
-            currentStats = statsDoc.data();
-        }
-        
-        // 기존 선택이 있다면 감소
-        const userPredictionsRef = window.firebase.doc(db, 'predictions', userEmail);
-        const userDoc = await window.firebase.getDoc(userPredictionsRef);
-        
-        if (userDoc.exists() && userDoc.data()[currentCategory]) {
-            const previousChoice = userDoc.data()[currentCategory].choice;
-            if (previousChoice && currentStats[previousChoice]) {
-                currentStats[previousChoice] = Math.max(0, (currentStats[previousChoice] || 0) - 1);
-            }
-        }
-        
-        // 새 선택 증가
-        currentStats[selectedOption] = (currentStats[selectedOption] || 0) + 1;
-        
-        // 통계 저장
+        // 2. 통계 업데이트
         await window.firebase.setDoc(statsRef, currentStats);
-        
+
         // UI 업데이트
         updateUserPredictionDisplay(currentCategory, selectedOption);
         updateCategoryButton(currentCategory);
         loadChartData();
         
         closePredictionModal();
-        
         alert('예측이 성공적으로 저장되었습니다!');
         
     } catch (error) {
