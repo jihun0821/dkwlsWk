@@ -349,3 +349,184 @@ document.querySelector('.search-bar')?.addEventListener('input', function (e) {
 // 패널 닫기 버튼 및 오버레이 클릭 시 닫힘 처리
 closePanelBtn?.addEventListener("click", closePanel);
 overlay?.addEventListener("click", closePanel);
+
+// 경기 상세정보 패널에 탭 UI, 라인업, 채팅 기능 추가
+
+// HTML 이스케이프
+function escapeHtml(text) {
+  if (!text) return "";
+  return text.replace(/[&<>"'`]/g, s => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+    "`": "&#96;"
+  }[s]));
+}
+
+function renderPanelTabs(matchDetails, matchId) {
+  return `
+    <div class="tab-container">
+      <div class="tabs">
+        <div class="tab active" data-tab="lineup">라인업</div>
+        <div class="tab" data-tab="chat">채팅</div>
+      </div>
+      <div class="tab-contents">
+        <div class="tab-content lineup-content active">
+          ${renderLineup(matchDetails)}
+        </div>
+        <div class="tab-content chat-content">
+          ${renderChatBox(matchId)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// 라인업 렌더링 (학년별)
+function renderLineup(match) {
+  const groupLabel = (idx) => ["1학년", "2학년", "3학년"][idx];
+function players(list) {
+  return `<div class="players-container">${list.map((n) => `<div class="player">${escapeHtml(n)}</div>`).join("")}</div>`;
+}
+  function sideBlock(side, data) {
+    return `
+      <div class="lineup-team lineup-${side}">
+        <div class="lineup-group"><span class="position-label">3학년</span>${players(data.third || [])}</div>
+        <div class="lineup-group"><span class="position-label">2학년</span>${players(data.second || [])}</div>
+        <div class="lineup-group"><span class="position-label">1학년</span>${players(data.first || [])}</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="lineup-field">
+      <div class="lineup-bg"></div>
+      <div class="lineup-sides">
+        ${sideBlock("home", match.lineups.home)}
+        <div class="vs-label">VS</div>
+        ${sideBlock("away", match.lineups.away)}
+      </div>
+    </div>
+  `;
+}
+
+// 채팅 박스 렌더링
+function renderChatBox(matchId) {
+  return `
+    <div class="chat-messages" id="chatMessages"></div>
+    <form class="chat-form" id="chatForm">
+      <input type="text" id="chatInput" autocomplete="off" maxlength="120" placeholder="메시지를 입력하세요" />
+      <button type="submit" id="sendChatBtn">전송</button>
+    </form>
+    <div class="chat-login-notice" style="display:none;">
+      <button class="login-btn" onclick="document.getElementById('authModal').style.display='flex'">로그인 후 채팅하기</button>
+    </div>
+  `;
+}
+
+// 채팅 Firestore 경로
+function chatCollection(matchId) {
+  return window.firebase.collection(db, 'match_chats', matchId, 'messages');
+}
+
+// 패널 탭 동작 및 기능 연결 (수정된 버전)
+function setupPanelTabs(matchId) {
+  const tabs = document.querySelectorAll('.tab');
+  const contents = document.querySelectorAll('.tab-content');
+  
+  tabs.forEach((tab, index) => {
+    tab.onclick = () => {
+      // 모든 탭과 콘텐츠에서 active 클래스 제거
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      
+      // 클릭된 탭과 해당 콘텐츠에 active 클래스 추가
+      tab.classList.add('active');
+      contents[index].classList.add('active');
+      
+      // 채팅 탭이 활성화된 경우 채팅 기능 초기화
+      if (tab.dataset.tab === "chat") {
+        setupChat(matchId);
+      }
+    };
+  });
+  
+  // 기본적으로 첫 번째 탭(라인업)을 활성화
+  if (tabs.length > 0 && contents.length > 0) {
+    tabs[0].classList.add('active');
+    contents[0].classList.add('active');
+  }
+}
+
+// 채팅 기능 (실시간 반영)
+function setupChat(matchId) {
+  const chatBox = document.getElementById('chatMessages');
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const loginNotice = document.querySelector('.chat-login-notice');
+  chatBox.innerHTML = "";
+
+  if (!auth.currentUser) {
+    loginNotice.style.display = "block";
+    chatForm.style.display = "none";
+    chatBox.innerHTML = "<p style='text-align:center;color:#aaa;'>로그인 후 채팅을 이용할 수 있습니다.</p>";
+    return;
+  } else {
+    loginNotice.style.display = "none";
+    chatForm.style.display = "flex";
+  }
+
+  // 기존 setInterval로 불러오는 부분 삭제하고, onSnapshot으로 실시간 반영
+  if (window.chatUnsubscribe) window.chatUnsubscribe();
+
+  // Firestore의 onSnapshot 메서드로 실시간 수신
+  // SDK v10+ 기준, import 필요: onSnapshot
+  // window.firebase.onSnapshot이 있는지 확인(없으면 import 문 추가 필요)
+  // 아래는 CDN 환경 가정, window.firebase에 onSnapshot이 연결되어 있다고 가정
+  window.chatUnsubscribe = window.firebase.onSnapshot(
+    window.firebase.query(
+      chatCollection(matchId),
+      window.firebase.where('matchId', '==', matchId)
+    ),
+    (snapshot) => {
+      let html = '';
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const isMe = msg.uid === auth.currentUser.uid;
+        html += `
+          <div class="chat-msg${isMe ? " me" : ""}">
+            <span class="chat-nick">${escapeHtml(msg.nickname)}</span>
+            <span class="chat-text">${escapeHtml(msg.text)}</span>
+            <span class="chat-time">${msg.time ? new Date(msg.time.seconds * 1000).toLocaleTimeString() : ""}</span>
+          </div>
+        `;
+      });
+      chatBox.innerHTML = html;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  );
+
+  // 메시지 전송
+  chatForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+    const user = auth.currentUser;
+    if (!user) return;
+    const profileSnap = await window.firebase.getDoc(window.firebase.doc(db, 'profiles', user.uid));
+    const nickname = profileSnap.exists() ? profileSnap.data().nickname : user.email.split('@')[0];
+    await window.firebase.setDoc(
+      window.firebase.doc(chatCollection(matchId), Date.now().toString() + "_" + user.uid),
+      {
+        matchId,
+        uid: user.uid,
+        nickname,
+        text,
+        time: new Date()
+      }
+    );
+    chatInput.value = "";
+    setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+  };
+}
