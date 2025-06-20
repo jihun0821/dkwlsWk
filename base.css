@@ -667,7 +667,7 @@ body.light-mode .tab.active {
 .lineup-field {
   position: relative;
   width: 100%;
-  max-width: 800px;
+  max-width: 900px; /* 더 넓게 */
   margin: 20px auto;
   padding: 0;
   background: linear-gradient(135deg, #1a2332 0%, #2d3748 100%);
@@ -711,14 +711,15 @@ body.light-mode .lineup-bg {
   justify-content: space-between;
   align-items: stretch;
   padding: 30px 20px;
-  min-height: 300px;
+  min-height: 350px; /* 높이 증가 */
   z-index: 2;
-  gap: 100px; /* 기존보다 넓은 간격 */
-}}
+  gap: 80px; /* 적절한 간격 */
+}
 
 /* 각 팀 라인업 */
 .lineup-team {
   flex: 1;
+  max-width: 380px; /* 최대 너비 설정 */
   background: rgba(26, 32, 44, 0.85);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -746,9 +747,10 @@ body.light-mode .lineup-team:hover {
 /* 학년별 그룹 */
 .lineup-group {
   display: flex;
-  align-items: center; /* 라벨과 선수 박스 수직 정렬 */
-  margin-bottom: 20px;
-  gap: 12px; /* 라벨과 선수 간 간격 */
+  align-items: flex-start; /* 상단 정렬로 변경 */
+  margin-bottom: 18px; /* 간격 조정 */
+  gap: 12px;
+  flex-wrap: wrap; /* 줄바꿈 허용 */
 }
 
 .lineup-group:last-child {
@@ -757,16 +759,18 @@ body.light-mode .lineup-team:hover {
 
 /* 포지션 라벨 (학년) */
 .position-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
   color: #63b3ed;
-  margin-bottom: 8px;
-  padding: 4px 12px;
+  padding: 6px 12px;
   background: rgba(99, 179, 237, 0.1);
   border-radius: 20px;
   text-align: center;
   border: 1px solid rgba(99, 179, 237, 0.3);
   letter-spacing: 0.5px;
+  white-space: nowrap; /* 라벨 줄바꿈 방지 */
+  flex-shrink: 0; /* 축소 방지 */
+  min-width: 45px; /* 최소 너비 */
 }
 
 body.light-mode .position-label {
@@ -777,19 +781,26 @@ body.light-mode .position-label {
 
 /* 선수들 컨테이너 */
 .players-container {
-  display: flex;
-  gap: 8px;
-  flex-wrap: nowrap; /* 줄 바꿈 금지 */
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); /* 그리드 사용 */
+  gap: 6px;
+  flex: 1;
+  max-width: 100%;
+}
+
+/* 7개 이상일 때 더 조밀하게 */
+.players-container:has(.player:nth-child(7)) {
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 4px;
 }
 
 /* 개별 선수 */
 .player {
   background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
   color: white;
-  padding: 8px 14px;
-  border-radius: 25px;
-  font-size: 13px;
+  padding: 6px 10px; /* 패딩 축소 */
+  border-radius: 20px; /* 모서리 덜 둥글게 */
+  font-size: 12px; /* 폰트 크기 축소 */
   font-weight: 600;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
@@ -798,6 +809,10 @@ body.light-mode .position-label {
   border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
   overflow: hidden;
+  text-align: center;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  text-overflow: ellipsis; /* 길면 ... 표시 */
+  min-width: 0; /* flexbox에서 텍스트 축소 허용 */
 }
 
 .player::before {
@@ -895,6 +910,30 @@ body.light-mode .vs-label {
 }
 
 /* 반응형 디자인 */
+@media (max-width: 1024px) {
+  .lineup-field {
+    max-width: 95vw;
+  }
+  
+  .lineup-sides {
+    gap: 60px;
+    padding: 25px 15px;
+  }
+  
+  .lineup-team {
+    max-width: 350px;
+    padding: 18px 14px;
+  }
+  
+  .players-container {
+    grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+  }
+  
+  .players-container:has(.player:nth-child(7)) {
+    grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .lineup-field {
     margin: 15px auto;
@@ -909,6 +948,7 @@ body.light-mode .vs-label {
   }
   
   .lineup-team {
+    max-width: 100%;
     padding: 16px 12px;
   }
   
@@ -919,23 +959,32 @@ body.light-mode .vs-label {
     font-size: 20px;
     padding: 8px 16px;
     margin: 10px 0;
-    z-index: 1; /* 텍스트가 위에 겹치지 않도록 낮추기 */
+    z-index: 1;
   }
   
   .lineup-group {
-    flex-direction: column; /* 작을 땐 다시 세로 정렬 */
+    flex-direction: column;
     align-items: flex-start;
+    gap: 8px;
   }
-
+  
+  .players-container {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    width: 100%;
+  }
+  
+  .players-container:has(.player:nth-child(7)) {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
   
   .position-label {
     font-size: 13px;
-    padding: 3px 10px;
+    padding: 5px 10px;
   }
   
   .player {
     font-size: 12px;
-    padding: 6px 12px;
+    padding: 6px 8px;
   }
 }
 
@@ -949,12 +998,18 @@ body.light-mode .vs-label {
   }
   
   .players-container {
-    flex-wrap: wrap; /* 작은 화면에서는 다시 줄 바꿈 허용 */
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 4px;
+  }
+  
+  .players-container:has(.player:nth-child(7)) {
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 3px;
   }
   
   .player {
     font-size: 11px;
-    padding: 5px 10px;
+    padding: 5px 6px;
   }
   
   .vs-label {
@@ -979,7 +1034,6 @@ body.light-mode .lineup-group:empty::after {
   color: #718096;
   background: rgba(113, 128, 150, 0.1);
 }
-/* 기존 스타일 유지 */
 
 /* 채팅창 UI */
 .chat-content {
