@@ -1209,7 +1209,7 @@ body.light-mode .chat-msg.me {
   position: fixed;
   top: 0;
   width: 100%;
-  background-color: #661111;
+  background-color: #rgb(26,83,228);
   color: white;
   padding: 10px 20px;
   z-index: 10000;
@@ -1226,6 +1226,7 @@ body.light-mode .chat-msg.me {
 .notice-message {
   flex: 1;
   min-width: 200px; /* 최소 너비 설정 */
+  font-weight: bold;
 }
 
 .notice-message a {
