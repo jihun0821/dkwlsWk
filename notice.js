@@ -282,31 +282,36 @@ class NoticeManager {
         }
     }
 
-    editNotice(noticeId) {
-        const notice = this.notices.find(n => n.id === noticeId);
-        if (!notice) {
-            alert('공지사항을 찾을 수 없습니다.');
-            return;
-        }
-
-        // 작성 모달에 기존 내용 채우기
-        document.getElementById('noticeTitle').value = notice.title;
-        document.getElementById('noticeContent').value = notice.content;
-        document.getElementById('isImportant').checked = notice.isImportant || false;
-
-        // 상세보기 모달 닫기
-        document.getElementById('noticeDetailModal').style.display = 'none';
-        
-        // 작성 모달 열기
-        document.getElementById('writeNoticeModal').style.display = 'block';
-
-        // 폼 제출 이벤트를 수정용으로 변경
-        const form = document.getElementById('noticeForm');
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            await this.updateNotice(noticeId);
-        };
+editNotice(noticeId) {
+    if (!this.isAdmin) {
+        alert('관리자만 수정할 수 있습니다.');
+        return;
     }
+
+    const notice = this.notices.find(n => n.id === noticeId);
+    if (!notice) {
+        alert('공지사항을 찾을 수 없습니다.');
+        return;
+    }
+
+    // 작성 모달에 기존 내용 채우기
+    document.getElementById('noticeTitle').value = notice.title;
+    document.getElementById('noticeContent').value = notice.content;
+    document.getElementById('isImportant').checked = notice.isImportant || false;
+
+    // 상세보기 모달 닫기
+    document.getElementById('noticeDetailModal').style.display = 'none';
+    
+    // 작성 모달 열기
+    document.getElementById('writeNoticeModal').style.display = 'block';
+
+    // 폼 제출 이벤트를 수정용으로 변경
+    const form = document.getElementById('noticeForm');
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        await this.updateNotice(noticeId);
+    };
+}
 
     async updateNotice(noticeId) {
         const title = document.getElementById('noticeTitle').value.trim();
