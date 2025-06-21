@@ -18,6 +18,20 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+const predictionOptions = {
+    scorer: [
+        '이승민', '김태현', '박준호', '최민수', '정우진',
+        '한동원', '김민성', '이재혁', '박성훈', '조영수'
+    ],
+    champion: [
+        '1조', '2조', '3조', '4조', '5조', '6조'
+    ],
+    assist: [
+        '김현우', '박지훈', '이동현', '최준영', '정민호',
+        '한승우', '김동민', '이성민', '박태준', '조민수'
+    ]
+};
+
 const categoryTitles = {
     scorer: '🥅 득점왕 예측',
     champion: '🏆 우승팀 예측',
