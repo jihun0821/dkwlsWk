@@ -1209,7 +1209,7 @@ body.light-mode .chat-msg.me {
   position: fixed;
   top: 0;
   width: 100%;
-  background-color: #rgb(26,83,228);
+  background-color: rgb(26,83,228);
   color: white;
   padding: 10px 20px;
   z-index: 10000;
