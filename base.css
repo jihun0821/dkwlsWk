@@ -1204,31 +1204,117 @@ body.light-mode .chat-msg.me {
   --bubble-color: #fff;
 }
 
- .top-notice {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background-color: #661111;
-    color: white;
-    padding: 10px 20px;
-    z-index: 10000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-  }
+/* 상단 공지사항 개선된 스타일 */
+.top-notice {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #661111;
+  color: white;
+  padding: 10px 20px;
+  z-index: 10000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  box-sizing: border-box; /* 패딩 포함한 너비 계산 */
+  min-height: 44px; /* 최소 높이 설정 */
+  flex-wrap: wrap; /* 작은 화면에서 줄바꿈 허용 */
+  gap: 10px; /* 요소 간 간격 */
+}
 
-  .notice-message a {
-    color: #ffd9d9;
-    text-decoration: underline;
-    margin-left: 5px;
-  }
+.notice-message {
+  flex: 1;
+  min-width: 200px; /* 최소 너비 설정 */
+}
 
+.notice-message a {
+  color: #ffd9d9;
+  text-decoration: underline;
+  margin-left: 5px;
+  white-space: nowrap; /* 링크 텍스트 줄바꿈 방지 */
+}
+
+.close-notice {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 5px 8px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+  flex-shrink: 0; /* 축소 방지 */
+  min-width: 40px; /* 최소 너비 보장 */
+  height: 30px; /* 고정 높이 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-notice:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 태블릿 크기 */
+@media (max-width: 768px) {
+  .top-notice {
+    padding: 8px 15px;
+    font-size: 13px;
+  }
+  
+  .notice-message {
+    min-width: 150px;
+  }
+  
   .close-notice {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
     font-size: 14px;
+    min-width: 35px;
+    height: 28px;
   }
+}
+
+/* 모바일 크기 */
+@media (max-width: 480px) {
+  .top-notice {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  
+  .notice-message {
+    min-width: 120px;
+    line-height: 1.3;
+  }
+  
+  .notice-message a {
+    margin-left: 3px;
+  }
+  
+  .close-notice {
+    font-size: 14px;
+    min-width: 32px;
+    height: 26px;
+    padding: 3px 6px;
+  }
+}
+
+/* 매우 작은 화면 */
+@media (max-width: 320px) {
+  .top-notice {
+    padding: 5px 8px;
+    font-size: 11px;
+    gap: 5px;
+  }
+  
+  .notice-message {
+    min-width: 100px;
+  }
+  
+  .close-notice {
+    font-size: 12px;
+    min-width: 28px;
+    height: 24px;
+  }
+}
