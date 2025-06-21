@@ -18,28 +18,11 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 예측 데이터 구조
-const predictionOptions = {
-    scorer: [
-        '이승민', '김태현', '박준호', '최민수', '정우진',
-        '한동원', '김민성', '이재혁', '박성훈', '조영수'
-    ],
-    champion: [
-        '1조', '2조', '3조', '4조', '5조', '6조'
-    ],
-    assist: [
-        '김현우', '박지훈', '이동현', '최준영', '정민호',
-        '한승우', '김동민', '이성민', '박태준', '조민수'
-    ]
-};
-
 const categoryTitles = {
     scorer: '🥅 득점왕 예측',
     champion: '🏆 우승팀 예측',
     assist: '🅰️ 도움왕 예측'
 };
-
-// ... 기존 코드 유지
 
 // 예측 모달 열기
 function openPredictionModal(category) {
@@ -139,15 +122,12 @@ async function submitPrediction() {
         loadChartData();
         
         closePredictionModal();
-        alert('예측이 성공적으로 저장되었습니다!');
         
     } catch (error) {
         console.error('예측 저장 실패:', error);
         alert('예측 저장에 실패했습니다. 다시 시도해주세요.');
     }
 }
-
-// ... 나머지 함수는 그대로 (옵션 생성, selectOption 등은 더 이상 필요 없음)
 
 // 사용자 예측 표시 업데이트
 function updateUserPredictionDisplay(category, choice) {
