@@ -136,7 +136,30 @@
         </section>
     </main>
 
-    <!-- 이하 동일 -->
+    <!-- 공지사항 상세보기 모달 -->
+    <div id="noticeDetailModal" class="notice-detail-modal">
+        <div class="notice-detail-content">
+            <div class="notice-detail-header">
+                <span class="notice-detail-close" id="closeDetailModal">&times;</span>
+                <h2 class="notice-detail-title" id="detailTitle"></h2>
+                <div class="notice-detail-meta">
+                    <div>
+                        <span class="notice-detail-author" id="detailAuthor"></span>
+                        <span class="notice-detail-badge" id="detailBadge" style="display: none;">중요</span>
+                    </div>
+                    <span class="notice-detail-date" id="detailDate"></span>
+                </div>
+            </div>
+            <div class="notice-detail-body">
+                <div class="notice-detail-content-text" id="detailContent"></div>
+            </div>
+            <div class="notice-detail-actions" id="detailActions">
+                <button class="notice-action-btn notice-close-btn" id="closeDetailBtn">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공지사항 작성 모달 -->
     <div id="writeNoticeModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 600px; width: 90%;">
             <span class="close" id="closeWriteModal">&times;</span>
@@ -174,7 +197,7 @@
         </div>
     </div>
 
-    <!-- 이하 동일 -->
+    <!-- 인증 모달 -->
     <div id="authModal" class="auth-modal">
         <div class="auth-modal-content">
             <span class="auth-modal-close" id="closeAuthModal">&times;</span>
@@ -194,19 +217,15 @@
       <a class="footer-link" href="footer.html">개인정보 처리방침</a>
     </footer>
     
-    <!-- 이하 동일 -->
+    <!-- 프로필 모달 -->
     <div id="profileModal" class="profile-modal">
         <div class="profile-modal-content">
             <span class="profile-modal-close" id="closeProfileModal">&times;</span>
             <h2>프로필 설정</h2>
             
-            <!-- 프로필 이미지 미리보기 영역 -->
             <div class="profile-preview"></div>
-            
-            <!-- 닉네임 입력 -->
             <input id="nickname" type="text" placeholder="닉네임 (2-20자)" maxlength="20" />
             
-            <!-- 파일 업로드 -->
             <div class="file-upload-wrapper">
                 <label for="avatar" class="file-upload-label">
                     프로필 사진 선택 (선택사항)
@@ -214,7 +233,6 @@
                 <input id="avatar" type="file" accept="image/*" style="display: none;" />
             </div>
             
-            <!-- 버튼들 -->
             <div class="modal-buttons">
                 <button id="saveProfileBtn" class="save-profile-btn">저장하고 가입</button>
                 <button class="cancel-btn" onclick="document.getElementById('profileModal').style.display='none'">취소</button>
@@ -223,9 +241,9 @@
         </div>
     </div>
 
+    <script src="notice.js"></script>
     <script type="module" src="auth.js"></script>
     <script src="matchData.js"></script>
     <script src="script.js"></script>
-    <script src="notice.js"></script>
 </body>
 </html>
