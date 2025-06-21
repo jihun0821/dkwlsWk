@@ -9,7 +9,7 @@ class NoticeManager {
     }
 
     init() {
-        this.checkAdminStatus(); // 로그인 감지 후 관리자 확인
+        this.checkAdminStatus();
         this.loadNotices();
         this.setupEventListeners();
     }
@@ -33,8 +33,8 @@ class NoticeManager {
         });
     }
 
-
     setupEventListeners() {
+        // 공지사항 작성 모달
         document.getElementById('adminWriteBtn').addEventListener('click', () => {
             document.getElementById('writeNoticeModal').style.display = 'block';
         });
@@ -52,6 +52,23 @@ class NoticeManager {
             this.submitNotice();
         });
 
+        // 상세보기 모달
+        document.getElementById('closeDetailModal').addEventListener('click', () => {
+            document.getElementById('noticeDetailModal').style.display = 'none';
+        });
+
+        document.getElementById('closeDetailBtn').addEventListener('click', () => {
+            document.getElementById('noticeDetailModal').style.display = 'none';
+        });
+
+        // 모달 외부 클릭 시 닫기
+        document.getElementById('noticeDetailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'noticeDetailModal') {
+                document.getElementById('noticeDetailModal').style.display = 'none';
+            }
+        });
+
+        // 기타 모달
         document.getElementById('moreLink').addEventListener('click', (e) => {
             e.preventDefault();
             document.getElementById('moreModal').style.display = 'block';
@@ -101,7 +118,7 @@ class NoticeManager {
         }
 
         noticeList.innerHTML = currentNotices.map(notice => `
-            <div class="notice-item" onclick="openNoticeDetail('${notice.id}')">
+            <div class="notice-item" onclick="noticeManager.openNoticeDetail('${notice.id}')">
                 <div class="notice-item-header">
                     <h3 class="notice-item-title">${notice.title}</h3>
                     ${notice.isImportant ? '<span class="notice-badge">중요</span>' : ''}
@@ -201,11 +218,135 @@ class NoticeManager {
             alert('공지사항 등록 중 오류가 발생했습니다.');
         }
     }
-}
 
-// 공지사항 상세보기 (나중에 실제 구현 가능)
-function openNoticeDetail(noticeId) {
-    alert('상세보기 기능은 준비 중입니다.');
+    openNoticeDetail(noticeId) {
+        const notice = this.notices.find(n => n.id === noticeId);
+        if (!notice) {
+            alert('공지사항을 찾을 수 없습니다.');
+            return;
+        }
+
+        // 모달 내용 채우기
+        document.getElementById('detailTitle').textContent = notice.title;
+        document.getElementById('detailAuthor').textContent = notice.author || '관리자';
+        document.getElementById('detailDate').textContent = notice.date || '';
+        document.getElementById('detailContent').textContent = notice.content;
+
+        // 중요 배지 표시/숨김
+        const badge = document.getElementById('detailBadge');
+        if (notice.isImportant) {
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        // 관리자 액션 버튼 추가
+        const actionsContainer = document.getElementById('detailActions');
+        actionsContainer.innerHTML = `
+            <button class="notice-action-btn notice-close-btn" id="closeDetailBtn">닫기</button>
+        `;
+
+        if (this.isAdmin) {
+            actionsContainer.innerHTML = `
+                <button class="notice-action-btn notice-edit-btn" onclick="noticeManager.editNotice('${noticeId}')">수정</button>
+                <button class="notice-action-btn notice-delete-btn" onclick="noticeManager.deleteNotice('${noticeId}')">삭제</button>
+                <button class="notice-action-btn notice-close-btn" id="closeDetailBtn">닫기</button>
+            `;
+        }
+
+        // 닫기 버튼 이벤트 재등록
+        document.getElementById('closeDetailBtn').addEventListener('click', () => {
+            document.getElementById('noticeDetailModal').style.display = 'none';
+        });
+
+        // 모달 열기
+        document.getElementById('noticeDetailModal').style.display = 'block';
+    }
+
+    async deleteNotice(noticeId) {
+        if (!confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            const db = firebase.getFirestore();
+            await firebase.deleteDoc(firebase.doc(db, "notices", noticeId));
+            
+            document.getElementById('noticeDetailModal').style.display = 'none';
+            await this.loadNotices();
+            
+            alert('공지사항이 삭제되었습니다.');
+        } catch (error) {
+            console.error('공지사항 삭제 오류:', error);
+            alert('공지사항 삭제 중 오류가 발생했습니다.');
+        }
+    }
+
+    editNotice(noticeId) {
+        const notice = this.notices.find(n => n.id === noticeId);
+        if (!notice) {
+            alert('공지사항을 찾을 수 없습니다.');
+            return;
+        }
+
+        // 작성 모달에 기존 내용 채우기
+        document.getElementById('noticeTitle').value = notice.title;
+        document.getElementById('noticeContent').value = notice.content;
+        document.getElementById('isImportant').checked = notice.isImportant || false;
+
+        // 상세보기 모달 닫기
+        document.getElementById('noticeDetailModal').style.display = 'none';
+        
+        // 작성 모달 열기
+        document.getElementById('writeNoticeModal').style.display = 'block';
+
+        // 폼 제출 이벤트를 수정용으로 변경
+        const form = document.getElementById('noticeForm');
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            await this.updateNotice(noticeId);
+        };
+    }
+
+    async updateNotice(noticeId) {
+        const title = document.getElementById('noticeTitle').value.trim();
+        const content = document.getElementById('noticeContent').value.trim();
+        const isImportant = document.getElementById('isImportant').checked;
+
+        if (!title || !content) {
+            alert('제목과 내용을 모두 입력해주세요.');
+            return;
+        }
+
+        try {
+            const db = firebase.getFirestore();
+            const noticeRef = firebase.doc(db, "notices", noticeId);
+            
+            await firebase.setDoc(noticeRef, {
+                title,
+                content,
+                isImportant,
+                date: new Date().toISOString().split('T')[0],
+                timestamp: firebase.serverTimestamp()
+            }, { merge: true });
+
+            document.getElementById('noticeForm').reset();
+            document.getElementById('writeNoticeModal').style.display = 'none';
+
+            // 폼 제출 이벤트를 원래대로 복구
+            const form = document.getElementById('noticeForm');
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                this.submitNotice();
+            };
+
+            await this.loadNotices();
+            alert('공지사항이 수정되었습니다.');
+        } catch (error) {
+            console.error('공지사항 수정 오류:', error);
+            alert('공지사항 수정 중 오류가 발생했습니다.');
+        }
+    }
 }
 
 // 초기화
