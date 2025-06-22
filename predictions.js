@@ -210,18 +210,17 @@ function renderChart(category, stats) {
     const chartContainer = document.getElementById(`${category}-chart`);
     if (!chartContainer) return;
 
-    // 통계 데이터 정렬: 득표수 내림차순 → 이름 오름차순
+    // 득표수 내림차순, 동률시 이름 오름차순
     const sortedData = Object.entries(stats)
         .sort((a, b) => {
             if (b[1] !== a[1]) return b[1] - a[1];
-            // 동률이면 이름(숫자면 숫자순, 한글/영문은 localeCompare)
-            if (!isNaN(a[0]) && !isNaN(b[0])) {
-                return Number(a[0]) - Number(b[0]);
-            }
+            if (!isNaN(a[0]) && !isNaN(b[0])) return Number(a[0]) - Number(b[0]);
             return a[0].localeCompare(b[0], 'ko');
         });
 
-    const maxVotes = Math.max(...Object.values(stats), 1);
+    // 전체 투표수 계산
+    const totalVotes = Object.values(stats).reduce((sum, v) => sum + v, 0) || 1;
+
     chartContainer.innerHTML = '';
 
     if (sortedData.length === 0) {
@@ -229,16 +228,15 @@ function renderChart(category, stats) {
         return;
     }
 
-    // 상위 3개만 기본 표시, 4위 이후는 hidden, "더보기" 버튼으로 토글
+    // 상위 3개만 기본 표시, 4위 이후는 숨김
     const visibleCount = 3;
     const hasOverflow = sortedData.length > visibleCount;
-
-    // 차트 아이템 div
     const chartList = document.createElement('div');
     chartList.className = 'chart-list';
 
     sortedData.forEach(([option, votes], index) => {
-        const percentage = (votes / maxVotes) * 100;
+        // 전체 투표수 대비 퍼센트
+        const percentage = (votes / totalVotes) * 100;
         const chartItem = document.createElement('div');
         chartItem.className = 'chart-item';
         if (index >= visibleCount) {
@@ -263,7 +261,6 @@ function renderChart(category, stats) {
 
     chartContainer.appendChild(chartList);
 
-    // "더보기" 버튼 추가
     if (hasOverflow) {
         const moreBtn = document.createElement('button');
         moreBtn.className = 'chart-more-btn';
