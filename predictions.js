@@ -1,3 +1,4 @@
+
 // predictions.js
 let currentUser = null;
 let currentCategory = null;
@@ -65,73 +66,37 @@ function openPredictionModal(category) {
     submitBtn.disabled = true;
     modal.style.display = 'block';
 
-if (category === 'champion') {
-    // Select로 변경
-    const select = document.createElement('select');
-    select.id = 'prediction-select';
-    select.className = 'prediction-select';
-    
-    // 인라인 스타일로 강제 적용 (CSS가 적용되지 않는 경우 대비)
-    const isDarkMode = !document.body.classList.contains('light-mode');
-    
-    select.style.cssText = `
-        width: 100% !important;
-        padding: 12px 40px 12px 15px !important;
-        font-size: 16px !important;
-        font-family: inherit !important;
-        border: 2px solid ${isDarkMode ? '#4a4a4a' : '#d1d5db'} !important;
-        border-radius: 10px !important;
-        background-color: ${isDarkMode ? '#2a2a2a' : '#ffffff'} !important;
-        color: ${isDarkMode ? '#ffffff' : '#121212'} !important;
-        outline: none !important;
-        transition: all 0.3s ease !important;
-        margin-bottom: 20px !important;
-        box-sizing: border-box !important;
-        cursor: pointer !important;
-        appearance: none !important;
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${isDarkMode ? '%23ffffff' : '%23374151'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
-        background-repeat: no-repeat !important;
-        background-position: right 12px center !important;
-        background-size: 20px 20px !important;
-    `;
-    
-    select.innerHTML = `<option value="">우승팀을 선택하세요</option>` +
-        predictionOptions.champion.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-    
-    inputContainer.appendChild(select);
+    if (category === 'champion') {
+        // Select로 변경
+        const select = document.createElement('select');
+        select.id = 'prediction-select';
+        select.className = 'prediction-select';
+        select.innerHTML = `<option value="">우승팀을 선택하세요</option>` +
+            predictionOptions.champion.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+        inputContainer.appendChild(select);
 
-    // 호버/포커스 이벤트 추가
-    select.addEventListener('mouseenter', function() {
-        this.style.borderColor = '#667eea';
-        this.style.backgroundColor = isDarkMode ? '#333333' : '#f9fafb';
-    });
-    
-    select.addEventListener('mouseleave', function() {
-        if (document.activeElement !== this) {
-            this.style.borderColor = isDarkMode ? '#4a4a4a' : '#d1d5db';
-            this.style.backgroundColor = isDarkMode ? '#2a2a2a' : '#ffffff';
-        }
-    });
-    
-    select.addEventListener('focus', function() {
-        this.style.borderColor = '#667eea';
-        this.style.backgroundColor = isDarkMode ? '#333333' : '#f8f9ff';
-        this.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-    });
-    
-    select.addEventListener('blur', function() {
-        this.style.borderColor = isDarkMode ? '#4a4a4a' : '#d1d5db';
-        this.style.backgroundColor = isDarkMode ? '#2a2a2a' : '#ffffff';
-        this.style.boxShadow = 'none';
-    });
-
-    select.onchange = function() {
-        if (select.value) {
-            selectedOption = select.value;
-            submitBtn.disabled = false;
-        } else {
+        select.onchange = function() {
+            if (select.value) {
+                selectedOption = select.value;
+                submitBtn.disabled = false;
+            } else {
+                selectedOption = null;
+                submitBtn.disabled = true;
+            }
+        };
+    } else {
+        // 기본 input 사용
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'prediction-input';
+        input.className = 'prediction-input';
+        input.placeholder = "예측을 입력하세요";
+        inputContainer.appendChild(input);
+        input.oninput = function() {
+            if (input.value.trim().length > 0) {
+                selectedOption = input.value.trim();
+                submitBtn.disabled = false;
+            } else {
                 selectedOption = null;
                 submitBtn.disabled = true;
             }
