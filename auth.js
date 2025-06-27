@@ -331,13 +331,20 @@ async function logout() {
 // DOM 요소 가져오기
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
-const authModal = document.getElementById('authModal');
-const closeAuthModal = document.getElementById('closeAuthModal');
+const loginModal = document.getElementById('loginModal');
+const closeLoginModal = document.getElementById('closeLoginModal');
+const signupModal = document.getElementById('signupModal');
+const closeSignupModal = document.getElementById('closeSignupModal');
+const openSignupLink = document.getElementById('openSignupLink');
+const backToLoginLink = document.getElementById('backToLoginLink');
+const openProfileModalBtn = document.getElementById('openProfileModalBtn');
 const profileModal = document.getElementById('profileModal');
 const closeProfileModal = document.getElementById('closeProfileModal');
 const saveProfileBtn = document.getElementById('saveProfileBtn');
-const doLoginBtn = document.getElementById('doLogin');
-const doSignUpBtn = document.getElementById('doSignUp');
+const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+
+let signupEmail = '';
+let signupPassword = '';
 
 console.log('요소 확인:', { loginBtn, doLoginBtn, doSignUpBtn });
 
@@ -445,6 +452,158 @@ const checkVerificationBtn = document.getElementById('checkVerificationBtn');
 
 if (checkVerificationBtn) {
   checkVerificationBtn.onclick = completeSignup;
+}
+
+if (loginBtn) {
+  loginBtn.onclick = () => {
+    loginModal.style.display = 'flex';
+  };
+}
+if (logoutBtn) {
+  logoutBtn.onclick = logout;
+}
+if (closeLoginModal) {
+  closeLoginModal.onclick = () => loginModal.style.display = 'none';
+}
+if (closeSignupModal) {
+  closeSignupModal.onclick = () => signupModal.style.display = 'none';
+}
+if (openSignupLink) {
+  openSignupLink.onclick = (e) => {
+    e.preventDefault();
+    loginModal.style.display = 'none';
+    signupModal.style.display = 'flex';
+  };
+}
+if (backToLoginLink) {
+  backToLoginLink.onclick = (e) => {
+    e.preventDefault();
+    signupModal.style.display = 'none';
+    loginModal.style.display = 'flex';
+  };
+}
+if (openProfileModalBtn) {
+  openProfileModalBtn.onclick = () => {
+    // 이메일, 비밀번호 값 저장
+    signupEmail = document.getElementById('signupEmail').value.trim();
+    signupPassword = document.getElementById('signupPassword').value.trim();
+
+    if (!signupEmail || !signupPassword) {
+      alert('이메일과 비밀번호를 입력해주세요.');
+      return;
+    }
+    signupModal.style.display = 'none';
+    showProfileModal();
+  };
+}
+if (closeProfileModal) {
+  closeProfileModal.onclick = () => {
+    profileModal.style.display = 'none';
+    tempUserData = null;
+  };
+}
+if (saveProfileBtn) {
+  saveProfileBtn.onclick = saveProfile;
+}
+if (checkVerificationBtn) {
+  checkVerificationBtn.onclick = completeSignup;
+}
+
+// 바깥 영역 클릭 시 모달 닫기
+window.onclick = (e) => {
+  if (e.target === loginModal) loginModal.style.display = 'none';
+  if (e.target === signupModal) signupModal.style.display = 'none';
+  if (e.target === profileModal) {
+    profileModal.style.display = 'none';
+    tempUserData = null;
+  }
+};
+
+// -------------------- 로그인 기능 --------------------
+if (document.getElementById('doLogin')) {
+  document.getElementById('doLogin').onclick = () => {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    if (!email || !password) {
+      alert('이메일과 비밀번호를 입력해주세요.');
+      return;
+    }
+    login(email, password);
+  };
+} else {
+  console.error('doLogin 버튼을 찾을 수 없습니다');
+}
+
+// -------------------- 회원가입 기능 (프로필 저장 시 사용) --------------------
+async function saveProfile() {
+  const nickname = document.getElementById('nickname').value.trim();
+  const saveBtn = document.getElementById('saveProfileBtn');
+  
+  if (!nickname) {
+    alert('닉네임을 입력해주세요.');
+    return;
+  }
+  if (nickname.length < 2 || nickname.length > 20) {
+    alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+    return;
+  }
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = '계정 생성 중...';
+  }
+
+  // 여기서 signupEmail, signupPassword 사용
+  const email = signupEmail;
+  const password = signupPassword;
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=667eea&color=fff&size=80&bold=true`;
+  
+  try {
+    console.log('회원가입 시도:', { email, nickname });
+
+    if (!isHanilEmail(email)) {
+      throw new Error('한일고 이메일(@hanilgo.cnehs.kr)만 가입할 수 있습니다.');
+    }
+
+    // Firebase 계정 생성 (데이터베이스 저장 전)
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    console.log('계정 생성 성공:', user);
+
+    // 임시 데이터 저장 (이메일 인증 후 실제 저장용)
+    tempUserData = {
+      email: email,
+      nickname: nickname,
+      avatarUrl: avatarUrl
+    };
+
+    // 이메일 인증 메일 발송
+    await sendEmailVerification(user);
+    
+    alert('인증 이메일이 발송되었습니다.\n이메일을 확인하고 인증을 완료한 후 "인증 확인" 버튼을 클릭해주세요.');
+
+    // UI 업데이트 - 인증 대기 상태로 변경
+    updateUIForEmailVerification();
+
+  } catch (error) {
+    console.error('계정 생성 중 오류:', error);
+    let errorMessage = '계정 생성 중 오류가 발생했습니다.';
+    
+    if (error.code === 'auth/email-already-in-use') {
+      errorMessage = '이미 사용 중인 이메일입니다.';
+    } else if (error.code === 'auth/weak-password') {
+      errorMessage = '비밀번호가 너무 약합니다. 6자 이상 입력해주세요.';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = '유효하지 않은 이메일 주소입니다.';
+    }
+    
+    alert(errorMessage);
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '저장하고 가입';
+    }
+  }
 }
 
 // 전역 함수로 내보내기
