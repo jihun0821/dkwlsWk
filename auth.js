@@ -1,7 +1,7 @@
 const { 
   initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
-  getFirestore, doc, setDoc, getDoc, deleteUser
+  getFirestore, doc, setDoc, getDoc, deleteUser, sendPasswordResetEmail
 } = window.firebase;
 
 const firebaseConfig = {
@@ -377,6 +377,51 @@ document.addEventListener('DOMContentLoaded', function() {
   const saveProfileBtn = document.getElementById('saveProfileBtn');
   const checkVerificationBtn = document.getElementById('checkVerificationBtn');
   const doLoginBtn = document.getElementById('doLogin');
+  const openPasswordResetLink = document.getElementById('openPasswordResetLink');
+  const passwordResetModal = document.getElementById('passwordResetModal');
+  const closePasswordResetModal = document.getElementById('closePasswordResetModal');
+  const backToLoginFromReset = document.getElementById('backToLoginFromReset');
+  const sendResetEmailBtn = document.getElementById('sendResetEmailBtn');
+
+  console.log('비밀번호 재설정 요소 확인:', { 
+    openPasswordResetLink, 
+    passwordResetModal, 
+    sendResetEmailBtn 
+  });
+
+  // 비밀번호 찾기 링크 클릭
+  if (openPasswordResetLink) {
+    openPasswordResetLink.onclick = (e) => {
+      e.preventDefault();
+      console.log('비밀번호 재설정 링크 클릭');
+      if (loginModal) loginModal.style.display = 'none';
+      if (passwordResetModal) passwordResetModal.style.display = 'flex';
+    };
+  }
+
+  // 비밀번호 재설정 모달 닫기
+  if (closePasswordResetModal) {
+    closePasswordResetModal.onclick = () => {
+      if (passwordResetModal) passwordResetModal.style.display = 'none';
+    };
+  }
+
+  // 로그인으로 돌아가기
+  if (backToLoginFromReset) {
+    backToLoginFromReset.onclick = (e) => {
+      e.preventDefault();
+      if (passwordResetModal) passwordResetModal.style.display = 'none';
+      if (loginModal) loginModal.style.display = 'flex';
+      // 입력 필드 초기화
+      const resetEmailInput = document.getElementById('resetEmail');
+      if (resetEmailInput) resetEmailInput.value = '';
+    };
+  }
+
+  // 비밀번호 재설정 이메일 보내기 버튼
+  if (sendResetEmailBtn) {
+    sendResetEmailBtn.onclick = sendPasswordReset;
+  }
 
   console.log('요소 확인:', { loginBtn, doLoginBtn, openProfileModalBtn });
 
@@ -467,16 +512,87 @@ document.addEventListener('DOMContentLoaded', function() {
     console.error('doLogin 버튼을 찾을 수 없습니다');
   }
 
-  // 바깥 영역 클릭 시 모달 닫기
-  window.onclick = (e) => {
+ window.onclick = (e) => {
     if (e.target === loginModal) loginModal.style.display = 'none';
     if (e.target === signupModal) signupModal.style.display = 'none';
     if (e.target === profileModal) {
       profileModal.style.display = 'none';
       tempUserData = null;
     }
+    // ✅ 비밀번호 재설정 모달 추가
+    if (e.target === passwordResetModal) {
+      passwordResetModal.style.display = 'none';
+      const resetEmailInput = document.getElementById('resetEmail');
+      if (resetEmailInput) resetEmailInput.value = '';
+    }
   };
+
+  // 비밀번호 재설정 모달에서 Enter 키 처리
+  const resetEmailInput = document.getElementById('resetEmail');
+  if (resetEmailInput) {
+    resetEmailInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendPasswordReset();
+      }
+    });
+  }
 });
+
+// 비밀번호 재설정 이메일 보내기
+async function sendPasswordReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  const sendBtn = document.getElementById('sendResetEmailBtn');
+  
+  if (!email) {
+    alert('이메일 주소를 입력해주세요.');
+    return;
+  }
+  
+  if (!isHanilEmail(email)) {
+    alert('한일고 이메일(@hanilgo.cnehs.kr)만 사용할 수 있습니다.');
+    return;
+  }
+
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.textContent = '이메일 전송 중...';
+  }
+
+  try {
+    console.log('비밀번호 재설정 이메일 전송 시도:', email);
+    
+    await sendPasswordResetEmail(auth, email);
+    
+    alert('비밀번호 재설정 이메일이 전송되었습니다.\n이메일을 확인하고 안내에 따라 비밀번호를 재설정해주세요.');
+    
+    // 모달 닫기
+    document.getElementById('passwordResetModal').style.display = 'none';
+    
+    // 입력 필드 초기화
+    document.getElementById('resetEmail').value = '';
+    
+  } catch (error) {
+    console.error('비밀번호 재설정 이메일 전송 오류:', error);
+    
+    let errorMessage = '비밀번호 재설정 이메일 전송 중 오류가 발생했습니다.';
+    
+    if (error.code === 'auth/user-not-found') {
+      errorMessage = '등록되지 않은 이메일 주소입니다.';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = '유효하지 않은 이메일 주소입니다.';
+    } else if (error.code === 'auth/too-many-requests') {
+      errorMessage = '너무 많은 요청입니다. 잠시 후 다시 시도해주세요.';
+    }
+    
+    alert(errorMessage);
+  } finally {
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.textContent = '비밀번호 재설정 이메일 보내기';
+    }
+  }
+}
 
 // 전역 함수로 내보내기
 window.logout = logout;
