@@ -407,8 +407,8 @@ body.light-mode .chart-more-btn:hover {
     width: 100%;
 }
 
-/* 기본 셀렉트 박스 스타일 (다크 모드) */
-.custom-select {
+/* 공통 셀렉트 박스 스타일 */
+.prediction-select {
   width: 100%;
   padding: 12px 15px;
   font-size: 16px;
@@ -429,30 +429,32 @@ body.light-mode .chart-more-btn:hover {
   background-size: 16px 16px;
 }
 
-.custom-select:focus {
+.prediction-select:focus {
   border-color: #667eea;
   background-color: #444;
 }
 
+/* 옵션 배경색/글자색(다크) */
+.prediction-select option {
+  background: #333;
+  color: #fff;
+}
+
 /* 라이트 모드 셀렉트 박스 스타일 */
-body.light-mode .custom-select {
+body.light-mode .prediction-select {
   background-color: #fff;
   color: #121212;
   border-color: #ccc;
   background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='16' height='16' xmlns='http://www.w3.org/2000/svg'><path fill='black' d='M4 6l4 4 4-4z'/></svg>");
 }
 
-body.light-mode .custom-select:focus {
+body.light-mode .prediction-select:focus {
   border-color: #2051ff;
   background-color: #f8f9ff;
 }
 
-/* 옵션 스타일 (다크/라이트 모두 적용) */
-.custom-select option {
+/* 옵션 배경/글자색(라이트) */
+body.light-mode .prediction-select option {
   background: #fff;
   color: #121212;
-}
-body:not(.light-mode) .custom-select option {
-  background: #333;
-  color: #fff;
 }
