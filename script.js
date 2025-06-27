@@ -1,4 +1,3 @@
-
 // 테마 버튼
 const matchDetailsPanel = document.getElementById("matchDetailsPanel");
 const overlay = document.getElementById("overlay");
@@ -76,7 +75,13 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
       </div>
     `;
     document.getElementById('loginBtn').onclick = () => {
-      document.getElementById('authModal').style.display = 'flex';
+      // 수정: authModal → loginModal
+      const loginModal = document.getElementById('loginModal');
+      if (loginModal) {
+        loginModal.style.display = 'flex';
+      } else {
+        console.error('loginModal 요소를 찾을 수 없습니다.');
+      }
     };
     document.getElementById('toggleThemeBtn').onclick = toggleTheme;
   }
@@ -423,7 +428,7 @@ function renderChatBox(matchId) {
       <button type="submit" id="sendChatBtn">전송</button>
     </form>
     <div class="chat-login-notice" style="display:none;">
-      <button class="login-btn" onclick="document.getElementById('authModal').style.display='flex'">로그인 후 채팅하기</button>
+      <button class="login-btn" onclick="document.getElementById('loginModal').style.display='flex'">로그인 후 채팅하기</button>
     </div>
   `;
 }
