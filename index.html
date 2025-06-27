@@ -206,22 +206,38 @@
     </div>
     <div class="overlay" id="overlay"></div>
 
-    <!-- 로그인/회원가입 모달 -->
-    <div id="authModal" class="auth-modal">
-        <div class="auth-modal-content">
-            <span class="auth-modal-close" id="closeAuthModal">&times;</span>
-            <h2>로그인 / 회원가입</h2>
-            <div class="auth-form">
-                <input id="email" type="email" placeholder="이메일 (@hanilgo.cnehs.kr)" autocomplete="username" name="email" />
-                <input id="password" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" name="password" />
-                <div class="auth-buttons">
-                    <button id="doLogin" class="auth-btn login-btn">로그인</button>
-                    <button id="doSignUp" class="auth-btn signup-btn">회원가입</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
+ <div id="loginModal" class="auth-modal">
+   <div class="auth-modal-content">
+     <span class="auth-modal-close" id="closeLoginModal">&times;</span>
+     <h2 style="margin-bottom: 24px;">로그인</h2>
+     <div class="auth-form">
+       <input id="loginEmail" type="email" placeholder="아이디(이메일)" autocomplete="username" name="email" />
+       <input id="loginPassword" type="password" placeholder="비밀번호" autocomplete="current-password" name="password" />
+       <button id="doLogin" class="auth-btn login-btn" style="width: 100%; margin: 12px 0;">로그인</button>
+     </div>
+     <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+       <a href="#" id="openSignupLink" style="color: #2051ff; font-size: 15px; text-decoration: underline;">가입하기</a>
+       <a href="#" style="color: #2051ff; font-size: 15px;">비밀번호를 잊어버리셨나요?</a>
+     </div>
+   </div>
+ </div>
+
+ <!-- 회원가입 모달 (Signup Modal) -->
+ <div id="signupModal" class="auth-modal">
+   <div class="auth-modal-content">
+     <span class="auth-modal-close" id="closeSignupModal">&times;</span>
+     <h2 style="margin-bottom: 24px;">회원가입</h2>
+     <div class="auth-form">
+       <input id="signupEmail" type="email" placeholder="이메일 (@hanilgo.cnehs.kr)" autocomplete="username" name="email" />
+       <input id="signupPassword" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" name="password" />
+       <button id="openProfileModalBtn" class="auth-btn signup-btn" style="width: 100%; margin: 12px 0;">다음</button>
+     </div>
+     <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+       <a href="#" id="backToLoginLink" style="color: #2051ff; font-size: 15px; text-decoration: underline;">로그인으로 돌아가기</a>
+     </div>
+   </div>
+ </div>
+
     <!-- 프로필 설정 모달 -->
     <div id="profileModal" class="profile-modal">
         <div class="profile-modal-content">
