@@ -407,26 +407,24 @@ body.light-mode .chart-more-btn:hover {
 /* 공통 셀렉트 박스 스타일 */
 .prediction-select {
     width: 100%;
-    padding: 12px 40px 12px 15px; /* 오른쪽에 드롭다운 아이콘 공간 확보 */
+    padding: 12px 40px 12px 15px;
     font-size: 16px;
     font-family: inherit;
-    border: 2px solid #4a4a4a;
+    border: 2px solid #d1d5db;
     border-radius: 10px;
-    background-color: #2a2a2a;
-    color: #ffffff;
+    background-color: #ffffff;
+    color: #121212;
     outline: none;
     transition: all 0.3s ease;
     margin-bottom: 20px;
     box-sizing: border-box;
     cursor: pointer;
-    
-    /* 기본 드롭다운 화살표 제거 */
+
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    
-    /* 커스텀 드롭다운 아이콘 */
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 20px 20px;
@@ -434,62 +432,16 @@ body.light-mode .chart-more-btn:hover {
 
 .prediction-select:hover {
     border-color: #667eea;
-    background-color: #333333;
-}
-
-.prediction-select:focus {
-    border-color: #667eea;
-    background-color: #333333;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.prediction-select:disabled {
-    background-color: #1a1a1a;
-    color: #666666;
-    border-color: #333333;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-/* 셀렉트 옵션 스타일 (다크 모드) */
-.prediction-select option {
-    background-color: #2a2a2a;
-    color: #ffffff;
-    padding: 8px 12px;
-    border: none;
-}
-
-.prediction-select option:hover {
-    background-color: #667eea;
-}
-
-.prediction-select option:checked {
-    background-color: #667eea;
-    color: #ffffff;
-}
-
-/* 라이트 모드 셀렉트 박스 스타일 */
-body.light-mode .prediction-select {
-    background-color: #ffffff;
-    color: #121212;
-    border-color: #d1d5db;
-    
-    /* 라이트 모드용 드롭다운 아이콘 */
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-}
-
-body.light-mode .prediction-select:hover {
-    border-color: #667eea;
     background-color: #f9fafb;
 }
 
-body.light-mode .prediction-select:focus {
+.prediction-select:focus {
     border-color: #667eea;
     background-color: #f8f9ff;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-body.light-mode .prediction-select:disabled {
+.prediction-select:disabled {
     background-color: #f3f4f6;
     color: #9ca3af;
     border-color: #e5e7eb;
@@ -497,32 +449,26 @@ body.light-mode .prediction-select:disabled {
     opacity: 0.6;
 }
 
-/* 라이트 모드 옵션 스타일 */
-body.light-mode .prediction-select option {
+/* 셀렉트 옵션 스타일 */
+.prediction-select option {
     background-color: #ffffff;
     color: #121212;
     padding: 8px 12px;
+    border: none;
 }
 
-body.light-mode .prediction-select option:hover {
+.prediction-select option:hover {
     background-color: #f3f4f6;
 }
 
-body.light-mode .prediction-select option:checked {
+.prediction-select option:checked {
     background-color: #667eea;
     color: #ffffff;
 }
 
 /* 플레이스홀더 스타일 */
 .prediction-select option[value=""] {
-    color: #9ca3af;
+    color: #6b7280;
     font-style: italic;
 }
 
-body.light-mode .prediction-select option[value=""] {
-    color: #6b7280;
-}
-body.light-mode .prediction-select option {
-  background: #fff;
-  color: #121212;
-}
