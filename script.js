@@ -46,6 +46,15 @@ window.onload = function () {
     } else {
         setupMatchClickListeners();
     }
+    
+    // 페이지 로드 시 공지 표시 여부 확인
+    checkNoticeVisibility();
+
+    // 닫기 버튼에 이벤트 리스너 추가
+    const closeButton = document.querySelector('.close-notice');
+    if (closeButton) {
+        closeButton.onclick = closeNoticeForWeek;
+    }
 };
 
 function updateUIForAuthState(isLoggedIn, profileData = null) {
@@ -537,4 +546,44 @@ function setupChat(matchId) {
     chatInput.value = "";
     setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
   };
+}
+
+// =================== [공지 일주일 닫기 기능 추가] ===================
+
+// 공지 닫기 (일주일간)
+function closeNoticeForWeek() {
+    const noticeElement = document.getElementById('topNotice');
+    const currentTime = new Date().getTime();
+    
+    // 현재 시간을 localStorage에 저장
+    localStorage.setItem('noticeClosed', currentTime);
+    
+    // 공지 숨기기
+    if (noticeElement) noticeElement.style.display = 'none';
+}
+
+// 페이지 로드 시 공지 표시 여부 확인
+function checkNoticeVisibility() {
+    const noticeElement = document.getElementById('topNotice');
+    const noticeClosed = localStorage.getItem('noticeClosed');
+    
+    if (noticeElement) {
+      if (noticeClosed) {
+          const closedTime = parseInt(noticeClosed);
+          const currentTime = new Date().getTime();
+          const oneWeek = 7 * 24 * 60 * 60 * 1000; // 일주일을 밀리초로 변환
+          
+          // 일주일이 지났는지 확인
+          if (currentTime - closedTime < oneWeek) {
+              // 아직 일주일이 안 지났으면 공지 숨기기
+              noticeElement.style.display = 'none';
+          } else {
+              // 일주일이 지났으면 localStorage에서 제거하고 공지 표시
+              localStorage.removeItem('noticeClosed');
+              noticeElement.style.display = 'block';
+          }
+      } else {
+          noticeElement.style.display = 'block';
+      }
+    }
 }
