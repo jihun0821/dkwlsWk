@@ -24,7 +24,10 @@ const predictionOptions = {
         '한동원', '김민성', '이재혁', '박성훈', '조영수'
     ],
     champion: [
-        '1조', '2조', '3조', '4조', '5조', '6조'
+        // 우승팀 예측용 실질적 선택지 (select에서만 사용)
+        'C101','C102','C103','C104','C105','C106',
+        'C201','C202','C203','C204','C205','C206','C207',
+        'C301','C302','C303','C304','C305','C306','C307'
     ],
     assist: [
         '김현우', '박지훈', '이동현', '최준영', '정민호',
@@ -50,29 +53,54 @@ function openPredictionModal(category) {
     
     const modal = document.getElementById('predictionModal');
     const title = document.getElementById('modal-title');
-    // 입력창 컨테이너와 인풋
     const inputContainer = document.getElementById('prediction-input-container');
     const inputBox = document.getElementById('prediction-input');
     const submitBtn = document.getElementById('submit-prediction');
 
     title.textContent = categoryTitles[category];
     
-    // 입력창 초기화 및 표시
-    inputBox.value = '';
+    // 기존 input/select 초기화
+    inputContainer.innerHTML = '';
     inputContainer.style.display = 'block';
     submitBtn.disabled = true;
     modal.style.display = 'block';
 
-    // 입력 변화 감지해서 버튼 활성화
-    inputBox.oninput = function() {
-        if (inputBox.value.trim().length > 0) {
-            selectedOption = inputBox.value.trim();
-            submitBtn.disabled = false;
-        } else {
-            selectedOption = null;
-            submitBtn.disabled = true;
-        }
-    };
+    if (category === 'champion') {
+        // Select로 변경
+        const select = document.createElement('select');
+        select.id = 'prediction-select';
+        select.className = 'prediction-select';
+        select.innerHTML = `<option value="">우승팀을 선택하세요</option>` +
+            predictionOptions.champion.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+        inputContainer.appendChild(select);
+
+        select.onchange = function() {
+            if (select.value) {
+                selectedOption = select.value;
+                submitBtn.disabled = false;
+            } else {
+                selectedOption = null;
+                submitBtn.disabled = true;
+            }
+        };
+    } else {
+        // 기본 input 사용
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'prediction-input';
+        input.className = 'prediction-input';
+        input.placeholder = "예측을 입력하세요";
+        inputContainer.appendChild(input);
+        input.oninput = function() {
+            if (input.value.trim().length > 0) {
+                selectedOption = input.value.trim();
+                submitBtn.disabled = false;
+            } else {
+                selectedOption = null;
+                submitBtn.disabled = true;
+            }
+        };
+    }
 }
 
 async function submitPrediction() {
@@ -289,8 +317,8 @@ function closePredictionModal() {
     const modal = document.getElementById('predictionModal');
     if (modal) {
         modal.style.display = 'none';
-        const inputBox = document.getElementById('prediction-input');
-        if (inputBox) inputBox.value = '';
+        const inputContainer = document.getElementById('prediction-input-container');
+        if (inputContainer) inputContainer.innerHTML = '';
         const submitBtn = document.getElementById('submit-prediction');
         if (submitBtn) submitBtn.disabled = true;
     }
