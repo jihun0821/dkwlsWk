@@ -406,3 +406,53 @@ body.light-mode .chart-more-btn:hover {
 .chart-list {
     width: 100%;
 }
+
+/* 기본 셀렉트 박스 스타일 (다크 모드) */
+.custom-select {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background-color: #333;
+  color: #fff;
+  outline: none;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='16' height='16' xmlns='http://www.w3.org/2000/svg'><path fill='white' d='M4 6l4 4 4-4z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 16px;
+}
+
+.custom-select:focus {
+  border-color: #667eea;
+  background-color: #444;
+}
+
+/* 라이트 모드 셀렉트 박스 스타일 */
+body.light-mode .custom-select {
+  background-color: #fff;
+  color: #121212;
+  border-color: #ccc;
+  background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='16' height='16' xmlns='http://www.w3.org/2000/svg'><path fill='black' d='M4 6l4 4 4-4z'/></svg>");
+}
+
+body.light-mode .custom-select:focus {
+  border-color: #2051ff;
+  background-color: #f8f9ff;
+}
+
+/* 옵션 스타일 (다크/라이트 모두 적용) */
+.custom-select option {
+  background: #fff;
+  color: #121212;
+}
+body:not(.light-mode) .custom-select option {
+  background: #333;
+  color: #fff;
+}
