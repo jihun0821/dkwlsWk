@@ -1206,13 +1206,12 @@ body.light-mode .chat-msg.me {
 
 /* 상단 공지사항 개선된 스타일 */
 .top-notice {
-  position: fixed;
-  top: 0;
+  position: relative;
   width: 100%;
   background-color: rgb(26,83,228);
   color: white;
   padding: 10px 20px;
-  z-index: 10000;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
