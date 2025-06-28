@@ -793,6 +793,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// UI 상태 업데이트 함수
+function updateUIForAuthState(isLoggedIn, profileData) {
+  const profileBox = document.getElementById('profile-box');
+  
+  if (!profileBox) {
+    console.error('profile-box 요소를 찾을 수 없습니다.');
+    return;
+  }
+  
+  if (isLoggedIn && profileData) {
+    profileBox.innerHTML = `
+      <div class="profile-section" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+        <img src="${profileData.avatar_url}" alt="프로필" style="width: 35px; height: 35px; border-radius: 50%;" />
+        <span>${profileData.nickname}</span>
+        <button onclick="logout()" style="margin-left: auto;">로그아웃</button>
+      </div>
+    `;
+    
+    // 동적으로 생성된 프로필 섹션에 이벤트 리스너 연결
+    const profileSection = document.querySelector('.profile-section');
+    if (profileSection) {
+      profileSection.addEventListener('click', function(e) {
+        // 로그아웃 버튼 클릭 시에는 프로필 편집 모달을 열지 않음
+        if (e.target.tagName !== 'BUTTON') {
+          openProfileEditModal();
+        }
+      });
+    }
+  } else {
+    profileBox.innerHTML = `
+      <button id="loginBtn" onclick="document.getElementById('loginModal').style.display='flex'">로그인</button>
+    `;
+  }
+}
+
+// 전역 함수로 내보내기
+window.logout = logout;
+window.showUserProfile = showUserProfile;
+window.updateUIForAuthState = updateUIForAuthState;
+
 // 전역 함수로 내보내기 (다른 스크립트에서 사용할 수 있도록)
 window.openProfileEditModal = openProfileEditModal;
 window.closeProfileEditModal = closeProfileEditModal;
