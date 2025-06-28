@@ -803,13 +803,14 @@ function updateUIForAuthState(isLoggedIn, profileData) {
   }
   
   if (isLoggedIn && profileData) {
-    profileBox.innerHTML = `
-      <div class="profile-section" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-        <img src="${profileData.avatar_url}" alt="프로필" style="width: 35px; height: 35px; border-radius: 50%;" />
-        <span>${profileData.nickname}</span>
-        <button onclick="logout()" style="margin-left: auto;">로그아웃</button>
-      </div>
-    `;
+  profileBox.innerHTML = `
+    <div class="profile-section" style="display: flex; align-items: center; gap: 10px;">
+      <img src="${avatarUrl}" ... />
+      <span ...>${profileData.nickname || '사용자'}</span>
+      <button id="logoutBtn" ...>로그아웃</button>
+      <button id="toggleThemeBtn" ...>${themeIcon}</button>
+    </div>
+  `;
     
     // 동적으로 생성된 프로필 섹션에 이벤트 리스너 연결
     const profileSection = document.querySelector('.profile-section');
