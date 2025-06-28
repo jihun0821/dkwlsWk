@@ -281,6 +281,42 @@
                 </label>
                 <input id="avatar" type="file" accept="image/*" style="display: none;" />
             </div>
+
+                <!-- 프로필 편집 모달 -->
+    <div id="profileEditModal" class="profile-edit-modal">
+        <div class="profile-edit-modal-content">
+            <span class="profile-edit-modal-close" id="closeProfileEditModal">&times;</span>
+            <h2>프로필 편집</h2>
+            
+            <!-- 현재 프로필 정보 표시 -->
+            <div class="current-profile-info">
+                <img id="currentProfileImage" src="" alt="현재 프로필 이미지">
+                <div class="current-nickname" id="currentNickname"></div>
+                <div class="current-email" id="currentEmail"></div>
+            </div>
+            
+            <!-- 편집 폼 -->
+            <div class="edit-form">
+                <label for="newNickname">새 닉네임</label>
+                <input 
+                    id="newNickname" 
+                    type="text" 
+                    placeholder="새 닉네임 입력 (2-20자)" 
+                    maxlength="20"
+                />
+                
+                <div class="edit-buttons">
+                    <button id="saveNicknameBtn" class="edit-btn save-btn">저장</button>
+                    <button id="cancelEditBtn" class="edit-btn cancel-btn">취소</button>
+                </div>
+                
+                <div id="editSuccessMessage" class="success-message">
+                    닉네임이 성공적으로 변경되었습니다!
+                </div>
+            </div>
+        </div>
+    </div>
+
             
             <!-- 버튼들 -->
             <div class="modal-buttons">
