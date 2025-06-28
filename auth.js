@@ -382,15 +382,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const closePasswordResetModal = document.getElementById('closePasswordResetModal');
   const backToLoginFromReset = document.getElementById('backToLoginFromReset');
   const sendResetEmailBtn = document.getElementById('sendResetEmailBtn');
-  const profileSection = document.querySelector('.profile-section');
-  if (profileSection) {
-    profileSection.addEventListener('click', openProfileEditModal);
-  }
   const profileBox = document.getElementById('profile-box');
   if (profileBox) {
     profileBox.addEventListener('click', function(e) {
-      const target = e.target.closest('.profile-section');
-      if (target) {
+      if (e.target.closest('button')) return;
+      const section = e.target.closest('.profile-section');
+      if (section) {
         openProfileEditModal();
       }
     });
