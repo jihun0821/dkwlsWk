@@ -793,35 +793,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// UI 상태 업데이트 함수
-function updateUIForAuthState(isLoggedIn, profileData) {
+function updateUIForAuthState(isLoggedIn, profileData = null) {
   const profileBox = document.getElementById('profile-box');
-  
-  if (!profileBox) {
-    console.error('profile-box 요소를 찾을 수 없습니다.');
-    return;
-  }
-  
+  const themeIcon = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+
   if (isLoggedIn && profileData) {
-  profileBox.innerHTML = `
-    <div class="profile-section" style="display: flex; align-items: center; gap: 10px;">
-      <img src="${avatarUrl}" ... />
-      <span ...>${profileData.nickname || '사용자'}</span>
-      <button id="logoutBtn" ...>로그아웃</button>
-      <button id="toggleThemeBtn" ...>${themeIcon}</button>
-    </div>
-  `;
-    
-    // 동적으로 생성된 프로필 섹션에 이벤트 리스너 연결
-    const profileSection = document.querySelector('.profile-section');
-    if (profileSection) {
-      profileSection.addEventListener('click', function(e) {
-        // 로그아웃 버튼 클릭 시에는 프로필 편집 모달을 열지 않음
-        if (e.target.tagName !== 'BUTTON') {
-          openProfileEditModal();
-        }
-      });
-    }
+    const nickname = profileData.nickname || 'USER';
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=667eea&color=fff&size=35&bold=true`;
+    const avatarUrl = profileData.avatar_url || defaultAvatar; // 안전하게 정의
+
+    profileBox.innerHTML = `
+      <div class="profile-section" style="display: flex; align-items: center; gap: 10px;">
+        <img src="${avatarUrl}" alt="프로필"
+          style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;"
+          onerror="this.src='${defaultAvatar}'">
+        <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${nickname}</span>
+        <button id="logoutBtn" type="button">로그아웃</button>
+        <button id="toggleThemeBtn" type="button">${themeIcon}</button>
+      </div>
+    `;
+    document.getElementById('logoutBtn').onclick = logout;
+    document.getElementById('toggleThemeBtn').onclick = toggleTheme;
   } else {
     profileBox.innerHTML = `
       <button id="loginBtn" onclick="document.getElementById('loginModal').style.display='flex'">로그인</button>
@@ -829,9 +821,7 @@ function updateUIForAuthState(isLoggedIn, profileData) {
   }
 }
 
-// 전역 함수로 내보내기
-window.logout = logout;
-window.showUserProfile = showUserProfile;
+
 window.updateUIForAuthState = updateUIForAuthState;
 
 // 전역 함수로 내보내기 (다른 스크립트에서 사용할 수 있도록)
