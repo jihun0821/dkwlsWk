@@ -382,6 +382,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const closePasswordResetModal = document.getElementById('closePasswordResetModal');
   const backToLoginFromReset = document.getElementById('backToLoginFromReset');
   const sendResetEmailBtn = document.getElementById('sendResetEmailBtn');
+  const profileSection = document.querySelector('.profile-section');
+  if (profileSection) {
+    profileSection.addEventListener('click', openProfileEditModal);
+  }
+
 
   console.log('비밀번호 재설정 요소 확인:', { 
     openPasswordResetLink, 
@@ -593,6 +598,205 @@ async function sendPasswordReset() {
     }
   }
 }
+
+// 프로필 편집 관련 JavaScript 코드
+
+// 프로필 편집 모달 열기 함수
+function openProfileEditModal() {
+    const user = window.firebase ? window.firebase.getAuth().currentUser : null;
+    if (!user) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+
+    // 현재 프로필 정보 표시
+    const currentProfileImage = document.getElementById('currentProfileImage');
+    const currentNickname = document.getElementById('currentNickname');
+    const currentEmail = document.getElementById('currentEmail');
+    const newNicknameInput = document.getElementById('newNickname');
+
+    // 현재 사용자 정보로 모달 채우기
+    if (currentProfileImage && user.photoURL) {
+        currentProfileImage.src = user.photoURL;
+    }
+    if (currentNickname && user.displayName) {
+        currentNickname.textContent = user.displayName;
+        newNicknameInput.value = user.displayName; // 현재 닉네임을 입력 필드에도 설정
+    }
+    if (currentEmail && user.email) {
+        currentEmail.textContent = user.email;
+    }
+
+    // 모달 표시
+    const modal = document.getElementById('profileEditModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+// 프로필 편집 모달 닫기 함수
+function closeProfileEditModal() {
+    const modal = document.getElementById('profileEditModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    // 입력 필드 초기화
+    const newNicknameInput = document.getElementById('newNickname');
+    if (newNicknameInput) {
+        newNicknameInput.value = '';
+    }
+    
+    // 성공 메시지 숨기기
+    const successMessage = document.getElementById('editSuccessMessage');
+    if (successMessage) {
+        successMessage.style.display = 'none';
+    }
+}
+
+// 닉네임 저장 함수
+async function saveNickname() {
+    const newNickname = document.getElementById('newNickname').value.trim();
+    const saveBtn = document.getElementById('saveNicknameBtn');
+    
+    if (!newNickname) {
+        alert('닉네임을 입력해주세요.');
+        return;
+    }
+    
+    if (newNickname.length < 2 || newNickname.length > 20) {
+        alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+        return;
+    }
+
+    // Firebase 인증과 Firestore 가져오기
+    if (!window.firebase) {
+        alert('Firebase가 로드되지 않았습니다.');
+        return;
+    }
+
+    const auth = window.firebase.getAuth();
+    const user = auth.currentUser;
+    
+    if (!user) {
+        alert('로그인 상태가 아닙니다.');
+        return;
+    }
+
+    // 버튼 비활성화
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = '저장 중...';
+    }
+
+    try {
+        const { getFirestore, doc, setDoc, updateProfile } = window.firebase;
+        const db = getFirestore();
+
+        // 새 아바타 URL 생성
+        const newAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(newNickname)}&background=667eea&color=fff&size=80&bold=true`;
+
+        // Firebase Auth 프로필 업데이트
+        await updateProfile(user, {
+            displayName: newNickname,
+            photoURL: newAvatarUrl
+        });
+
+        // Firestore 프로필 데이터 업데이트
+        await setDoc(doc(db, 'profiles', user.uid), {
+            uid: user.uid,
+            email: user.email,
+            nickname: newNickname,
+            avatar_url: newAvatarUrl,
+            updated_at: new Date()
+        }, { merge: true }); // merge: true로 기존 데이터 유지하면서 업데이트
+
+        // 성공 메시지 표시
+        const successMessage = document.getElementById('editSuccessMessage');
+        if (successMessage) {
+            successMessage.style.display = 'block';
+        }
+
+        // 현재 프로필 정보 업데이트
+        const currentNickname = document.getElementById('currentNickname');
+        const currentProfileImage = document.getElementById('currentProfileImage');
+        if (currentNickname) {
+            currentNickname.textContent = newNickname;
+        }
+        if (currentProfileImage) {
+            currentProfileImage.src = newAvatarUrl;
+        }
+
+        // 메인 페이지의 프로필 UI도 업데이트
+        if (typeof showUserProfile === 'function') {
+            setTimeout(() => {
+                showUserProfile();
+            }, 1000);
+        }
+
+        // 2초 후 모달 닫기
+        setTimeout(() => {
+            closeProfileEditModal();
+        }, 2000);
+
+    } catch (error) {
+        console.error('프로필 업데이트 중 오류:', error);
+        alert('프로필 업데이트 중 오류가 발생했습니다.');
+    } finally {
+        // 버튼 활성화
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = '저장';
+        }
+    }
+}
+
+// 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', function() {
+    // 프로필 편집 모달 닫기 버튼
+    const closeBtn = document.getElementById('closeProfileEditModal');
+    if (closeBtn) {
+        closeBtn.onclick = closeProfileEditModal;
+    }
+
+    // 취소 버튼
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    if (cancelBtn) {
+        cancelBtn.onclick = closeProfileEditModal;
+    }
+
+    // 저장 버튼
+    const saveBtn = document.getElementById('saveNicknameBtn');
+    if (saveBtn) {
+        saveBtn.onclick = saveNickname;
+    }
+
+    // 닉네임 입력 필드에서 Enter 키 처리
+    const nicknameInput = document.getElementById('newNickname');
+    if (nicknameInput) {
+        nicknameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveNickname();
+            }
+        });
+    }
+
+    // 모달 외부 클릭 시 닫기
+    const modal = document.getElementById('profileEditModal');
+    if (modal) {
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                closeProfileEditModal();
+            }
+        };
+    }
+});
+
+// 전역 함수로 내보내기 (다른 스크립트에서 사용할 수 있도록)
+window.openProfileEditModal = openProfileEditModal;
+window.closeProfileEditModal = closeProfileEditModal;
+window.saveNickname = saveNickname;
 
 // 전역 함수로 내보내기
 window.logout = logout;
