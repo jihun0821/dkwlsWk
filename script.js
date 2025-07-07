@@ -69,12 +69,10 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     const avatarUrl = profileData.avatar_url || defaultAvatar;
     profileBox.innerHTML = `
       <div style="display: flex; align-items: center; gap: 10px;">
-        <div id="profile-view" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-          <img src="${avatarUrl}" alt="프로필"
-            style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;"
-            onerror="this.src='${defaultAvatar}'">
-          <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
-        </div>
+        <img id="profileAvatar" src="${avatarUrl}" alt="프로필"
+          style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; cursor: pointer;"
+          onerror="this.src='${defaultAvatar}'">
+        <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
         <button id="logoutBtn" type="button">로그아웃</button>
         <button id="toggleThemeBtn" type="button">${themeIcon}</button>
       </div>
@@ -82,10 +80,12 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     document.getElementById('logoutBtn').onclick = logout;
     document.getElementById('toggleThemeBtn').onclick = toggleTheme;
     
-    // [추가!] 프로필 영역 클릭 시 편집 모달 열기
-    const profileView = document.getElementById('profile-view');
-    if (profileView) {
-      profileView.onclick = openProfileEditModal;
+    // === 프로필 아바타 클릭 시 편집 모달 열기 ===
+    const profileAvatar = document.getElementById('profileAvatar');
+    if (profileAvatar) {
+      profileAvatar.onclick = () => {
+        openProfileEditModal(profileData);
+      };
     }
   } else {
     profileBox.innerHTML = `
@@ -118,40 +118,17 @@ function isUserLoggedIn() {
     return !!localStorage.getItem("userEmail");
 }
 
-// [추가!] 프로필 편집 모달 열기 함수
-function openProfileEditModal() {
-  // 유저 정보 가져오기
-  const user = auth && auth.currentUser;
-  if (!user) return;
+// === 프로필 편집 모달 열기 함수 ===
+function openProfileEditModal(profileData) {
+  const modal = document.getElementById('profileEditModal');
+  if (!modal) return;
   
-  // 기존 프로필 정보 표시
-  const profileEditModal = document.getElementById('profileEditModal');
-  const currentProfileImage = document.getElementById('currentProfileImage');
-  const currentNickname = document.getElementById('currentNickname');
-  const currentEmail = document.getElementById('currentEmail');
-  
-  // Firestore에서 최신 닉네임/아바타 불러오기
-  window.firebase.getDoc(window.firebase.doc(db, 'profiles', user.uid)).then((docSnap) => {
-    let nickname = user.displayName || user.email.split('@')[0];
-    let avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=667eea&color=fff&size=80&bold=true`;
-    
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      nickname = data.nickname || nickname;
-      avatarUrl = data.avatar_url || avatarUrl;
-    }
-    
-    if (currentProfileImage) currentProfileImage.src = avatarUrl;
-    if (currentNickname) currentNickname.innerText = nickname;
-    if (currentEmail) currentEmail.innerText = user.email;
-    if (profileEditModal) profileEditModal.style.display = 'flex';
-  }).catch((error) => {
-    console.error('프로필 정보를 불러오는 중 오류가 발생했습니다:', error);
-  });
-  
-  // 성공 메시지 숨기기
-  const editSuccessMessage = document.getElementById('editSuccessMessage');
-  if (editSuccessMessage) editSuccessMessage.style.display = "none";
+  document.getElementById('currentProfileImage').src = profileData.avatar_url;
+  document.getElementById('currentNickname').textContent = profileData.nickname;
+  document.getElementById('currentEmail').textContent = profileData.email || "";
+  document.getElementById('editSuccessMessage').style.display = "none";
+  document.getElementById('newNickname').value = "";
+  modal.style.display = "flex";
 }
 
 // [추가!] 프로필 편집 모달 이벤트 설정
@@ -182,6 +159,51 @@ function setupProfileEditModalEvents() {
     };
   }
 }
+
+// === 편집 모달 이벤트 연결 ===
+window.addEventListener('DOMContentLoaded', function() {
+  const closeEdit = document.getElementById('closeProfileEditModal');
+  const cancelEdit = document.getElementById('cancelEditBtn');
+  const saveEdit = document.getElementById('saveNicknameBtn');
+  
+  if (closeEdit) closeEdit.onclick = () => { 
+    document.getElementById('profileEditModal').style.display = "none"; 
+  };
+  
+  if (cancelEdit) cancelEdit.onclick = () => { 
+    document.getElementById('profileEditModal').style.display = "none"; 
+  };
+  
+  if (saveEdit) saveEdit.onclick = async function () {
+    const newNickname = document.getElementById('newNickname').value.trim();
+    if (newNickname.length < 2 || newNickname.length > 20) {
+      alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+      return;
+    }
+    
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+      // Firestore 수정
+      const docRef = window.firebase.doc(db, 'profiles', user.uid);
+      await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
+      
+      // Auth displayName도 수정
+      await window.firebase.updateProfile(user, { displayName: newNickname });
+      
+      document.getElementById('editSuccessMessage').style.display = "block";
+      showUserProfile();
+      
+      setTimeout(() => {
+        document.getElementById('profileEditModal').style.display = "none";
+      }, 1000);
+    } catch (error) {
+      console.error('닉네임 수정 중 오류 발생:', error);
+      alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+});
 
 // Firebase 투표 저장
 async function saveVoteToFirestore(matchId, voteType) {
