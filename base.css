@@ -1213,7 +1213,7 @@ body.light-mode .chat-msg.me {
   padding: 10px 20px;
   z-index: 100;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;    /* ★ 가운데 정렬 */
   align-items: center;
   font-size: 14px;
   box-sizing: border-box; /* 패딩 포함한 너비 계산 */
@@ -1226,12 +1226,15 @@ body.light-mode .chat-msg.me {
   flex: 1;
   min-width: 200px; /* 최소 너비 설정 */
   font-weight: bold;
+  justify-content: center;    /* ★ 가운데 정렬 */
+  text-align: center;         /* 텍스트 가운데 정렬 */
+  gap: 10px;                  /* 간격을 줄임 */
 }
 
 .notice-message a {
   color: #ffd9d9;
   text-decoration: underline;
-  margin-left: 5px;
+  margin-left: 8px;           /* 간격을 줄임 */
   white-space: nowrap; /* 링크 텍스트 줄바꿈 방지 */
 }
 
