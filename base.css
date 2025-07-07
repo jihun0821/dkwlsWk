@@ -1368,9 +1368,8 @@ body.light-mode .chat-msg.me {
   text-decoration: underline;
 }
 
-/* 닫기 버튼 스타일 */
 .top-notice .close-notice {
-  margin-left: 30px;
+  margin-left: 16px;               /* 간격을 줄임 */
   background: none;
   border: none;
   color: #fff;
