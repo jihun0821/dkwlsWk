@@ -595,6 +595,100 @@ async function sendPasswordReset() {
   }
 }
 
+// 1. 프로필 박스 클릭 → 닉네임 수정 모달 열기
+document.addEventListener('DOMContentLoaded', function() {
+  const profileBox = document.getElementById('profile-box');
+  const profileEditModal = document.getElementById('profileEditModal');
+  const closeProfileEditModal = document.getElementById('closeProfileEditModal');
+  const saveNicknameBtn = document.getElementById('saveNicknameBtn');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const editSuccessMessage = document.getElementById('editSuccessMessage');
+  const newNicknameInput = document.getElementById('newNickname');
+  
+  // 프로필 박스 클릭시 모달 오픈
+  profileBox.addEventListener('click', async function(e) {
+    // 버튼 클릭(로그아웃, 테마)은 제외
+    if (e.target.tagName === 'BUTTON') return;
+    
+    if (!auth || !auth.currentUser) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+    // 현재 정보 표시
+    const user = auth.currentUser;
+    const docRef = window.firebase.doc(db, 'profiles', user.uid);
+    const docSnap = await window.firebase.getDoc(docRef);
+    let nickname = user.displayName || user.email.split('@')[0];
+    let avatarUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=667eea&color=fff&size=80&bold=true`;
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      nickname = data.nickname || nickname;
+      avatarUrl = data.avatar_url || avatarUrl;
+    }
+    document.getElementById('currentProfileImage').src = avatarUrl;
+    document.getElementById('currentNickname').textContent = nickname;
+    document.getElementById('currentEmail').textContent = user.email;
+    newNicknameInput.value = nickname;
+    editSuccessMessage.style.display = 'none';
+    profileEditModal.style.display = 'flex';
+  });
+
+  // 닫기
+  closeProfileEditModal.onclick = () => profileEditModal.style.display = 'none';
+  cancelEditBtn.onclick = () => profileEditModal.style.display = 'none';
+
+  // 저장
+  saveNicknameBtn.onclick = async function() {
+    const newNickname = newNicknameInput.value.trim();
+    if (!newNickname) {
+      alert('새 닉네임을 입력해주세요.');
+      return;
+    }
+    if (newNickname.length < 2 || newNickname.length > 20) {
+      alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+      return;
+    }
+    const user = auth.currentUser;
+    if (!user) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+    saveNicknameBtn.disabled = true;
+    saveNicknameBtn.textContent = '저장 중...';
+    try {
+      // Firebase Auth displayName 변경
+      await window.firebase.updateProfile(user, { displayName: newNickname });
+      // Firestore 반영
+      const docRef = window.firebase.doc(db, 'profiles', user.uid);
+      await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
+      // 성공 메시지
+      editSuccessMessage.style.display = 'block';
+      // 즉시 UI 반영
+      setTimeout(() => {
+        profileEditModal.style.display = 'none';
+        showUserProfile(); // 프로필 박스 갱신
+      }, 1100);
+    } catch(err) {
+      alert('닉네임 변경 실패: ' + (err.message || err));
+    } finally {
+      saveNicknameBtn.disabled = false;
+      saveNicknameBtn.textContent = '저장';
+    }
+  };
+
+  // ESC 눌러도 닫기
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && profileEditModal.style.display === 'flex') {
+      profileEditModal.style.display = 'none';
+    }
+  });
+  // 바깥 클릭시 닫기
+  profileEditModal.addEventListener('click', function(e){
+    if (e.target === profileEditModal) profileEditModal.style.display = 'none';
+  });
+});
+
+
 // 전역 함수로 내보내기
 window.logout = logout;
 window.showUserProfile = showUserProfile;
