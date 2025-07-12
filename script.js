@@ -218,14 +218,13 @@ function isUserLoggedIn() {
 function openProfileEditModal(profileData) {
   const modal = document.getElementById('profileEditModal');
   if (!modal) return;
-
-  const imgEl = document.getElementById('currentProfileImage');
-  const nickEl = document.getElementById('currentNickname');
-  const emailEl = document.getElementById('currentEmail');
-  if (!imgEl || !nickEl || !emailEl) {
-    console.error('프로필 편집 모달 내부 요소를 찾을 수 없습니다.');
-    return;
-  }
+  document.getElementById('currentProfileImage').src = profileData.avatar_url;
+  document.getElementById('currentNickname').textContent = profileData.nickname;
+  document.getElementById('currentEmail').textContent = profileData.email || "";
+  document.getElementById('editSuccessMessage').style.display = "none";
+  document.getElementById('newNickname').value = "";
+  modal.style.display = "flex";
+}
 
   imgEl.src = profileData.avatar_url || 'https://ui-avatars.com/api/?name=USER';
   nickEl.textContent = profileData.nickname || '';
@@ -277,28 +276,24 @@ window.addEventListener('DOMContentLoaded', function() {
   if (cancelEdit) cancelEdit.onclick = () => { 
     document.getElementById('profileEditModal').style.display = "none"; 
   };
-  
-  if (saveEdit) saveEdit.onclick = async function () {
+});
+
+if (saveEdit) saveEdit.onclick = async function () {
     const newNickname = document.getElementById('newNickname').value.trim();
     if (newNickname.length < 2 || newNickname.length > 20) {
       alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
       return;
     }
-    
     const user = auth.currentUser;
     if (!user) return;
-    
     try {
       // Firestore 수정
       const docRef = window.firebase.doc(db, 'profiles', user.uid);
       await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
-      
       // Auth displayName도 수정
       await window.firebase.updateProfile(user, { displayName: newNickname });
-      
       document.getElementById('editSuccessMessage').style.display = "block";
       showUserProfile();
-      
       setTimeout(() => {
         document.getElementById('profileEditModal').style.display = "none";
       }, 1000);
@@ -307,7 +302,6 @@ window.addEventListener('DOMContentLoaded', function() {
       alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
     }
   };
-});
 
 // Firebase 투표 저장
 async function saveVoteToFirestore(matchId, voteType) {
