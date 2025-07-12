@@ -145,7 +145,12 @@ async function completeSignup() {
 
 // 프로필 저장 및 회원가입 (이메일 인증 전)
 async function saveProfile() {
-  const nickname = document.getElementById('nickname').value.trim();
+  const nicknameInput = document.getElementById('nickname');
+  if (!nicknameInput) {
+    alert('닉네임 입력란을 찾을 수 없습니다.');
+    return;
+  }
+  const nickname = nicknameInput.value.trim();
   const saveBtn = document.getElementById('saveProfileBtn');
   
   if (!nickname) {
@@ -215,6 +220,60 @@ async function saveProfile() {
       saveBtn.disabled = false;
       saveBtn.textContent = '저장하고 가입';
     }
+  }
+}
+
+// 닉네임 변경(프로필 편집) 함수 추가
+async function saveNickname() {
+  const newNicknameInput = document.getElementById('newNickname');
+  if (!newNicknameInput) {
+    alert('새 닉네임 입력란을 찾을 수 없습니다.');
+    return;
+  }
+  const newNickname = newNicknameInput.value.trim();
+  
+  if (!newNickname) {
+    alert('새 닉네임을 입력해주세요.');
+    return;
+  }
+  
+  if (newNickname.length < 2 || newNickname.length > 20) {
+    alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+    return;
+  }
+  
+  const user = auth.currentUser;
+  if (!user) {
+    alert('로그인 정보가 없습니다.');
+    return;
+  }
+  
+  try {
+    // Firestore 수정
+    const docRef = doc(db, 'profiles', user.uid);
+    await setDoc(docRef, { nickname: newNickname }, { merge: true });
+    
+    // Auth displayName도 수정
+    await updateProfile(user, { displayName: newNickname });
+    
+    const editSuccessMessage = document.getElementById('editSuccessMessage');
+    if (editSuccessMessage) {
+      editSuccessMessage.style.display = "block";
+    }
+    
+    // UI 갱신
+    if (typeof showUserProfile === 'function') {
+      showUserProfile();
+    }
+    
+    setTimeout(() => {
+      const modal = document.getElementById('profileEditModal');
+      if (modal) modal.style.display = "none";
+    }, 1000);
+    
+  } catch (error) {
+    console.error('닉네임 수정 중 오류 발생:', error);
+    alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
   }
 }
 
@@ -382,6 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const closePasswordResetModal = document.getElementById('closePasswordResetModal');
   const backToLoginFromReset = document.getElementById('backToLoginFromReset');
   const sendResetEmailBtn = document.getElementById('sendResetEmailBtn');
+  const saveNicknameBtn = document.getElementById('saveNicknameBtn');
 
   console.log('비밀번호 재설정 요소 확인:', { 
     openPasswordResetLink, 
@@ -496,6 +556,11 @@ document.addEventListener('DOMContentLoaded', function() {
     checkVerificationBtn.onclick = completeSignup;
   }
 
+  // 닉네임 변경 저장 버튼(프로필 편집 모달)
+  if (saveNicknameBtn) {
+    saveNicknameBtn.onclick = saveNickname;
+  }
+
   if (doLoginBtn) {
     doLoginBtn.onclick = () => {
       console.log('로그인 버튼 클릭됨');
@@ -512,14 +577,14 @@ document.addEventListener('DOMContentLoaded', function() {
     console.error('doLogin 버튼을 찾을 수 없습니다');
   }
 
- window.onclick = (e) => {
+  window.onclick = (e) => {
     if (e.target === loginModal) loginModal.style.display = 'none';
     if (e.target === signupModal) signupModal.style.display = 'none';
     if (e.target === profileModal) {
       profileModal.style.display = 'none';
       tempUserData = null;
     }
-    // ✅ 비밀번호 재설정 모달 추가
+    // 비밀번호 재설정 모달 추가
     if (e.target === passwordResetModal) {
       passwordResetModal.style.display = 'none';
       const resetEmailInput = document.getElementById('resetEmail');
