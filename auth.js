@@ -1,9 +1,11 @@
+//파이어베이스 SDK에서 기능들 가져오는 구조 분해 할당 문법
 const { 
   initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
   getFirestore, doc, setDoc, getDoc, deleteUser, sendPasswordResetEmail
 } = window.firebase;
 
+//파이어베이스 프로젝트와 연결
 const firebaseConfig = {
   apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
   authDomain: "hsp-auth-22845.firebaseapp.com",
