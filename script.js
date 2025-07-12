@@ -270,9 +270,9 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 });
 
-const saveEdit = document.getElementById('saveEdit'); 
-if (saveEdit) {
-  saveEdit.onclick = async function () {
+const saveNicknameBtn = document.getElementById('saveNicknameBtn');
+if (saveNicknameBtn) {
+  saveNicknameBtn.onclick = async function () {
     const newNickname = document.getElementById('newNickname').value.trim();
     if (newNickname.length < 2 || newNickname.length > 20) {
       alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
