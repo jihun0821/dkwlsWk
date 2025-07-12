@@ -66,38 +66,38 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
     const avatarUrl = profileData.avatar_url || defaultAvatar;
     profileBox.innerHTML = `
-      <div class="profile-bar" style="display: flex; align-items: center; gap: 10px; position: relative;">
-        <img id="profileAvatar" src="${avatarUrl}" alt="프로필"
-          style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;">
-        <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
-        <button id="logoutBtn" type="button" style="margin-left:5px;">로그아웃</button>
-        <button id="profileSettingsBtn" type="button" title="설정"
-          style="background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; margin-left: 5px;">
-          <span class="material-symbols-outlined" style="font-size:22px;">&#9881;</span>
+      <div class="profile-bar">
+        <img id="profileAvatar" src="${avatarUrl}" alt="프로필" class="profile-avatar">
+        <span class="profile-nickname">${profileData.nickname || '사용자'}</span>
+        <button id="logoutBtn" type="button" class="logout-btn">로그아웃</button>
+        <button id="profileSettingsBtn" type="button" title="설정" class="profile-settings-btn">
+          <span class="material-symbols-outlined">&#9881;</span>
         </button>
-        <div id="profileSettingsMenu" class="settings-menu" style="display: none; position: absolute; right: 0; top: 44px; z-index: 10; min-width: 220px; background: #fff; border-radius: 17px; box-shadow: 0 2px 16px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
-          <div style="padding: 16px 20px 8px 20px;">
-            <div style="font-weight: bold; color: #444; margin-bottom: 12px; font-size: 13px;">테마</div>
-            <div class="theme-options" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 15px;">
-              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+        <div id="profileSettingsMenu" class="settings-menu">
+          <div class="settings-menu-inner">
+            <div class="settings-menu-title">테마</div>
+            <div class="theme-options">
+              <label class="theme-label">
                 <input type="radio" name="theme" value="system" id="themeSystem">
                 시스템
               </label>
-              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+              <label class="theme-label">
                 <input type="radio" name="theme" value="light" id="themeLight">
                 라이트
               </label>
-              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+              <label class="theme-label">
                 <input type="radio" name="theme" value="dark" id="themeDark">
                 다크
               </label>
             </div>
-            <hr style="border:none;border-top:1px solid #eee; margin: 0 -20px 12px -20px;">
-            <button id="openProfileEditBtn" style="width: 100%; font-size:15px; background: none; border: none; color: #2051ff; padding: 8px 0; cursor: pointer;">프로필 편집</button>
+            <hr class="settings-divider">
+            <button id="openProfileEditBtn" class="profile-edit-btn">프로필 편집</button>
           </div>
         </div>
       </div>
     `;
+  }
+}
     document.getElementById('logoutBtn').onclick = logout;
     // 메뉴 열고 닫기 토글
     const settingsBtn = document.getElementById('profileSettingsBtn');
