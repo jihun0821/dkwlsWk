@@ -226,14 +226,6 @@ function openProfileEditModal(profileData) {
   modal.style.display = "flex";
 }
 
-  imgEl.src = profileData.avatar_url || 'https://ui-avatars.com/api/?name=USER';
-  nickEl.textContent = profileData.nickname || '';
-  emailEl.textContent = profileData.email || '';
-  document.getElementById('editSuccessMessage').style.display = "none";
-  document.getElementById('newNickname').value = "";
-  modal.style.display = "flex";
-}
-
 // [추가!] 프로필 편집 모달 이벤트 설정
 function setupProfileEditModalEvents() {
   // 프로필 편집 모달 닫기/취소 버튼 이벤트
