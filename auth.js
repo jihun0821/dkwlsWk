@@ -1,666 +1,851 @@
-//파이어베이스 SDK에서 기능들 가져오는 구조 분해 할당 문법
-const { 
-  initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
-  getFirestore, doc, setDoc, getDoc, deleteUser, sendPasswordResetEmail
-} = window.firebase;
-
-//파이어베이스 프로젝트와 연결
-const firebaseConfig = {
-  apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
-  authDomain: "hsp-auth-22845.firebaseapp.com",
-  projectId: "hsp-auth-22845",
-  storageBucket: "hsp-auth-22845.firebasestorage.app",
-  messagingSenderId: "1034282361573",
-  appId: "1:1034282361573:web:a15b970a18ae7033552a0c",
+// 설정 및 상수
+const CONFIG = {
+  EMAIL_DOMAIN: '@hanilgo.cnehs.kr',
+  NICKNAME_MIN_LENGTH: 2,
+  NICKNAME_MAX_LENGTH: 20,
+  AVATAR_BASE_URL: 'https://ui-avatars.com/api/',
+  FIREBASE_CONFIG: {
+    apiKey: "AIzaSyC_YES_I20XByZpXjCN2p1Vp5gueS4Op24",
+    authDomain: "hsp-auth-22845.firebaseapp.com",
+    projectId: "hsp-auth-22845",
+    storageBucket: "hsp-auth-22845.firebasestorage.app",
+    messagingSenderId: "1034282361573",
+    appId: "1:1034282361573:web:a15b970a18ae7033552a0c"
+  }
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const ERROR_MESSAGES = {
+  INVALID_EMAIL: '한일고 이메일(@hanilgo.cnehs.kr)만 가입할 수 있습니다.',
+  NICKNAME_REQUIRED: '닉네임을 입력해주세요.',
+  NICKNAME_LENGTH: '닉네임은 2자 이상 20자 이하로 입력해주세요.',
+  EMAIL_PASSWORD_REQUIRED: '이메일과 비밀번호를 입력해주세요.',
+  LOGIN_REQUIRED: '로그인이 필요합니다.',
+  EMAIL_VERIFICATION_REQUIRED: '이메일 인증이 필요합니다.',
+  TEMP_DATA_MISSING: '임시 사용자 데이터가 없습니다.',
+  PROFILE_IMAGE_NOT_SUPPORTED: '현재 버전에서는 프로필 이미지 업로드가 지원되지 않습니다.',
+  UNKNOWN_ERROR: '알 수 없는 오류가 발생했습니다.'
+};
 
-console.log('Firebase 초기화 완료');
+const LOADING_MESSAGES = {
+  CREATING_ACCOUNT: '계정 생성 중...',
+  SENDING_EMAIL: '이메일 전송 중...',
+  LOGGING_IN: '로그인 중...',
+  SAVING_PROFILE: '프로필 저장 중...'
+};
 
-let tempUserData = null;
-let signupEmail = '';
-let signupPassword = '';
+// 에러 처리 클래스
+class ErrorHandler {
+  /**
+   * Firebase Auth 에러를 사용자 친화적인 메시지로 변환
+   * @param {Error} error - Firebase 에러 객체
+   * @returns {string} 사용자 친화적인 에러 메시지
+   */
+  static handleAuthError(error) {
+    const errorMessages = {
+      'auth/email-already-in-use': '이미 사용 중인 이메일입니다.',
+      'auth/weak-password': '비밀번호가 너무 약합니다. 6자 이상 입력해주세요.',
+      'auth/invalid-email': '유효하지 않은 이메일 주소입니다.',
+      'auth/user-not-found': '존재하지 않는 사용자입니다.',
+      'auth/wrong-password': '비밀번호가 올바르지 않습니다.',
+      'auth/too-many-requests': '너무 많은 요청입니다. 잠시 후 다시 시도해주세요.'
+    };
+    
+    return errorMessages[error.code] || ERROR_MESSAGES.UNKNOWN_ERROR;
+  }
 
-function isHanilEmail(email) {
-  return email.endsWith('@hanilgo.cnehs.kr');  
+  /**
+   * 에러 로깅 및 사용자 알림
+   * @param {Error} error - 에러 객체
+   * @param {string} context - 에러 발생 컨텍스트
+   */
+  static logAndNotify(error, context) {
+    console.error(`${context} 오류:`, error);
+    const message = this.handleAuthError(error);
+    alert(message);
+  }
 }
 
-// 프로필 이미지 미리보기 기능
-function setupProfileImagePreview() {
-  const avatarInput = document.getElementById('avatar');
-  const fileLabel = document.querySelector('.file-upload-label');
-  
-  if (avatarInput && fileLabel) {
-    avatarInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      
-      if (file) {
-        alert('현재 버전에서는 프로필 이미지 업로드가 지원되지 않습니다. 기본 아바타를 사용합니다.');
-        e.target.value = '';
+// 유틸리티 클래스
+class Utils {
+  /**
+   * 모달 닫기
+   * @param {string} modalId - 모달 요소 ID
+   */
+  static closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'none';
+  }
+
+  /**
+   * 모달 열기
+   * @param {string} modalId - 모달 요소 ID
+   */
+  static showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'flex';
+  }
+
+  /**
+   * 입력 폼 초기화
+   * @param {string} formId - 폼 요소 ID
+   */
+  static clearForm(formId) {
+    const form = document.getElementById(formId);
+    if (form) form.reset();
+  }
+
+  /**
+   * 모든 모달 닫기
+   */
+  static closeAllModals() {
+    const modals = ['loginModal', 'signupModal', 'profileModal', 'passwordResetModal'];
+    modals.forEach(modalId => this.closeModal(modalId));
+  }
+
+  /**
+   * 아바타 URL 생성
+   * @param {string} nickname - 닉네임
+   * @param {number} size - 아바타 크기
+   * @returns {string} 아바타 URL
+   */
+  static generateAvatarUrl(nickname, size = 80) {
+    return `${CONFIG.AVATAR_BASE_URL}?name=${encodeURIComponent(nickname)}&background=667eea&color=fff&size=${size}&bold=true`;
+  }
+}
+
+// 검증 클래스
+class Validator {
+  /**
+   * 한일고 이메일 검증
+   * @param {string} email - 이메일 주소
+   * @returns {boolean} 검증 결과
+   */
+  static isHanilEmail(email) {
+    return email.endsWith(CONFIG.EMAIL_DOMAIN);
+  }
+
+  /**
+   * 이메일 형식 검증
+   * @param {string} email - 이메일 주소
+   * @returns {boolean} 검증 결과
+   */
+  static validateEmail(email) {
+    const emailRegex = /^[^\s@]+@hanilgo\.cnehs\.kr$/;
+    return emailRegex.test(email);
+  }
+
+  /**
+   * 비밀번호 검증
+   * @param {string} password - 비밀번호
+   * @returns {boolean} 검증 결과
+   */
+  static validatePassword(password) {
+    return password.length >= 6;
+  }
+
+  /**
+   * 닉네임 검증
+   * @param {string} nickname - 닉네임
+   * @returns {boolean} 검증 결과
+   */
+  static validateNickname(nickname) {
+    return nickname.length >= CONFIG.NICKNAME_MIN_LENGTH && 
+           nickname.length <= CONFIG.NICKNAME_MAX_LENGTH;
+  }
+}
+
+// 로딩 상태 관리 클래스
+class LoadingManager {
+  /**
+   * 로딩 상태 표시
+   * @param {HTMLElement} element - 버튼 요소
+   * @param {string} text - 로딩 텍스트
+   */
+  static showLoading(element, text) {
+    if (element) {
+      element.disabled = true;
+      element.dataset.originalText = element.textContent;
+      element.textContent = text;
+    }
+  }
+
+  /**
+   * 로딩 상태 해제
+   * @param {HTMLElement} element - 버튼 요소
+   */
+  static hideLoading(element) {
+    if (element) {
+      element.disabled = false;
+      element.textContent = element.dataset.originalText || element.textContent;
+    }
+  }
+}
+
+// 이벤트 관리 클래스
+class EventManager {
+  constructor() {
+    this.listeners = [];
+  }
+
+  /**
+   * 이벤트 리스너 추가
+   * @param {HTMLElement} element - 대상 요소
+   * @param {string} event - 이벤트 타입
+   * @param {Function} handler - 이벤트 핸들러
+   */
+  addListener(element, event, handler) {
+    if (element) {
+      element.addEventListener(event, handler);
+      this.listeners.push({ element, event, handler });
+    }
+  }
+
+  /**
+   * 모든 이벤트 리스너 제거
+   */
+  removeAllListeners() {
+    this.listeners.forEach(({ element, event, handler }) => {
+      element.removeEventListener(event, handler);
+    });
+    this.listeners = [];
+  }
+}
+
+// 메인 인증 관리 클래스
+class AuthManager {
+  constructor() {
+    this.tempUserData = null;
+    this.signupEmail = '';
+    this.signupPassword = '';
+    this.eventManager = new EventManager();
+    
+    this.initializeFirebase();
+    this.setupEventListeners();
+    this.setupAuthStateListener();
+  }
+
+  /**
+   * Firebase 초기화
+   */
+  initializeFirebase() {
+    try {
+      const { 
+        initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+        signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
+        getFirestore, doc, setDoc, getDoc, sendPasswordResetEmail
+      } = window.firebase;
+
+      this.firebase = {
+        initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+        signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
+        getFirestore, doc, setDoc, getDoc, sendPasswordResetEmail
+      };
+
+      this.app = this.firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
+      this.auth = this.firebase.getAuth(this.app);
+      this.db = this.firebase.getFirestore(this.app);
+
+      console.log('Firebase 초기화 완료');
+    } catch (error) {
+      console.error('Firebase 초기화 실패:', error);
+      throw new Error('Firebase 초기화에 실패했습니다.');
+    }
+  }
+
+  /**
+   * 인증 상태 변화 리스너 설정
+   */
+  setupAuthStateListener() {
+    this.firebase.onAuthStateChanged(this.auth, async (user) => {
+      console.log('Auth 상태 변경:', user);
+
+      if (user) {
+        await user.reload();
+        const refreshedUser = this.auth.currentUser;
+
+        if (!refreshedUser.emailVerified) {
+          console.log('이메일 미인증 상태');
+          this.updateUIForAuthState(false);
+          return;
+        }
+
+        await this.showUserProfile();
+      } else {
+        this.updateUIForAuthState(false);
       }
     });
-    
+  }
+
+  /**
+   * 이벤트 리스너 설정
+   */
+  setupEventListeners() {
+    document.addEventListener('DOMContentLoaded', () => {
+      this.setupModalEventListeners();
+      this.setupFormEventListeners();
+      this.setupProfileImagePreview();
+    });
+  }
+
+  /**
+   * 모달 관련 이벤트 리스너 설정
+   */
+  setupModalEventListeners() {
+    // 로그인 모달
+    this.eventManager.addListener(
+      document.getElementById('loginBtn'),
+      'click',
+      () => Utils.showModal('loginModal')
+    );
+
+    this.eventManager.addListener(
+      document.getElementById('closeLoginModal'),
+      'click',
+      () => Utils.closeModal('loginModal')
+    );
+
+    // 회원가입 모달
+    this.eventManager.addListener(
+      document.getElementById('openSignupLink'),
+      'click',
+      (e) => {
+        e.preventDefault();
+        Utils.closeModal('loginModal');
+        Utils.showModal('signupModal');
+      }
+    );
+
+    this.eventManager.addListener(
+      document.getElementById('closeSignupModal'),
+      'click',
+      () => Utils.closeModal('signupModal')
+    );
+
+    this.eventManager.addListener(
+      document.getElementById('backToLoginLink'),
+      'click',
+      (e) => {
+        e.preventDefault();
+        Utils.closeModal('signupModal');
+        Utils.showModal('loginModal');
+      }
+    );
+
+    // 프로필 모달
+    this.eventManager.addListener(
+      document.getElementById('openProfileModalBtn'),
+      'click',
+      () => this.handleOpenProfileModal()
+    );
+
+    this.eventManager.addListener(
+      document.getElementById('closeProfileModal'),
+      'click',
+      () => this.handleCloseProfileModal()
+    );
+
+    // 비밀번호 재설정 모달
+    this.eventManager.addListener(
+      document.getElementById('openPasswordResetLink'),
+      'click',
+      (e) => {
+        e.preventDefault();
+        Utils.closeModal('loginModal');
+        Utils.showModal('passwordResetModal');
+      }
+    );
+
+    this.eventManager.addListener(
+      document.getElementById('closePasswordResetModal'),
+      'click',
+      () => Utils.closeModal('passwordResetModal')
+    );
+
+    this.eventManager.addListener(
+      document.getElementById('backToLoginFromReset'),
+      'click',
+      (e) => {
+        e.preventDefault();
+        Utils.closeModal('passwordResetModal');
+        Utils.showModal('loginModal');
+        Utils.clearForm('passwordResetForm');
+      }
+    );
+
+    // 모달 외부 클릭 시 닫기
+    window.addEventListener('click', (e) => {
+      const modals = ['loginModal', 'signupModal', 'profileModal', 'passwordResetModal'];
+      modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (e.target === modal) {
+          Utils.closeModal(modalId);
+          if (modalId === 'profileModal') {
+            this.cleanup();
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * 폼 관련 이벤트 리스너 설정
+   */
+  setupFormEventListeners() {
+    // 로그인 폼
+    this.eventManager.addListener(
+      document.getElementById('doLogin'),
+      'click',
+      () => this.handleLogin()
+    );
+
+    // 회원가입 폼
+    this.eventManager.addListener(
+      document.getElementById('saveProfileBtn'),
+      'click',
+      () => this.handleSaveProfile()
+    );
+
+    this.eventManager.addListener(
+      document.getElementById('checkVerificationBtn'),
+      'click',
+      () => this.handleCompleteSignup()
+    );
+
+    // 비밀번호 재설정
+    this.eventManager.addListener(
+      document.getElementById('sendResetEmailBtn'),
+      'click',
+      () => this.handleSendPasswordReset()
+    );
+
+    // 닉네임 변경
+    this.eventManager.addListener(
+      document.getElementById('saveNicknameBtn'),
+      'click',
+      () => this.handleSaveNickname()
+    );
+
+    // 로그아웃
+    this.eventManager.addListener(
+      document.getElementById('logoutBtn'),
+      'click',
+      () => this.handleLogout()
+    );
+
+    // Enter 키 이벤트
+    this.setupEnterKeyEvents();
+  }
+
+  /**
+   * Enter 키 이벤트 설정
+   */
+  setupEnterKeyEvents() {
+    const inputs = [
+      { id: 'loginPassword', handler: () => this.handleLogin() },
+      { id: 'resetEmail', handler: () => this.handleSendPasswordReset() }
+    ];
+
+    inputs.forEach(({ id, handler }) => {
+      const input = document.getElementById(id);
+      if (input) {
+        this.eventManager.addListener(input, 'keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handler();
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * 프로필 이미지 미리보기 설정
+   */
+  setupProfileImagePreview() {
+    const avatarInput = document.getElementById('avatar');
     const fileUploadWrapper = document.querySelector('.file-upload-wrapper');
+    
+    if (avatarInput) {
+      this.eventManager.addListener(avatarInput, 'change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          alert(ERROR_MESSAGES.PROFILE_IMAGE_NOT_SUPPORTED);
+          e.target.value = '';
+        }
+      });
+    }
+    
     if (fileUploadWrapper) {
       fileUploadWrapper.style.display = 'none';
     }
   }
-}
 
-// 프로필 모달 표시
-function showProfileModal() {
-  const loginModal = document.getElementById('loginModal');
-  const signupModal = document.getElementById('signupModal');
-  const profileModal = document.getElementById('profileModal');
-  
-  if (loginModal) loginModal.style.display = 'none';
-  if (signupModal) signupModal.style.display = 'none';
-  
-  if (profileModal) {
-    profileModal.style.display = 'flex';
+  /**
+   * 프로필 모달 열기 처리
+   */
+  handleOpenProfileModal() {
+    this.signupEmail = document.getElementById('signupEmail')?.value.trim() || '';
+    this.signupPassword = document.getElementById('signupPassword')?.value.trim() || '';
+
+    if (!this.signupEmail || !this.signupPassword) {
+      alert(ERROR_MESSAGES.EMAIL_PASSWORD_REQUIRED);
+      return;
+    }
+
+    Utils.closeModal('signupModal');
+    this.showProfileModal();
+  }
+
+  /**
+   * 프로필 모달 닫기 처리
+   */
+  handleCloseProfileModal() {
+    Utils.closeModal('profileModal');
+    this.cleanup();
+  }
+
+  /**
+   * 프로필 모달 표시
+   */
+  showProfileModal() {
+    Utils.closeAllModals();
+    Utils.showModal('profileModal');
     
     const nicknameInput = document.getElementById('nickname');
     if (nicknameInput) nicknameInput.value = '';
   }
-}
 
-// 이메일 인증 대기 상태 UI 업데이트
-function updateUIForEmailVerification() {
-  const saveBtn = document.getElementById('saveProfileBtn');
-  const checkVerificationBtn = document.getElementById('checkVerificationBtn');
-  const buttonContainer = saveBtn?.parentElement;
-  
-  if (saveBtn) {
-    saveBtn.style.display = 'none';
-  }
-  
-  if (checkVerificationBtn) {
-    checkVerificationBtn.style.display = 'inline-block';
-    checkVerificationBtn.disabled = false;
+  /**
+   * 로그인 처리
+   */
+  async handleLogin() {
+    const email = document.getElementById('loginEmail')?.value.trim();
+    const password = document.getElementById('loginPassword')?.value.trim();
+
+    if (!email || !password) {
+      alert(ERROR_MESSAGES.EMAIL_PASSWORD_REQUIRED);
+      return;
+    }
+
+    const loginBtn = document.getElementById('doLogin');
     
-    if (buttonContainer) {
-      buttonContainer.style.display = 'flex';
-      buttonContainer.style.justifyContent = 'space-between';
-      buttonContainer.style.alignItems = 'center';
-      buttonContainer.style.gap = '10px';
+    try {
+      LoadingManager.showLoading(loginBtn, LOADING_MESSAGES.LOGGING_IN);
+      
+      const userCredential = await this.firebase.signInWithEmailAndPassword(this.auth, email, password);
+      const user = userCredential.user;
+
+      if (!user.emailVerified) {
+        alert(ERROR_MESSAGES.EMAIL_VERIFICATION_REQUIRED);
+        await this.firebase.signOut(this.auth);
+        return;
+      }
+
+      console.log('로그인 성공:', user);
+      Utils.closeModal('loginModal');
+      
+    } catch (error) {
+      ErrorHandler.logAndNotify(error, '로그인');
+    } finally {
+      LoadingManager.hideLoading(loginBtn);
     }
   }
-}
 
-// 이메일 인증 확인 및 회원가입 완료
-async function completeSignup() {
-  const user = auth.currentUser;
-  
-  if (!user) {
-    alert('로그인 상태가 아닙니다.');
-    return;
-  }
+  /**
+   * 프로필 저장 및 회원가입 처리
+   */
+  async handleSaveProfile() {
+    const nickname = document.getElementById('nickname')?.value.trim();
+    const saveBtn = document.getElementById('saveProfileBtn');
+    
+    if (!nickname) {
+      alert(ERROR_MESSAGES.NICKNAME_REQUIRED);
+      return;
+    }
+    
+    if (!Validator.validateNickname(nickname)) {
+      alert(ERROR_MESSAGES.NICKNAME_LENGTH);
+      return;
+    }
 
-  // 사용자 정보 새로고침
-  await user.reload();
-  const refreshedUser = auth.currentUser;
+    if (!Validator.isHanilEmail(this.signupEmail)) {
+      alert(ERROR_MESSAGES.INVALID_EMAIL);
+      return;
+    }
 
-  if (!refreshedUser.emailVerified) {
-    alert('아직 이메일 인증이 완료되지 않았습니다.\n메일함에서 인증 링크를 클릭해주세요.');
-    return;
-  }
-
-  // 이메일 인증이 완료된 경우에만 데이터베이스에 저장
-  if (tempUserData) {
     try {
-      // 프로필 업데이트
-      await updateProfile(refreshedUser, {
-        displayName: tempUserData.nickname,
-        photoURL: tempUserData.avatarUrl
-      });
+      LoadingManager.showLoading(saveBtn, LOADING_MESSAGES.CREATING_ACCOUNT);
 
-      // Firestore에 프로필 데이터 저장
-      await setDoc(doc(db, 'profiles', refreshedUser.uid), {
-        uid: refreshedUser.uid,
-        email: tempUserData.email,
-        nickname: tempUserData.nickname,
-        avatar_url: tempUserData.avatarUrl,
-        created_at: new Date()
-      });
+      const userCredential = await this.firebase.createUserWithEmailAndPassword(
+        this.auth, 
+        this.signupEmail, 
+        this.signupPassword
+      );
+      const user = userCredential.user;
+
+      console.log('계정 생성 성공:', user);
+
+      this.tempUserData = {
+        email: this.signupEmail,
+        nickname: nickname,
+        avatarUrl: Utils.generateAvatarUrl(nickname)
+      };
+
+      await this.firebase.sendEmailVerification(user);
+      
+      alert('인증 이메일이 발송되었습니다.\n이메일을 확인하고 인증을 완료한 후 "이메일 인증 확인" 버튼을 클릭해주세요.');
+
+      this.updateUIForEmailVerification();
+
+    } catch (error) {
+      ErrorHandler.logAndNotify(error, '계정 생성');
+    } finally {
+      LoadingManager.hideLoading(saveBtn);
+    }
+  }
+
+  /**
+   * 회원가입 완료 처리
+   */
+  async handleCompleteSignup() {
+    const user = this.auth.currentUser;
+    
+    if (!user) {
+      alert(ERROR_MESSAGES.LOGIN_REQUIRED);
+      return;
+    }
+
+    try {
+      await user.reload();
+      const refreshedUser = this.auth.currentUser;
+
+      if (!refreshedUser.emailVerified) {
+        alert('아직 이메일 인증이 완료되지 않았습니다.\n메일함에서 인증 링크를 클릭해주세요.');
+        return;
+      }
+
+      if (!this.tempUserData) {
+        alert(ERROR_MESSAGES.TEMP_DATA_MISSING);
+        return;
+      }
+
+      await Promise.all([
+        this.firebase.updateProfile(refreshedUser, {
+          displayName: this.tempUserData.nickname,
+          photoURL: this.tempUserData.avatarUrl
+        }),
+        this.firebase.setDoc(this.firebase.doc(this.db, 'profiles', refreshedUser.uid), {
+          uid: refreshedUser.uid,
+          email: this.tempUserData.email,
+          nickname: this.tempUserData.nickname,
+          avatar_url: this.tempUserData.avatarUrl,
+          created_at: new Date()
+        })
+      ]);
 
       alert('회원가입이 완료되었습니다!');
       
-      // 임시 데이터 초기화
-      tempUserData = null;
+      this.cleanup();
+      Utils.closeModal('profileModal');
+
+    } catch (error) {
+      ErrorHandler.logAndNotify(error, '회원가입 완료');
+    }
+  }
+
+  /**
+   * 닉네임 변경 처리
+   */
+  async handleSaveNickname() {
+    const newNickname = document.getElementById('newNickname')?.value.trim();
+    
+    if (!newNickname) {
+      alert(ERROR_MESSAGES.NICKNAME_REQUIRED);
+      return;
+    }
+    
+    if (!Validator.validateNickname(newNickname)) {
+      alert(ERROR_MESSAGES.NICKNAME_LENGTH);
+      return;
+    }
+    
+    const user = this.auth.currentUser;
+    if (!user) {
+      alert(ERROR_MESSAGES.LOGIN_REQUIRED);
+      return;
+    }
+    
+    try {
+      await Promise.all([
+        this.firebase.setDoc(
+          this.firebase.doc(this.db, 'profiles', user.uid),
+          { nickname: newNickname },
+          { merge: true }
+        ),
+        this.firebase.updateProfile(user, { displayName: newNickname })
+      ]);
       
-      // 모달 닫기
-      document.getElementById('profileModal').style.display = 'none';
+      const editSuccessMessage = document.getElementById('editSuccessMessage');
+      if (editSuccessMessage) {
+        editSuccessMessage.style.display = "block";
+      }
       
-      // 사용자 프로필 표시
-      showUserProfile();
+      this.updateUIForAuthState(true);
+      
+      setTimeout(() => {
+        Utils.closeModal('profileEditModal');
+      }, 1000);
       
     } catch (error) {
-      console.error('회원가입 완료 중 오류:', error);
-      alert('회원가입 완료 중 오류가 발생했습니다.');
+      ErrorHandler.logAndNotify(error, '닉네임 수정');
     }
   }
-}
 
-// 프로필 저장 및 회원가입 (이메일 인증 전)
-async function saveProfile() {
-  const nicknameInput = document.getElementById('nickname');
-  if (!nicknameInput) {
-    alert('닉네임 입력란을 찾을 수 없습니다.');
-    return;
-  }
-  const nickname = nicknameInput.value.trim();
-  const saveBtn = document.getElementById('saveProfileBtn');
-  
-  if (!nickname) {
-    alert('닉네임을 입력해주세요.');
-    return;
-  }
-  
-  if (nickname.length < 2 || nickname.length > 20) {
-    alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
-    return;
-  }
-
-  if (saveBtn) {
-    saveBtn.disabled = true;
-    saveBtn.textContent = '계정 생성 중...';
-  }
-
-  // signupEmail, signupPassword 사용
-  const email = signupEmail;
-  const password = signupPassword;
-  
-  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=667eea&color=fff&size=80&bold=true`;
-  
-  try {
-    console.log('회원가입 시도:', { email, nickname });
-
-    if (!isHanilEmail(email)) {
-      throw new Error('한일고 이메일(@hanilgo.cnehs.kr)만 가입할 수 있습니다.');
-    }
-
-    // Firebase 계정 생성 (데이터베이스 저장 전)
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    console.log('계정 생성 성공:', user);
-
-    // 임시 데이터 저장 (이메일 인증 후 실제 저장용)
-    tempUserData = {
-      email: email,
-      nickname: nickname,
-      avatarUrl: avatarUrl
-    };
-
-    // 이메일 인증 메일 발송
-    await sendEmailVerification(user);
+  /**
+   * 비밀번호 재설정 이메일 발송 처리
+   */
+  async handleSendPasswordReset() {
+    const email = document.getElementById('resetEmail')?.value.trim();
+    const sendBtn = document.getElementById('sendResetEmailBtn');
     
-    alert('인증 이메일이 발송되었습니다.\n이메일을 확인하고 인증을 완료한 후 "이메일 인증 확인" 버튼을 클릭해주세요.');
-
-    // UI 업데이트 - 인증 대기 상태로 변경
-    updateUIForEmailVerification();
-
-  } catch (error) {
-    console.error('계정 생성 중 오류:', error);
-    let errorMessage = '계정 생성 중 오류가 발생했습니다.';
-    
-    if (error.code === 'auth/email-already-in-use') {
-      errorMessage = '이미 사용 중인 이메일입니다.';
-    } else if (error.code === 'auth/weak-password') {
-      errorMessage = '비밀번호가 너무 약습니다. 6자 이상 입력해주세요.';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = '유효하지 않은 이메일 주소입니다.';
+    if (!email) {
+      alert('이메일 주소를 입력해주세요.');
+      return;
     }
     
-    alert(errorMessage);
-  } finally {
+    if (!Validator.isHanilEmail(email)) {
+      alert(ERROR_MESSAGES.INVALID_EMAIL);
+      return;
+    }
+
+    try {
+      LoadingManager.showLoading(sendBtn, LOADING_MESSAGES.SENDING_EMAIL);
+      
+      await this.firebase.sendPasswordResetEmail(this.auth, email);
+      
+      alert('비밀번호 재설정 이메일이 전송되었습니다.\n이메일을 확인하고 안내에 따라 비밀번호를 재설정해주세요.');
+      
+      Utils.closeModal('passwordResetModal');
+      Utils.clearForm('passwordResetForm');
+      
+    } catch (error) {
+      ErrorHandler.logAndNotify(error, '비밀번호 재설정 이메일 전송');
+    } finally {
+      LoadingManager.hideLoading(sendBtn);
+    }
+  }
+
+  /**
+   * 로그아웃 처리
+   */
+  async handleLogout() {
+    try {
+      this.cleanup();
+      await this.firebase.signOut(this.auth);
+      
+    } catch (error) {
+      ErrorHandler.logAndNotify(error, '로그아웃');
+    }
+  }
+
+  /**
+   * 사용자 프로필 표시
+   */
+  async showUserProfile() {
+    try {
+      const user = this.auth.currentUser;
+      
+      if (!user) {
+        console.log('사용자 정보 없음');
+        this.updateUIForAuthState(false);
+        return;
+      }
+
+      console.log('현재 사용자:', user);
+
+      const docRef = this.firebase.doc(this.db, 'profiles', user.uid);
+      const docSnap = await this.firebase.getDoc(docRef);
+
+      let profileData;
+      
+      if (docSnap.exists()) {
+        profileData = docSnap.data();
+        console.log('프로필 데이터:', profileData);
+      } else {
+        console.log('프로필 데이터 없음, 기본값 사용');
+        const nickname = user.displayName || user.email.split('@')[0];
+        profileData = {
+          nickname: nickname,
+          avatar_url: Utils.generateAvatarUrl(nickname, 35)
+        };
+      }
+
+      Utils.closeAllModals();
+      this.updateUIForAuthState(true, profileData);
+
+    } catch (error) {
+      console.error('프로필 표시 중 오류:', error);
+      this.updateUIForAuthState(false);
+    }
+  }
+
+  /**
+   * 이메일 인증 대기 상태 UI 업데이트
+   */
+  updateUIForEmailVerification() {
+    const saveBtn = document.getElementById('saveProfileBtn');
+    const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+    const buttonContainer = saveBtn?.parentElement;
+    
     if (saveBtn) {
-      saveBtn.disabled = false;
-      saveBtn.textContent = '저장하고 가입';
-    }
-  }
-}
-
-// 닉네임 변경(프로필 편집) 함수 추가
-async function saveNickname() {
-  const newNicknameInput = document.getElementById('newNickname');
-  if (!newNicknameInput) {
-    alert('새 닉네임 입력란을 찾을 수 없습니다.');
-    return;
-  }
-  const newNickname = newNicknameInput.value.trim();
-  
-  if (!newNickname) {
-    alert('새 닉네임을 입력해주세요.');
-    return;
-  }
-  
-  if (newNickname.length < 2 || newNickname.length > 20) {
-    alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
-    return;
-  }
-  
-  const user = auth.currentUser;
-  if (!user) {
-    alert('로그인 정보가 없습니다.');
-    return;
-  }
-  
-  try {
-    // Firestore 수정
-    const docRef = doc(db, 'profiles', user.uid);
-    await setDoc(docRef, { nickname: newNickname }, { merge: true });
-    
-    // Auth displayName도 수정
-    await updateProfile(user, { displayName: newNickname });
-    
-    const editSuccessMessage = document.getElementById('editSuccessMessage');
-    if (editSuccessMessage) {
-      editSuccessMessage.style.display = "block";
+      saveBtn.style.display = 'none';
     }
     
-    // UI 갱신
-    if (typeof showUserProfile === 'function') {
-      showUserProfile();
-    }
-    
-    setTimeout(() => {
-      const modal = document.getElementById('profileEditModal');
-      if (modal) modal.style.display = "none";
-    }, 1000);
-    
-  } catch (error) {
-    console.error('닉네임 수정 중 오류 발생:', error);
-    alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
-  }
-}
-
-// 로그인 처리
-async function login(email, password) {
-  console.log('로그인 시도:', email);
-  
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // 이메일 인증 여부 확인
-    if (!user.emailVerified) {
-      alert('이메일 인증이 필요합니다. 이메일을 확인하고 인증을 완료해주세요.');
-      await signOut(auth);
-      return;
-    }
-
-    console.log('로그인 성공:', user);    
-    document.getElementById('loginModal').style.display = 'none';
-    
-    showUserProfile();
-    
-  } catch (error) {
-    console.error('로그인 오류:', error);
-    
-    let errorMessage = '로그인 실패';
-    if (error.code === 'auth/user-not-found') {
-      errorMessage = '존재하지 않는 사용자입니다.';
-    } else if (error.code === 'auth/wrong-password') {
-      errorMessage = '비밀번호가 올바르지 않습니다.';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = '유효하지 않은 이메일 주소입니다.';
-    } else if (error.code === 'auth/too-many-requests') {
-      errorMessage = '너무 많은 로그인 시도입니다. 잠시 후 다시 시도해주세요.';
-    }
-    
-    alert(errorMessage);
-  }
-}
-
-// 프로필 표시
-async function showUserProfile() {
-  console.log('프로필 표시 시도');
-  
-  try {
-    const user = auth.currentUser;
-    
-    if (!user) {
-      console.log('사용자 정보 없음');
-      // script.js의 updateUIForAuthState 함수 호출
-      if (typeof updateUIForAuthState === 'function') {
-        updateUIForAuthState(false);
-      }
-      return;
-    }
-
-    console.log('현재 사용자:', user);
-
-    const docRef = doc(db, 'profiles', user.uid);
-    const docSnap = await getDoc(docRef);
-
-    let profileData;
-    
-    if (docSnap.exists()) {
-      profileData = docSnap.data();
-      console.log('프로필 데이터:', profileData);
-    } else {
-      console.log('프로필 데이터 없음, 기본값 사용');
-      const nickname = user.displayName || user.email.split('@')[0];
-      profileData = {
-        nickname: nickname,
-        avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=667eea&color=fff&size=35&bold=true`
-      };
-    }
-
-    // 모든 모달 닫기
-    const loginModal = document.getElementById('loginModal');
-    const signupModal = document.getElementById('signupModal');
-    const profileModal = document.getElementById('profileModal');
-    if (loginModal) loginModal.style.display = 'none';
-    if (signupModal) signupModal.style.display = 'none';
-    if (profileModal) profileModal.style.display = 'none';
-
-    // UI 업데이트 - script.js의 함수 호출
-    if (typeof updateUIForAuthState === 'function') {
-      updateUIForAuthState(true, profileData);
-    }
-
-  } catch (error) {
-    console.error('프로필 표시 중 오류:', error);
-    if (typeof updateUIForAuthState === 'function') {
-      updateUIForAuthState(false);
-    }
-  }
-}
-
-// 로그아웃
-async function logout() {
-  console.log('로그아웃 시도');
-  try {
-    // 임시 데이터 초기화
-    tempUserData = null;
-    
-    await signOut(auth);
-    
-    if (typeof updateUIForAuthState === 'function') {
-      updateUIForAuthState(false);
-    }
-    
-  } catch (error) {
-    console.error('로그아웃 오류:', error);
-    alert('로그아웃 중 오류가 발생했습니다.');
-  }
-}
-
-// 프로필 이미지 미리보기 설정
-setupProfileImagePreview();
-
-// 인증 상태 변화 감지
-onAuthStateChanged(auth, async (user) => {
-  console.log('Auth 상태 변경:', user);
-
-  if (user) {
-    await user.reload(); // 사용자 정보 새로고침
-    const refreshedUser = auth.currentUser;
-
-    if (!refreshedUser.emailVerified) {
-      console.log('이메일 미인증 상태입니다.');
+    if (checkVerificationBtn) {
+      checkVerificationBtn.style.display = 'inline-block';
+      checkVerificationBtn.disabled = false;
       
-      // 이메일 미인증 상태에서는 프로필을 표시하지 않음
-      if (typeof updateUIForAuthState === 'function') {
-        updateUIForAuthState(false);
+      if (buttonContainer) {
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'space-between';
+        buttonContainer.style.alignItems = 'center';
+        buttonContainer.style.gap = '10px';
       }
-      return;
-    }
-
-    showUserProfile();
-  } else {
-    if (typeof updateUIForAuthState === 'function') {
-      updateUIForAuthState(false);
     }
   }
-});
 
-// DOM이 로드된 후 이벤트 리스너 설정
-document.addEventListener('DOMContentLoaded', function() {
-  // DOM 요소 가져오기
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const loginModal = document.getElementById('loginModal');
-  const closeLoginModal = document.getElementById('closeLoginModal');
-  const signupModal = document.getElementById('signupModal');
-  const closeSignupModal = document.getElementById('closeSignupModal');
-  const openSignupLink = document.getElementById('openSignupLink');
-  const backToLoginLink = document.getElementById('backToLoginLink');
-  const openProfileModalBtn = document.getElementById('openProfileModalBtn');
-  const profileModal = document.getElementById('profileModal');
-  const closeProfileModal = document.getElementById('closeProfileModal');
-  const saveProfileBtn = document.getElementById('saveProfileBtn');
-  const checkVerificationBtn = document.getElementById('checkVerificationBtn');
-  const doLoginBtn = document.getElementById('doLogin');
-  const openPasswordResetLink = document.getElementById('openPasswordResetLink');
-  const passwordResetModal = document.getElementById('passwordResetModal');
-  const closePasswordResetModal = document.getElementById('closePasswordResetModal');
-  const backToLoginFromReset = document.getElementById('backToLoginFromReset');
-  const sendResetEmailBtn = document.getElementById('sendResetEmailBtn');
-  const saveNicknameBtn = document.getElementById('saveNicknameBtn');
-
-  console.log('비밀번호 재설정 요소 확인:', { 
-    openPasswordResetLink, 
-    passwordResetModal, 
-    sendResetEmailBtn 
-  });
-
-  // 비밀번호 찾기 링크 클릭
-  if (openPasswordResetLink) {
-    openPasswordResetLink.onclick = (e) => {
-      e.preventDefault();
-      console.log('비밀번호 재설정 링크 클릭');
-      if (loginModal) loginModal.style.display = 'none';
-      if (passwordResetModal) passwordResetModal.style.display = 'flex';
-    };
-  }
-
-  // 비밀번호 재설정 모달 닫기
-  if (closePasswordResetModal) {
-    closePasswordResetModal.onclick = () => {
-      if (passwordResetModal) passwordResetModal.style.display = 'none';
-    };
-  }
-
-  // 로그인으로 돌아가기
-  if (backToLoginFromReset) {
-    backToLoginFromReset.onclick = (e) => {
-      e.preventDefault();
-      if (passwordResetModal) passwordResetModal.style.display = 'none';
-      if (loginModal) loginModal.style.display = 'flex';
-      // 입력 필드 초기화
-      const resetEmailInput = document.getElementById('resetEmail');
-      if (resetEmailInput) resetEmailInput.value = '';
-    };
-  }
-
-  // 비밀번호 재설정 이메일 보내기 버튼
-  if (sendResetEmailBtn) {
-    sendResetEmailBtn.onclick = sendPasswordReset;
-  }
-
-  console.log('요소 확인:', { loginBtn, doLoginBtn, openProfileModalBtn });
-
-  // 이벤트 리스너 설정
-  if (loginBtn) {
-    loginBtn.onclick = () => {
-      console.log('로그인 버튼 클릭');
-      if (loginModal) loginModal.style.display = 'flex';
-    };
-  }
-
-  if (logoutBtn) {
-    logoutBtn.onclick = logout;
-  }
-
-  if (closeLoginModal) {
-    closeLoginModal.onclick = () => {
-      if (loginModal) loginModal.style.display = 'none';
-    };
-  }
-
-  if (closeSignupModal) {
-    closeSignupModal.onclick = () => {
-      if (signupModal) signupModal.style.display = 'none';
-    };
-  }
-
-  if (openSignupLink) {
-    openSignupLink.onclick = (e) => {
-      e.preventDefault();
-      if (loginModal) loginModal.style.display = 'none';
-      if (signupModal) signupModal.style.display = 'flex';
-    };
-  }
-
-  if (backToLoginLink) {
-    backToLoginLink.onclick = (e) => {
-      e.preventDefault();
-      if (signupModal) signupModal.style.display = 'none';
-      if (loginModal) loginModal.style.display = 'flex';
-    };
-  }
-
-  if (openProfileModalBtn) {
-    openProfileModalBtn.onclick = () => {
-      // 이메일, 비밀번호 값 저장
-      signupEmail = document.getElementById('signupEmail').value.trim();
-      signupPassword = document.getElementById('signupPassword').value.trim();
-
-      if (!signupEmail || !signupPassword) {
-        alert('이메일과 비밀번호를 입력해주세요.');
-        return;
-      }
-      
-      if (signupModal) signupModal.style.display = 'none';
-      showProfileModal();
-    };
-  }
-
-  if (closeProfileModal) {
-    closeProfileModal.onclick = () => {
-      if (profileModal) profileModal.style.display = 'none';
-      tempUserData = null;
-    };
-  }
-
-  if (saveProfileBtn) {
-    saveProfileBtn.onclick = saveProfile;
-  }
-
-  if (checkVerificationBtn) {
-    checkVerificationBtn.onclick = completeSignup;
-  }
-
-  // 닉네임 변경 저장 버튼(프로필 편집 모달)
-  if (saveNicknameBtn) {
-    saveNicknameBtn.onclick = saveNickname;
-  }
-
-  if (doLoginBtn) {
-    doLoginBtn.onclick = () => {
-      console.log('로그인 버튼 클릭됨');
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-
-      if (!email || !password) {
-        alert('이메일과 비밀번호를 입력해주세요.');
-        return;
-      }
-      login(email, password);
-    };
-  } else {
-    console.error('doLogin 버튼을 찾을 수 없습니다');
-  }
-
-  window.onclick = (e) => {
-    if (e.target === loginModal) loginModal.style.display = 'none';
-    if (e.target === signupModal) signupModal.style.display = 'none';
-    if (e.target === profileModal) {
-      profileModal.style.display = 'none';
-      tempUserData = null;
+  /**
+   * 인증 상태에 따른 UI 업데이트
+   * @param {boolean} isAuthenticated - 인증 상태
+   * @param {Object} profileData - 프로필 데이터
+   */
+  updateUIForAuthState(isAuthenticated, profileData = null) {
+    if (typeof window.updateUIForAuthState === 'function') {
+      window.updateUIForAuthState(isAuthenticated, profileData);
     }
-    // 비밀번호 재설정 모달 추가
-    if (e.target === passwordResetModal) {
-      passwordResetModal.style.display = 'none';
-      const resetEmailInput = document.getElementById('resetEmail');
-      if (resetEmailInput) resetEmailInput.value = '';
-    }
-  };
-
-  // 비밀번호 재설정 모달에서 Enter 키 처리
-  const resetEmailInput = document.getElementById('resetEmail');
-  if (resetEmailInput) {
-    resetEmailInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        sendPasswordReset();
-      }
-    });
-  }
-});
-
-// 비밀번호 재설정 이메일 보내기
-async function sendPasswordReset() {
-  const email = document.getElementById('resetEmail').value.trim();
-  const sendBtn = document.getElementById('sendResetEmailBtn');
-  
-  if (!email) {
-    alert('이메일 주소를 입력해주세요.');
-    return;
-  }
-  
-  if (!isHanilEmail(email)) {
-    alert('한일고 이메일(@hanilgo.cnehs.kr)만 사용할 수 있습니다.');
-    return;
   }
 
-  if (sendBtn) {
-    sendBtn.disabled = true;
-    sendBtn.textContent = '이메일 전송 중...';
+  /**
+   * 임시 데이터 및 상태 초기화
+   */
+  cleanup() {
+    this.tempUserData = null;
+    this.signupEmail = '';
+    this.signupPassword = '';
   }
 
-  try {
-    console.log('비밀번호 재설정 이메일 전송 시도:', email);
-    
-    await sendPasswordResetEmail(auth, email);
-    
-    alert('비밀번호 재설정 이메일이 전송되었습니다.\n이메일을 확인하고 안내에 따라 비밀번호를 재설정해주세요.');
-    
-    // 모달 닫기
-    document.getElementById('passwordResetModal').style.display = 'none';
-    
-    // 입력 필드 초기화
-    document.getElementById('resetEmail').value = '';
-    
-  } catch (error) {
-    console.error('비밀번호 재설정 이메일 전송 오류:', error);
-    
-    let errorMessage = '비밀번호 재설정 이메일 전송 중 오류가 발생했습니다.';
-    
-    if (error.code === 'auth/user-not-found') {
-      errorMessage = '등록되지 않은 이메일 주소입니다.';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = '유효하지 않은 이메일 주소입니다.';
-    } else if (error.code === 'auth/too-many-requests') {
-      errorMessage = '너무 많은 요청입니다. 잠시 후 다시 시도해주세요.';
-    }
-    
-    alert(errorMessage);
-  } finally {
-    if (sendBtn) {
-      sendBtn.disabled = false;
-      sendBtn.textContent = '비밀번호 재설정 이메일 보내기';
-    }
+  /**
+   * 인스턴스 정리
+   */
+  destroy() {
+    this.eventManager.removeAllListeners();
+    this.cleanup();
   }
 }
 
-// 전역 함수로 내보내기
-window.logout = logout;
-window.showUserProfile = showUserProfile;
+// 전역 인스턴스 생성
+const authManager = new AuthManager();
+
+// 전역 함수 내보내기 (하위 호환성)
+window.logout = () => authManager.handleLogout();
+window.showUserProfile = () => authManager.showUserProfile();
