@@ -62,40 +62,99 @@ window.onload = function () {
 
 function updateUIForAuthState(isLoggedIn, profileData = null) {
   const profileBox = document.getElementById('profile-box');
-  const themeIcon = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
-
   if (isLoggedIn && profileData) {
     const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
     const avatarUrl = profileData.avatar_url || defaultAvatar;
     profileBox.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="profile-bar" style="display: flex; align-items: center; gap: 10px; position: relative;">
         <img id="profileAvatar" src="${avatarUrl}" alt="프로필"
-          style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; cursor: pointer;"
-          onerror="this.src='${defaultAvatar}'">
+          style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover;">
         <span style="color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${profileData.nickname || '사용자'}</span>
-        <button id="logoutBtn" type="button">로그아웃</button>
-        <button id="toggleThemeBtn" type="button">${themeIcon}</button>
+        <button id="logoutBtn" type="button" style="margin-left:5px;">로그아웃</button>
+        <button id="profileSettingsBtn" type="button" title="설정"
+          style="background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; margin-left: 5px;">
+          <span class="material-symbols-outlined" style="font-size:22px;">&#9881;</span>
+        </button>
+        <div id="profileSettingsMenu" class="settings-menu" style="display: none; position: absolute; right: 0; top: 44px; z-index: 10; min-width: 220px; background: #fff; border-radius: 17px; box-shadow: 0 2px 16px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
+          <div style="padding: 16px 20px 8px 20px;">
+            <div style="font-weight: bold; color: #444; margin-bottom: 12px; font-size: 13px;">테마</div>
+            <div class="theme-options" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 15px;">
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                <input type="radio" name="theme" value="system" id="themeSystem">
+                시스템
+              </label>
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                <input type="radio" name="theme" value="light" id="themeLight">
+                라이트
+              </label>
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                <input type="radio" name="theme" value="dark" id="themeDark">
+                다크
+              </label>
+            </div>
+            <hr style="border:none;border-top:1px solid #eee; margin: 0 -20px 12px -20px;">
+            <button id="openProfileEditBtn" style="width: 100%; font-size:15px; background: none; border: none; color: #2051ff; padding: 8px 0; cursor: pointer;">프로필 편집</button>
+          </div>
+        </div>
       </div>
     `;
     document.getElementById('logoutBtn').onclick = logout;
-    document.getElementById('toggleThemeBtn').onclick = toggleTheme;
-    
-    // === 프로필 아바타 클릭 시 편집 모달 열기 ===
-    const profileAvatar = document.getElementById('profileAvatar');
-    if (profileAvatar) {
-      profileAvatar.onclick = () => {
-        openProfileEditModal(profileData);
-      };
-    }
+    // 메뉴 열고 닫기 토글
+    const settingsBtn = document.getElementById('profileSettingsBtn');
+    const settingsMenu = document.getElementById('profileSettingsMenu');
+    settingsBtn.onclick = (e) => {
+      e.stopPropagation();
+      settingsMenu.style.display = (settingsMenu.style.display === 'none' || settingsMenu.style.display === '') ? 'block' : 'none';
+    };
+    // 메뉴 바깥 클릭시 닫기
+    document.addEventListener('click', function hideMenu(e) {
+      if (settingsMenu && !settingsMenu.contains(e.target) && e.target !== settingsBtn) {
+        settingsMenu.style.display = 'none';
+      }
+    }, { once: true });
+    // 테마 라디오 반영
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') document.getElementById('themeLight').checked = true;
+    else if (savedTheme === 'dark') document.getElementById('themeDark').checked = true;
+    else document.getElementById('themeSystem').checked = true;
+    document.getElementById('themeSystem').onclick = () => { setTheme('system'); };
+    document.getElementById('themeLight').onclick = () => { setTheme('light'); };
+    document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
+    // 프로필 편집 버튼
+    document.getElementById('openProfileEditBtn').onclick = () => {
+      openProfileEditModal(profileData);
+      settingsMenu.style.display = 'none';
+    };
   } else {
     profileBox.innerHTML = `
       <div style="display: flex; align-items: center; gap: 10px;">
         <button id="loginBtn" type="button">로그인</button>
-        <button id="toggleThemeBtn" type="button">${themeIcon}</button>
+        <button id="profileSettingsBtn" type="button" title="설정"
+          style="background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; margin-left: 5px;">
+          <span class="material-symbols-outlined" style="font-size:22px;">&#9881;</span>
+        </button>
+        <div id="profileSettingsMenu" class="settings-menu" style="display: none; position: absolute; right: 0; top: 44px; z-index: 10; min-width: 220px; background: #fff; border-radius: 17px; box-shadow: 0 2px 16px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
+          <div style="padding: 16px 20px 8px 20px;">
+            <div style="font-weight: bold; color: #444; margin-bottom: 12px; font-size: 13px;">테마</div>
+            <div class="theme-options" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px;">
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                <input type="radio" name="theme" value="system" id="themeSystem">
+                시스템
+              </label>
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                <input type="radio" name="theme" value="light" id="themeLight">
+                라이트
+              </label>
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                <input type="radio" name="theme" value="dark" id="themeDark">
+                다크
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
     `;
     document.getElementById('loginBtn').onclick = () => {
-      // 수정: authModal → loginModal
       const loginModal = document.getElementById('loginModal');
       if (loginModal) {
         loginModal.style.display = 'flex';
@@ -103,8 +162,45 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
         console.error('loginModal 요소를 찾을 수 없습니다.');
       }
     };
-    document.getElementById('toggleThemeBtn').onclick = toggleTheme;
+    // 메뉴 열고 닫기 토글
+    const settingsBtn = document.getElementById('profileSettingsBtn');
+    const settingsMenu = document.getElementById('profileSettingsMenu');
+    settingsBtn.onclick = (e) => {
+      e.stopPropagation();
+      settingsMenu.style.display = (settingsMenu.style.display === 'none' || settingsMenu.style.display === '') ? 'block' : 'none';
+    };
+    document.addEventListener('click', function hideMenu(e) {
+      if (settingsMenu && !settingsMenu.contains(e.target) && e.target !== settingsBtn) {
+        settingsMenu.style.display = 'none';
+      }
+    }, { once: true });
+    // 테마 라디오 반영
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') document.getElementById('themeLight').checked = true;
+    else if (savedTheme === 'dark') document.getElementById('themeDark').checked = true;
+    else document.getElementById('themeSystem').checked = true;
+    document.getElementById('themeSystem').onclick = () => { setTheme('system'); };
+    document.getElementById('themeLight').onclick = () => { setTheme('light'); };
+    document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
   }
+}
+
+// 시스템/라이트/다크 테마 적용 함수
+function setTheme(mode) {
+  if (mode === 'system') {
+    localStorage.removeItem('theme');
+    document.body.classList.remove('light-mode');
+    document.body.classList.remove('dark-mode');
+  } else if (mode === 'light') {
+    localStorage.setItem('theme', 'light');
+    document.body.classList.add('light-mode');
+    document.body.classList.remove('dark-mode');
+  } else if (mode === 'dark') {
+    localStorage.setItem('theme', 'dark');
+    document.body.classList.add('dark-mode');
+    document.body.classList.remove('light-mode');
+  }
+  showUserProfile();
 }
 
 function toggleTheme() {
