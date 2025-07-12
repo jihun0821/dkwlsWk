@@ -126,34 +126,34 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
             settingsMenu.style.display = 'none';
         };
     } else {
-        profileBox.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <button id="loginBtn" type="button">로그인</button>
-                <button id="profileSettingsBtn" type="button" title="설정"
-                    style="background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; margin-left: 5px;">
-                    <span class="material-symbols-outlined" style="font-size:22px;">&#9881;</span>
-                </button>
-                <div id="profileSettingsMenu" class="settings-menu" style="display: none; position: absolute; right: 0; top: 44px; z-index: 10; min-width: 220px; background: #fff; border-radius: 17px; box-shadow: 0 2px 16px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
-                    <div style="padding: 16px 20px 8px 20px;">
-                        <div style="font-weight: bold; color: #444; margin-bottom: 12px; font-size: 13px;">테마</div>
-                        <div class="theme-options" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px;">
-                            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-                                <input type="radio" name="theme" value="system" id="themeSystem">
-                                시스템
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-                                <input type="radio" name="theme" value="light" id="themeLight">
-                                라이트
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-                                <input type="radio" name="theme" value="dark" id="themeDark">
-                                다크
-                            </label>
-                        </div>
-                    </div>
+profileBox.innerHTML = `
+    <div class="profile-container">
+        <button id="loginBtn" type="button">로그인</button>
+        <button id="profileSettingsBtn" type="button" title="설정" class="settings-button">
+            <span class="material-symbols-outlined">⚙</span>
+        </button>
+        <div id="profileSettingsMenu" class="settings-menu">
+            <div class="settings-content">
+                <div class="settings-title">테마</div>
+                <div class="theme-options">
+                    <label class="theme-option">
+                        <input type="radio" name="theme" value="system" id="themeSystem">
+                        시스템
+                    </label>
+                    <label class="theme-option">
+                        <input type="radio" name="theme" value="light" id="themeLight">
+                        라이트
+                    </label>
+                    <label class="theme-option">
+                        <input type="radio" name="theme" value="dark" id="themeDark">
+                        다크
+                    </label>
                 </div>
             </div>
-        `;
+        </div>
+    </div>
+`;
+
         
         // 로그인 버튼 이벤트
         document.getElementById('loginBtn').onclick = () => {
