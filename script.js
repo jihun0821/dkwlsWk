@@ -61,184 +61,159 @@ window.onload = function () {
 };
 
 function updateUIForAuthState(isLoggedIn, profileData = null) {
-  const profileBox = document.getElementById('profile-box');
-  if (isLoggedIn && profileData) {
-    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
-    const avatarUrl = profileData.avatar_url || defaultAvatar;
-    profileBox.innerHTML = `
-      <div class="profile-bar">
-        <img id="profileAvatar" src="${avatarUrl}" alt="프로필" class="profile-avatar">
-        <span class="profile-nickname">${profileData.nickname || '사용자'}</span>
-        <button id="logoutBtn" type="button" class="logout-btn">로그아웃</button>
-        <button id="profileSettingsBtn" type="button" title="설정" class="profile-settings-btn">
-          <span class="material-symbols-outlined">&#9881;</span>
-        </button>
-        <div id="profileSettingsMenu" class="settings-menu">
-          <div class="settings-menu-inner">
-            <div class="settings-menu-title">테마</div>
-            <div class="theme-options">
-              <label class="theme-label">
-                <input type="radio" name="theme" value="system" id="themeSystem">
-                시스템
-              </label>
-              <label class="theme-label">
-                <input type="radio" name="theme" value="light" id="themeLight">
-                라이트
-              </label>
-              <label class="theme-label">
-                <input type="radio" name="theme" value="dark" id="themeDark">
-                다크
-              </label>
+    const profileBox = document.getElementById('profile-box');
+    
+    if (isLoggedIn && profileData) {
+        const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
+        const avatarUrl = profileData.avatar_url || defaultAvatar;
+        profileBox.innerHTML = `
+            <div class="profile-bar">
+                <img id="profileAvatar" src="${avatarUrl}" alt="프로필" class="profile-avatar">
+                <span class="profile-nickname">${profileData.nickname || '사용자'}</span>
+                <button id="logoutBtn" type="button" class="logout-btn">로그아웃</button>
+                <button id="profileSettingsBtn" type="button" title="설정" class="profile-settings-btn">
+                    <span class="material-symbols-outlined">&#9881;</span>
+                </button>
+                <div id="profileSettingsMenu" class="settings-menu">
+                    <div class="settings-menu-inner">
+                        <div class="settings-menu-title">테마</div>
+                        <div class="theme-options">
+                            <label class="theme-label">
+                                <input type="radio" name="theme" value="system" id="themeSystem">
+                                시스템
+                            </label>
+                            <label class="theme-label">
+                                <input type="radio" name="theme" value="light" id="themeLight">
+                                라이트
+                            </label>
+                            <label class="theme-label">
+                                <input type="radio" name="theme" value="dark" id="themeDark">
+                                다크
+                            </label>
+                        </div>
+                        <hr class="settings-divider">
+                        <button id="openProfileEditBtn" class="profile-edit-btn">프로필 편집</button>
+                    </div>
+                </div>
             </div>
-            <hr class="settings-divider">
-            <button id="openProfileEditBtn" class="profile-edit-btn">프로필 편집</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-}
-    document.getElementById('logoutBtn').onclick = logout;
-    // 메뉴 열고 닫기 토글
-    const settingsBtn = document.getElementById('profileSettingsBtn');
-    const settingsMenu = document.getElementById('profileSettingsMenu');
-    settingsBtn.onclick = (e) => {
-      e.stopPropagation();
-      settingsMenu.style.display = (settingsMenu.style.display === 'none' || settingsMenu.style.display === '') ? 'block' : 'none';
-    };
-    // 메뉴 바깥 클릭시 닫기
-    document.addEventListener('click', function hideMenu(e) {
-      if (settingsMenu && !settingsMenu.contains(e.target) && e.target !== settingsBtn) {
-        settingsMenu.style.display = 'none';
-      }
-    }, { once: true });
-    // 테마 라디오 반영
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') document.getElementById('themeLight').checked = true;
-    else if (savedTheme === 'dark') document.getElementById('themeDark').checked = true;
-    else document.getElementById('themeSystem').checked = true;
-    document.getElementById('themeSystem').onclick = () => { setTheme('system'); };
-    document.getElementById('themeLight').onclick = () => { setTheme('light'); };
-    document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
-    // 프로필 편집 버튼
-document.getElementById('openProfileEditBtn').onclick = () => {
-    openProfileEditModal(profileData);
-    settingsMenu.style.display = 'none';
-  };
-} else {
-  profileBox.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <button id="loginBtn" type="button">로그인</button>
-      <button id="profileSettingsBtn" type="button" title="설정"
-        style="background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; margin-left: 5px;">
-        <span class="material-symbols-outlined" style="font-size:22px;">&#9881;</span>
-      </button>
-      <div id="profileSettingsMenu" class="settings-menu" style="display: none; position: absolute; right: 0; top: 44px; z-index: 10; min-width: 220px; background: #fff; border-radius: 17px; box-shadow: 0 2px 16px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
-        <div style="padding: 16px 20px 8px 20px;">
-          <div style="font-weight: bold; color: #444; margin-bottom: 12px; font-size: 13px;">테마</div>
-          <div class="theme-options" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px;">
-            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-              <input type="radio" name="theme" value="system" id="themeSystem">
-              시스템
-            </label>
-            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-              <input type="radio" name="theme" value="light" id="themeLight">
-              라이트
-            </label>
-            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-              <input type="radio" name="theme" value="dark" id="themeDark">
-              다크
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  // 로그인 버튼 이벤트
-  document.getElementById('loginBtn').onclick = () => {
-    const loginModal = document.getElementById('loginModal');
-    if (loginModal) {
-      loginModal.style.display = 'flex';
+        `;
+        
+        document.getElementById('logoutBtn').onclick = logout;
+        // 메뉴 열고 닫기 토글
+        const settingsBtn = document.getElementById('profileSettingsBtn');
+        const settingsMenu = document.getElementById('profileSettingsMenu');
+        settingsBtn.onclick = (e) => {
+            e.stopPropagation();
+            settingsMenu.style.display = (settingsMenu.style.display === 'none' || settingsMenu.style.display === '') ? 'block' : 'none';
+        };
+        // 메뉴 바깥 클릭시 닫기
+        document.addEventListener('click', function hideMenu(e) {
+            if (settingsMenu && !settingsMenu.contains(e.target) && e.target !== settingsBtn) {
+                settingsMenu.style.display = 'none';
+            }
+        }, { once: true });
+        // 테마 라디오 반영
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') document.getElementById('themeLight').checked = true;
+        else if (savedTheme === 'dark') document.getElementById('themeDark').checked = true;
+        else document.getElementById('themeSystem').checked = true;
+        document.getElementById('themeSystem').onclick = () => { setTheme('system'); };
+        document.getElementById('themeLight').onclick = () => { setTheme('light'); };
+        document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
+        // 프로필 편집 버튼
+        document.getElementById('openProfileEditBtn').onclick = () => {
+            openProfileEditModal(profileData);
+            settingsMenu.style.display = 'none';
+        };
     } else {
-      console.error('loginModal 요소를 찾을 수 없습니다.');
+        profileBox.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button id="loginBtn" type="button">로그인</button>
+                <button id="profileSettingsBtn" type="button" title="설정"
+                    style="background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; margin-left: 5px;">
+                    <span class="material-symbols-outlined" style="font-size:22px;">&#9881;</span>
+                </button>
+                <div id="profileSettingsMenu" class="settings-menu" style="display: none; position: absolute; right: 0; top: 44px; z-index: 10; min-width: 220px; background: #fff; border-radius: 17px; box-shadow: 0 2px 16px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
+                    <div style="padding: 16px 20px 8px 20px;">
+                        <div style="font-weight: bold; color: #444; margin-bottom: 12px; font-size: 13px;">테마</div>
+                        <div class="theme-options" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                                <input type="radio" name="theme" value="system" id="themeSystem">
+                                시스템
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                                <input type="radio" name="theme" value="light" id="themeLight">
+                                라이트
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+                                <input type="radio" name="theme" value="dark" id="themeDark">
+                                다크
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 로그인 버튼 이벤트
+        document.getElementById('loginBtn').onclick = () => {
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) {
+                loginModal.style.display = 'flex';
+            } else {
+                console.error('loginModal 요소를 찾을 수 없습니다.');
+            }
+        };
+        
+        // 설정 버튼 이벤트
+        const settingsBtn = document.getElementById('profileSettingsBtn');
+        const settingsMenu = document.getElementById('profileSettingsMenu');
+        settingsBtn.onclick = (e) => {
+            e.stopPropagation();
+            settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
+        };
+        
+        // 메뉴 외부 클릭 시 닫기
+        document.addEventListener('click', (e) => {
+            if (settingsMenu && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+                settingsMenu.style.display = 'none';
+            }
+        });
+        
+        // 테마 변경 이벤트
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') document.getElementById('themeLight').checked = true;
+        else if (savedTheme === 'dark') document.getElementById('themeDark').checked = true;
+        else document.getElementById('themeSystem').checked = true;
+        document.getElementById('themeSystem').onclick = () => { setTheme('system'); };
+        document.getElementById('themeLight').onclick = () => { setTheme('light'); };
+        document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
     }
-  };
-  
-  // 설정 버튼 이벤트
-  document.getElementById('profileSettingsBtn').onclick = (e) => {
-    e.stopPropagation();
-    const settingsMenu = document.getElementById('profileSettingsMenu');
-    if (settingsMenu) {
-      settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
-    }
-  };
-  
-  // 메뉴 외부 클릭 시 닫기
-  document.addEventListener('click', (e) => {
-    const settingsMenu = document.getElementById('profileSettingsMenu');
-    const settingsBtn = document.getElementById('profileSettingsBtn');
-    if (settingsMenu && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
-      settingsMenu.style.display = 'none';
-    }
-  });
-  
-  // 테마 변경 이벤트
-  document.querySelectorAll('input[name="theme"]').forEach(radio => {
-    radio.addEventListener('change', (e) => {
-      const selectedTheme = e.target.value;
-      // 테마 변경 로직을 여기에 추가
-      console.log('테마 변경:', selectedTheme);
-      // 예: applyTheme(selectedTheme);
-    });
-  });
-}
-    // 메뉴 열고 닫기 토글
-    const settingsBtn = document.getElementById('profileSettingsBtn');
-    const settingsMenu = document.getElementById('profileSettingsMenu');
-    settingsBtn.onclick = (e) => {
-      e.stopPropagation();
-      settingsMenu.style.display = (settingsMenu.style.display === 'none' || settingsMenu.style.display === '') ? 'block' : 'none';
-    };
-    document.addEventListener('click', function hideMenu(e) {
-      if (settingsMenu && !settingsMenu.contains(e.target) && e.target !== settingsBtn) {
-        settingsMenu.style.display = 'none';
-      }
-    }, { once: true });
-    // 테마 라디오 반영
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') document.getElementById('themeLight').checked = true;
-    else if (savedTheme === 'dark') document.getElementById('themeDark').checked = true;
-    else document.getElementById('themeSystem').checked = true;
-    document.getElementById('themeSystem').onclick = () => { setTheme('system'); };
-    document.getElementById('themeLight').onclick = () => { setTheme('light'); };
-    document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
-  }
 }
 
 // 시스템/라이트/다크 테마 적용 함수
 function setTheme(mode) {
-  if (mode === 'system') {
-    localStorage.removeItem('theme');
-    document.body.classList.remove('light-mode');
-    document.body.classList.remove('dark-mode');
-  } else if (mode === 'light') {
-    localStorage.setItem('theme', 'light');
-    document.body.classList.add('light-mode');
-    document.body.classList.remove('dark-mode');
-  } else if (mode === 'dark') {
-    localStorage.setItem('theme', 'dark');
-    document.body.classList.add('dark-mode');
-    document.body.classList.remove('light-mode');
-  }
-  showUserProfile();
+    if (mode === 'system') {
+        localStorage.removeItem('theme');
+        document.body.classList.remove('light-mode');
+        document.body.classList.remove('dark-mode');
+    } else if (mode === 'light') {
+        localStorage.setItem('theme', 'light');
+        document.body.classList.add('light-mode');
+        document.body.classList.remove('dark-mode');
+    } else if (mode === 'dark') {
+        localStorage.setItem('theme', 'dark');
+        document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
+    }
+    showUserProfile();
 }
 
 function toggleTheme() {
-  document.body.classList.toggle("light-mode");
-  localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
-  // UI 갱신(아이콘 즉시 변경)
-  showUserProfile();
+    document.body.classList.toggle("light-mode");
+    localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
+    // UI 갱신(아이콘 즉시 변경)
+    showUserProfile();
 }
 
 function isUserLoggedIn() {
@@ -247,134 +222,134 @@ function isUserLoggedIn() {
 
 // === 프로필 편집 모달 열기 함수 ===
 function openProfileEditModal(profileData) {
-  const modal = document.getElementById('profileEditModal');
-  if (!modal) return;
-  document.getElementById('currentProfileImage').src = profileData.avatar_url;
-  document.getElementById('currentNickname').textContent = profileData.nickname;
-  document.getElementById('currentEmail').textContent = profileData.email || "";
-  document.getElementById('editSuccessMessage').style.display = "none";
-  document.getElementById('newNickname').value = "";
-  modal.style.display = "flex";
+    const modal = document.getElementById('profileEditModal');
+    if (!modal) return;
+    document.getElementById('currentProfileImage').src = profileData.avatar_url;
+    document.getElementById('currentNickname').textContent = profileData.nickname;
+    document.getElementById('currentEmail').textContent = profileData.email || "";
+    document.getElementById('editSuccessMessage').style.display = "none";
+    document.getElementById('newNickname').value = "";
+    modal.style.display = "flex";
 }
 
 // [추가!] 프로필 편집 모달 이벤트 설정
 function setupProfileEditModalEvents() {
-  // 프로필 편집 모달 닫기/취소 버튼 이벤트
-  const closeProfileEditModal = document.getElementById('closeProfileEditModal');
-  const cancelEditBtn = document.getElementById('cancelEditBtn');
-  const profileEditModal = document.getElementById('profileEditModal');
-  
-  if (closeProfileEditModal) {
-    closeProfileEditModal.onclick = () => {
-      if (profileEditModal) profileEditModal.style.display = 'none';
-    };
-  }
-  
-  if (cancelEditBtn) {
-    cancelEditBtn.onclick = () => {
-      if (profileEditModal) profileEditModal.style.display = 'none';
-    };
-  }
+    // 프로필 편집 모달 닫기/취소 버튼 이벤트
+    const closeProfileEditModal = document.getElementById('closeProfileEditModal');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const profileEditModal = document.getElementById('profileEditModal');
+    
+    if (closeProfileEditModal) {
+        closeProfileEditModal.onclick = () => {
+            if (profileEditModal) profileEditModal.style.display = 'none';
+        };
+    }
+    
+    if (cancelEditBtn) {
+        cancelEditBtn.onclick = () => {
+            if (profileEditModal) profileEditModal.style.display = 'none';
+        };
+    }
 
-  // 프로필 편집 모달 배경 클릭 시 닫기
-  if (profileEditModal) {
-    profileEditModal.onclick = (e) => {
-      if (e.target === profileEditModal) {
-        profileEditModal.style.display = 'none';
-      }
-    };
-  }
+    // 프로필 편집 모달 배경 클릭 시 닫기
+    if (profileEditModal) {
+        profileEditModal.onclick = (e) => {
+            if (e.target === profileEditModal) {
+                profileEditModal.style.display = 'none';
+            }
+        };
+    }
 }
 
 // === 편집 모달 이벤트 연결 ===
 window.addEventListener('DOMContentLoaded', function() {
-  const closeEdit = document.getElementById('closeProfileEditModal');
-  const cancelEdit = document.getElementById('cancelEditBtn');
-  const saveEdit = document.getElementById('saveNicknameBtn');
-  
-  if (closeEdit) closeEdit.onclick = () => { 
-    document.getElementById('profileEditModal').style.display = "none"; 
-  };
-  
-  if (cancelEdit) cancelEdit.onclick = () => { 
-    document.getElementById('profileEditModal').style.display = "none"; 
-  };
+    const closeEdit = document.getElementById('closeProfileEditModal');
+    const cancelEdit = document.getElementById('cancelEditBtn');
+    const saveEdit = document.getElementById('saveNicknameBtn');
+    
+    if (closeEdit) closeEdit.onclick = () => { 
+        document.getElementById('profileEditModal').style.display = "none"; 
+    };
+    
+    if (cancelEdit) cancelEdit.onclick = () => { 
+        document.getElementById('profileEditModal').style.display = "none"; 
+    };
 });
 
 const saveNicknameBtn = document.getElementById('saveNicknameBtn');
 if (saveNicknameBtn) {
-  saveNicknameBtn.onclick = async function () {
-    const newNickname = document.getElementById('newNickname').value.trim();
-    if (newNickname.length < 2 || newNickname.length > 20) {
-      alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
-      return;
-    }
-    const user = auth.currentUser;
-    if (!user) return;
-    try {
-      // Firestore 수정
-      const docRef = window.firebase.doc(db, 'profiles', user.uid);
-      await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
-      // Auth displayName도 수정
-      await window.firebase.updateProfile(user, { displayName: newNickname });
-      document.getElementById('editSuccessMessage').style.display = "block";
-      showUserProfile();
-      setTimeout(() => {
-        document.getElementById('profileEditModal').style.display = "none";
-      }, 1000);
-    } catch (error) {
-      console.error('닉네임 수정 중 오류 발생:', error);
-      alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
-    }
-  };
+    saveNicknameBtn.onclick = async function () {
+        const newNickname = document.getElementById('newNickname').value.trim();
+        if (newNickname.length < 2 || newNickname.length > 20) {
+            alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+            return;
+        }
+        const user = auth.currentUser;
+        if (!user) return;
+        try {
+            // Firestore 수정
+            const docRef = window.firebase.doc(db, 'profiles', user.uid);
+            await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
+            // Auth displayName도 수정
+            await window.firebase.updateProfile(user, { displayName: newNickname });
+            document.getElementById('editSuccessMessage').style.display = "block";
+            showUserProfile();
+            setTimeout(() => {
+                document.getElementById('profileEditModal').style.display = "none";
+            }, 1000);
+        } catch (error) {
+            console.error('닉네임 수정 중 오류 발생:', error);
+            alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
+        }
+    };
 }
 
 // Firebase 투표 저장
 async function saveVoteToFirestore(matchId, voteType) {
-  const user = auth.currentUser;
-  if (!user) return;
+    const user = auth.currentUser;
+    if (!user) return;
 
-  const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
-  const voteSnap = await window.firebase.getDoc(voteRef);
+    const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
+    const voteSnap = await window.firebase.getDoc(voteRef);
 
-  if (voteSnap.exists()) return null;
+    if (voteSnap.exists()) return null;
 
-  await window.firebase.setDoc(voteRef, {
-    matchId,
-    uid: user.uid,
-    voteType,
-    votedAt: new Date()
-  });
-  return true;
+    await window.firebase.setDoc(voteRef, {
+        matchId,
+        uid: user.uid,
+        voteType,
+        votedAt: new Date()
+    });
+    return true;
 }
 
 async function getVotingStatsFromFirestore(matchId) {
-  const stats = { homeWin: 0, draw: 0, awayWin: 0, total: 0 };
-  const querySnapshot = await window.firebase.getDocs(
-    window.firebase.query(
-      window.firebase.collection(db, 'votes'),
-      window.firebase.where('matchId', '==', matchId)
-    )
-  );
+    const stats = { homeWin: 0, draw: 0, awayWin: 0, total: 0 };
+    const querySnapshot = await window.firebase.getDocs(
+        window.firebase.query(
+            window.firebase.collection(db, 'votes'),
+            window.firebase.where('matchId', '==', matchId)
+        )
+    );
 
-  querySnapshot.forEach(doc => {
-    const data = doc.data();
-    if (data.voteType in stats) {
-      stats[data.voteType]++;
-      stats.total++;
-    }
-  });
+    querySnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.voteType in stats) {
+            stats[data.voteType]++;
+            stats.total++;
+        }
+    });
 
-  return stats;
+    return stats;
 }
 
 async function hasUserVoted(matchId) {
-  const user = auth.currentUser;
-  if (!user) return false;
+    const user = auth.currentUser;
+    if (!user) return false;
 
-  const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
-  const voteSnap = await window.firebase.getDoc(voteRef);
-  return voteSnap.exists();
+    const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
+    const voteSnap = await window.firebase.getDoc(voteRef);
+    return voteSnap.exists();
 }
 
 function renderVotingGraph(container, stats) {
@@ -431,60 +406,60 @@ function closePanel() {
 
 // Firebase 기반 loadMatchDetails 함수 (중복 제거, 이것만 사용)
 async function loadMatchDetails(matchId) {
-  const matchDetails = getMatchDetailsById(matchId);
-  panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
+    const matchDetails = getMatchDetailsById(matchId);
+    panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
 
-  const isLoggedIn = !!auth.currentUser;
-  const userVoted = isLoggedIn ? await hasUserVoted(matchId) : false;
-  const stats = await getVotingStatsFromFirestore(matchId);
+    const isLoggedIn = !!auth.currentUser;
+    const userVoted = isLoggedIn ? await hasUserVoted(matchId) : false;
+    const stats = await getVotingStatsFromFirestore(matchId);
 
-  let predictionHtml = "";
-  if (matchDetails.status === "scheduled") {
-    if (!isLoggedIn || userVoted) {
-      predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+    let predictionHtml = "";
+    if (matchDetails.status === "scheduled") {
+        if (!isLoggedIn || userVoted) {
+            predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+        } else {
+            predictionHtml = `
+                <h3>승부예측</h3>
+                <div class="prediction-btns">
+                    <button class="prediction-btn home-win" data-vote="homeWin">1</button>
+                    <button class="prediction-btn draw" data-vote="draw">X</button>
+                    <button class="prediction-btn away-win" data-vote="awayWin">2</button>
+                </div>`;
+        }
     } else {
-      predictionHtml = `
-        <h3>승부예측</h3>
-        <div class="prediction-btns">
-          <button class="prediction-btn home-win" data-vote="homeWin">1</button>
-          <button class="prediction-btn draw" data-vote="draw">X</button>
-          <button class="prediction-btn away-win" data-vote="awayWin">2</button>
-        </div>`;
+        predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
     }
-  } else {
-    predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
-  }
 
-panelContent.innerHTML = `
-  <div class="match-date">${matchDetails.date}</div>
-  <div class="match-league">${matchDetails.league}</div>
-  <div class="match-score">
-    <div class="team-name">${matchDetails.homeTeam}</div>
-    <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
-    <div class="team-name">${matchDetails.awayTeam}</div>
-  </div>
-  <div class="prediction-container">${predictionHtml}</div>
-  ${renderPanelTabs(matchDetails, matchId)}
-`;
+    panelContent.innerHTML = `
+        <div class="match-date">${matchDetails.date}</div>
+        <div class="match-league">${matchDetails.league}</div>
+        <div class="match-score">
+            <div class="team-name">${matchDetails.homeTeam}</div>
+            <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
+            <div class="team-name">${matchDetails.awayTeam}</div>
+        </div>
+        <div class="prediction-container">${predictionHtml}</div>
+        ${renderPanelTabs(matchDetails, matchId)}
+    `;
 
-const statsContainer = panelContent.querySelector('#votingStats');
-if (statsContainer) renderVotingGraph(statsContainer, stats);
+    const statsContainer = panelContent.querySelector('#votingStats');
+    if (statsContainer) renderVotingGraph(statsContainer, stats);
 
-setupPanelTabs(matchId); // 탭 이벤트 연결!
+    setupPanelTabs(matchId); // 탭 이벤트 연결!
 
-  const buttons = panelContent.querySelectorAll('.prediction-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const voteType = btn.getAttribute("data-vote");
-      const success = await saveVoteToFirestore(matchId, voteType);
-      if (success) {
-        const updatedStats = await getVotingStatsFromFirestore(matchId);
-        const container = btn.closest('.prediction-container');
-        container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
-        renderVotingGraph(container.querySelector('#votingStats'), updatedStats);
-      }
+    const buttons = panelContent.querySelectorAll('.prediction-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const voteType = btn.getAttribute("data-vote");
+            const success = await saveVoteToFirestore(matchId, voteType);
+            if (success) {
+                const updatedStats = await getVotingStatsFromFirestore(matchId);
+                const container = btn.closest('.prediction-container');
+                container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+                renderVotingGraph(container.querySelector('#votingStats'), updatedStats);
+            }
+        });
     });
-  });
 }
 
 function setupMatchClickListeners() {
@@ -593,117 +568,117 @@ overlay?.addEventListener("click", closePanel);
 
 // HTML 이스케이프
 function escapeHtml(text) {
-  if (!text) return "";
-  return text.replace(/[&<>"'`]/g, s => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-    "`": "&#96;"
-  }[s]));
+    if (!text) return "";
+    return text.replace(/[&<>"'`]/g, s => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+        "`": "&#96;"
+    }[s]));
 }
 
 function renderPanelTabs(matchDetails, matchId) {
-  return `
-    <div class="tab-container">
-      <div class="tabs">
-        <div class="tab active" data-tab="lineup">라인업</div>
-        <div class="tab" data-tab="chat">채팅</div>
-      </div>
-      <div class="tab-contents">
-        <div class="tab-content lineup-content active">
-          ${renderLineup(matchDetails)}
+    return `
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="lineup">라인업</div>
+                <div class="tab" data-tab="chat">채팅</div>
+            </div>
+            <div class="tab-contents">
+                <div class="tab-content lineup-content active">
+                    ${renderLineup(matchDetails)}
+                </div>
+                <div class="tab-content chat-content">
+                    ${renderChatBox(matchId)}
+                </div>
+            </div>
         </div>
-        <div class="tab-content chat-content">
-          ${renderChatBox(matchId)}
-        </div>
-      </div>
-    </div>
-  `;
+    `;
 }
 
 // 라인업 렌더링 (학년별)
 function renderLineup(match) {
-  const groupLabel = (idx) => ["1학년", "2학년", "3학년"][idx];
-function players(list) {
-  return `<div class="players-container">${list.map((n) => `<div class="player">${escapeHtml(n)}</div>`).join("")}</div>`;
-}
-  function sideBlock(side, data) {
+    const groupLabel = (idx) => ["1학년", "2학년", "3학년"][idx];
+    function players(list) {
+        return `<div class="players-container">${list.map((n) => `<div class="player">${escapeHtml(n)}</div>`).join("")}</div>`;
+    }
+    function sideBlock(side, data) {
+        return `
+            <div class="lineup-team lineup-${side}">
+                <div class="lineup-group"><span class="position-label">3학년</span>${players(data.third || [])}</div>
+                <div class="lineup-group"><span class="position-label">2학년</span>${players(data.second || [])}</div>
+                <div class="lineup-group"><span class="position-label">1학년</span>${players(data.first || [])}</div>
+            </div>
+        `;
+    }
     return `
-      <div class="lineup-team lineup-${side}">
-        <div class="lineup-group"><span class="position-label">3학년</span>${players(data.third || [])}</div>
-        <div class="lineup-group"><span class="position-label">2학년</span>${players(data.second || [])}</div>
-        <div class="lineup-group"><span class="position-label">1학년</span>${players(data.first || [])}</div>
-      </div>
+        <div class="lineup-field">
+            <div class="lineup-bg"></div>
+            <div class="lineup-sides">
+                ${sideBlock("home", match.lineups.home)}
+                <div class="vs-label">VS</div>
+                ${sideBlock("away", match.lineups.away)}
+            </div>
+        </div>
     `;
-  }
-  return `
-    <div class="lineup-field">
-      <div class="lineup-bg"></div>
-      <div class="lineup-sides">
-        ${sideBlock("home", match.lineups.home)}
-        <div class="vs-label">VS</div>
-        ${sideBlock("away", match.lineups.away)}
-      </div>
-    </div>
-  `;
 }
 
 // 채팅 박스 렌더링
 function renderChatBox(matchId) {
-  return `
-    <div class="chat-messages" id="chatMessages"></div>
-    <form class="chat-form" id="chatForm">
-      <input type="text" id="chatInput" autocomplete="off" maxlength="120" placeholder="메시지를 입력하세요" />
-      <button type="submit" id="sendChatBtn">전송</button>
-    </form>
-    <div class="chat-login-notice" style="display:none;">
-      <button class="login-btn" onclick="document.getElementById('loginModal').style.display='flex'">로그인 후 채팅하기</button>
-    </div>
-  `;
+    return `
+        <div class="chat-messages" id="chatMessages"></div>
+        <form class="chat-form" id="chatForm">
+            <input type="text" id="chatInput" autocomplete="off" maxlength="120" placeholder="메시지를 입력하세요" />
+            <button type="submit" id="sendChatBtn">전송</button>
+        </form>
+        <div class="chat-login-notice" style="display:none;">
+            <button class="login-btn" onclick="document.getElementById('loginModal').style.display='flex'">로그인 후 채팅하기</button>
+        </div>
+    `;
 }
 
 // 채팅 Firestore 경로
 function chatCollection(matchId) {
-  return window.firebase.collection(db, 'match_chats', matchId, 'messages');
+    return window.firebase.collection(db, 'match_chats', matchId, 'messages');
 }
 
 // 패널 탭 동작 및 기능 연결 (수정된 버전)
 function setupPanelTabs(matchId) {
-  const tabs = document.querySelectorAll('.tab');
-  const contents = document.querySelectorAll('.tab-content');
-  
-  tabs.forEach((tab, index) => {
-    tab.onclick = () => {
-      // 모든 탭과 콘텐츠에서 active 클래스 제거
-      tabs.forEach(t => t.classList.remove('active'));
-      contents.forEach(c => c.classList.remove('active'));
-      
-      // 클릭된 탭과 해당 콘텐츠에 active 클래스 추가
-      tab.classList.add('active');
-      contents[index].classList.add('active');
-      
-      // 채팅 탭이 활성화된 경우 채팅 기능 초기화
-      if (tab.dataset.tab === "chat") {
-        setupChat(matchId);
-      }
-    };
-  });
-  
-  // 기본적으로 첫 번째 탭(라인업)을 활성화
-  if (tabs.length > 0 && contents.length > 0) {
-    tabs[0].classList.add('active');
-    contents[0].classList.add('active');
-  }
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach((tab, index) => {
+        tab.onclick = () => {
+            // 모든 탭과 콘텐츠에서 active 클래스 제거
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            // 클릭된 탭과 해당 콘텐츠에 active 클래스 추가
+            tab.classList.add('active');
+            contents[index].classList.add('active');
+            
+            // 채팅 탭이 활성화된 경우 채팅 기능 초기화
+            if (tab.dataset.tab === "chat") {
+                setupChat(matchId);
+            }
+        };
+    });
+    
+    // 기본적으로 첫 번째 탭(라인업)을 활성화
+    if (tabs.length > 0 && contents.length > 0) {
+        tabs[0].classList.add('active');
+        contents[0].classList.add('active');
+    }
 }
 
 // 채팅 기능 (실시간 반영)
 function setupChat(matchId) {
-  const chatBox = document.getElementById('chatMessages');
-  const chatForm = document.getElementById('chatForm');
-  const chatInput = document.getElementById('chatInput');
-  const loginNotice = document.querySelector('.chat-login-notice');
+    const chatBox = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const loginNotice = document.querySelector('.chat-login-notice');
   chatBox.innerHTML = "";
 
   if (!auth.currentUser) {
