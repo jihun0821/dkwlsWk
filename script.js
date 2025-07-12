@@ -121,10 +121,10 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     document.getElementById('themeLight').onclick = () => { setTheme('light'); };
     document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
     // 프로필 편집 버튼
-   document.getElementById('openProfileEditBtn').onclick = () => {
-  openProfileEditModal(profileData);
-  settingsMenu.style.display = 'none';
-};
+document.getElementById('openProfileEditBtn').onclick = () => {
+    openProfileEditModal(profileData);
+    settingsMenu.style.display = 'none';
+  };
 } else {
   profileBox.innerHTML = `
     <div style="display: flex; align-items: center; gap: 10px;">
