@@ -122,10 +122,18 @@ function isUserLoggedIn() {
 function openProfileEditModal(profileData) {
   const modal = document.getElementById('profileEditModal');
   if (!modal) return;
-  
-  document.getElementById('currentProfileImage').src = profileData.avatar_url;
-  document.getElementById('currentNickname').textContent = profileData.nickname;
-  document.getElementById('currentEmail').textContent = profileData.email || "";
+
+  const imgEl = document.getElementById('currentProfileImage');
+  const nickEl = document.getElementById('currentNickname');
+  const emailEl = document.getElementById('currentEmail');
+  if (!imgEl || !nickEl || !emailEl) {
+    console.error('프로필 편집 모달 내부 요소를 찾을 수 없습니다.');
+    return;
+  }
+
+  imgEl.src = profileData.avatar_url || 'https://ui-avatars.com/api/?name=USER';
+  nickEl.textContent = profileData.nickname || '';
+  emailEl.textContent = profileData.email || '';
   document.getElementById('editSuccessMessage').style.display = "none";
   document.getElementById('newNickname').value = "";
   modal.style.display = "flex";
