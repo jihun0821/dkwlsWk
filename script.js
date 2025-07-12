@@ -270,7 +270,9 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 });
 
-if (saveEdit) saveEdit.onclick = async function () {
+const saveEdit = document.getElementById('saveEdit'); 
+if (saveEdit) {
+  saveEdit.onclick = async function () {
     const newNickname = document.getElementById('newNickname').value.trim();
     if (newNickname.length < 2 || newNickname.length > 20) {
       alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
@@ -294,6 +296,7 @@ if (saveEdit) saveEdit.onclick = async function () {
       alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
     }
   };
+}
 
 // Firebase 투표 저장
 async function saveVoteToFirestore(matchId, voteType) {
