@@ -121,47 +121,78 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     document.getElementById('themeLight').onclick = () => { setTheme('light'); };
     document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
     // 프로필 편집 버튼
-    document.getElementById('openProfileEditBtn').onclick = () => {
-      openProfileEditModal(profileData);
-      settingsMenu.style.display = 'none';
-    };
-  } else {
-    profileBox.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <button id="loginBtn" type="button">로그인</button>
-        <button id="profileSettingsBtn" type="button" title="설정"
-          style="background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; margin-left: 5px;">
-          <span class="material-symbols-outlined" style="font-size:22px;">&#9881;</span>
-        </button>
-        <div id="profileSettingsMenu" class="settings-menu" style="display: none; position: absolute; right: 0; top: 44px; z-index: 10; min-width: 220px; background: #fff; border-radius: 17px; box-shadow: 0 2px 16px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
-          <div style="padding: 16px 20px 8px 20px;">
-            <div style="font-weight: bold; color: #444; margin-bottom: 12px; font-size: 13px;">테마</div>
-            <div class="theme-options" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px;">
-              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-                <input type="radio" name="theme" value="system" id="themeSystem">
-                시스템
-              </label>
-              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-                <input type="radio" name="theme" value="light" id="themeLight">
-                라이트
-              </label>
-              <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
-                <input type="radio" name="theme" value="dark" id="themeDark">
-                다크
-              </label>
-            </div>
+   document.getElementById('openProfileEditBtn').onclick = () => {
+  openProfileEditModal(profileData);
+  settingsMenu.style.display = 'none';
+};
+} else {
+  profileBox.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button id="loginBtn" type="button">로그인</button>
+      <button id="profileSettingsBtn" type="button" title="설정"
+        style="background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; margin-left: 5px;">
+        <span class="material-symbols-outlined" style="font-size:22px;">&#9881;</span>
+      </button>
+      <div id="profileSettingsMenu" class="settings-menu" style="display: none; position: absolute; right: 0; top: 44px; z-index: 10; min-width: 220px; background: #fff; border-radius: 17px; box-shadow: 0 2px 16px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
+        <div style="padding: 16px 20px 8px 20px;">
+          <div style="font-weight: bold; color: #444; margin-bottom: 12px; font-size: 13px;">테마</div>
+          <div class="theme-options" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px;">
+            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+              <input type="radio" name="theme" value="system" id="themeSystem">
+              시스템
+            </label>
+            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+              <input type="radio" name="theme" value="light" id="themeLight">
+              라이트
+            </label>
+            <label style="display: flex; align-items: center; gap: 7px; font-size: 15px;">
+              <input type="radio" name="theme" value="dark" id="themeDark">
+              다크
+            </label>
           </div>
         </div>
       </div>
-    `;
-    document.getElementById('loginBtn').onclick = () => {
-      const loginModal = document.getElementById('loginModal');
-      if (loginModal) {
-        loginModal.style.display = 'flex';
-      } else {
-        console.error('loginModal 요소를 찾을 수 없습니다.');
-      }
-    };
+    </div>
+  `;
+  
+  // 로그인 버튼 이벤트
+  document.getElementById('loginBtn').onclick = () => {
+    const loginModal = document.getElementById('loginModal');
+    if (loginModal) {
+      loginModal.style.display = 'flex';
+    } else {
+      console.error('loginModal 요소를 찾을 수 없습니다.');
+    }
+  };
+  
+  // 설정 버튼 이벤트
+  document.getElementById('profileSettingsBtn').onclick = (e) => {
+    e.stopPropagation();
+    const settingsMenu = document.getElementById('profileSettingsMenu');
+    if (settingsMenu) {
+      settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
+    }
+  };
+  
+  // 메뉴 외부 클릭 시 닫기
+  document.addEventListener('click', (e) => {
+    const settingsMenu = document.getElementById('profileSettingsMenu');
+    const settingsBtn = document.getElementById('profileSettingsBtn');
+    if (settingsMenu && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+      settingsMenu.style.display = 'none';
+    }
+  });
+  
+  // 테마 변경 이벤트
+  document.querySelectorAll('input[name="theme"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const selectedTheme = e.target.value;
+      // 테마 변경 로직을 여기에 추가
+      console.log('테마 변경:', selectedTheme);
+      // 예: applyTheme(selectedTheme);
+    });
+  });
+}
     // 메뉴 열고 닫기 토글
     const settingsBtn = document.getElementById('profileSettingsBtn');
     const settingsMenu = document.getElementById('profileSettingsMenu');
