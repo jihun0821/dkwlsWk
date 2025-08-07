@@ -8,8 +8,9 @@ const panelTitle = document.getElementById("panelTitle");
 let currentPage = 6;
 const matchesPerPage = 5;
 
-function getTotalPages() {
-    return Math.ceil(Object.keys(getAllMatchData()).length / matchesPerPage);
+async function getTotalPages() {
+    const allMatches = await getAllMatchData();
+    return Math.ceil(Object.keys(allMatches).length / matchesPerPage);
 }
 
 const prevBtn = document.getElementById('prevBtn');
@@ -404,9 +405,29 @@ function closePanel() {
     document.body.style.overflow = "";
 }
 
+// ✅ Firestore에서 단일 경기 정보 가져오기 (비동기)
+async function getMatchDetailsById(matchId) {
+    try {
+        const docRef = window.firebase.doc(db, "matches", matchId);
+        const docSnap = await window.firebase.getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            return docSnap.data();
+        } else {
+            console.warn(`경기 ID ${matchId}에 대한 데이터가 없습니다.`);
+            return null;
+        }
+    } catch (error) {
+        console.error("경기 정보 불러오기 실패:", error);
+        return null;
+    }
+}
+
 // Firebase 기반 loadMatchDetails 함수 (중복 제거, 이것만 사용)
 async function loadMatchDetails(matchId) {
-    const matchDetails = getMatchDetailsById(matchId);
+    const matchDetails = await getMatchDetailsById(matchId);
+    if (!matchDetails) return;
+    
     panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
 
     const isLoggedIn = !!auth.currentUser;
@@ -471,42 +492,24 @@ function setupMatchClickListeners() {
     });
 }
 
-function getAllMatchData() {
-    return {
-        "1": getMatchDetailsById("1"),
-        "2": getMatchDetailsById("2"),
-        "3": getMatchDetailsById("3"),
-        "4": getMatchDetailsById("4"),
-        "5": getMatchDetailsById("5"),
-        "6": getMatchDetailsById("6"),
-        "7": getMatchDetailsById("7"),
-        "8": getMatchDetailsById("8"),
-        "9": getMatchDetailsById("21"),
-        "10": getMatchDetailsById("22"),
-        "11": getMatchDetailsById("23"),
-        "12": getMatchDetailsById("9"),
-        "13": getMatchDetailsById("10"),
-        "14": getMatchDetailsById("11"),
-        "15": getMatchDetailsById("12"),
-        "16": getMatchDetailsById("13"),
-        "17": getMatchDetailsById("14"),
-        "18": getMatchDetailsById("15"),
-        "19": getMatchDetailsById("16"),
-        "20": getMatchDetailsById("17"),
-        "21": getMatchDetailsById("18"),
-        "22": getMatchDetailsById("19"),
-        "23": getMatchDetailsById("24"),
-        "24": getMatchDetailsById("20"),
-        "25": getMatchDetailsById("25"),
-        "26": getMatchDetailsById("26"),
-        "27": getMatchDetailsById("27"),
-        "28": getMatchDetailsById("28")
-    };
+// ✅ Firestore에서 모든 경기 정보 가져오기 (비동기)
+async function getAllMatchData() {
+    const matchMap = {};
+    try {
+        const querySnapshot = await window.firebase.getDocs(window.firebase.collection(db, "matches"));
+        querySnapshot.forEach((doc) => {
+            matchMap[doc.id] = doc.data();
+        });
+    } catch (error) {
+        console.error("경기 목록 불러오기 실패:", error);
+    }
+    return matchMap;
 }
 
-function renderMatches() {
+// ✅ 비동기로 변경된 renderMatches 함수
+async function renderMatches() {
     const matchContainer = document.querySelector("section.main");
-    const allMatches = Object.values(getAllMatchData());
+    const allMatches = Object.values(await getAllMatchData());
     const matchesToShow = allMatches.slice((currentPage - 1) * matchesPerPage, currentPage * matchesPerPage);
 
     document.querySelectorAll(".match-list").forEach(el => el.remove());
@@ -532,23 +535,25 @@ function renderMatches() {
     updateButtons(); // 페이지 버튼도 함께 갱신
 }
 
-function updateButtons() {
+async function updateButtons() {
+    const totalPages = await getTotalPages();
     prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === getTotalPages();
+    nextBtn.disabled = currentPage === totalPages;
 }
 
 // 페이지네이션 이벤트 (중복되지 않게 1회만!)
-prevBtn?.addEventListener('click', () => {
+prevBtn?.addEventListener('click', async () => {
     if (currentPage > 1) {
         currentPage--;
-        renderMatches();
+        await renderMatches();
     }
 });
 
-nextBtn?.addEventListener('click', () => {
-    if (currentPage < getTotalPages()) {
+nextBtn?.addEventListener('click', async () => {
+    const totalPages = await getTotalPages();
+    if (currentPage < totalPages) {
         currentPage++;
-        renderMatches();
+        await renderMatches();
     }
 });
 
