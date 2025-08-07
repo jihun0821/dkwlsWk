@@ -1,6 +1,3 @@
-// 통합 AdminController + Add Match Modal 기능
-
-// 전역 변수 (Firebase는 이미 초기화되어 있다고 가정)
 let db, auth;
 
 // AdminController 클래스
