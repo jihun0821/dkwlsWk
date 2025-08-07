@@ -1,4 +1,5 @@
-let db, auth;
+db = db || null;
+auth = auth || null;
 
 // AdminController 클래스
 class AdminController {
