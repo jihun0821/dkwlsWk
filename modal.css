@@ -402,7 +402,7 @@
   margin-bottom: 15px;
 }
 
-.theme-label {
+.settings-menu .theme-label {
   display: flex;
   align-items: center;
   gap: 7px;
