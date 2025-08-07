@@ -513,3 +513,14 @@ body.light-mode .profile-modal-content input[type="password"]:focus {
 body.light-mode .profile-modal-content input::placeholder {
   color: #aaa;
 }
+
+body.light-mode .profile-edit-btn {
+  background-color: #ffffff;
+  color: #2051ff;
+  border-radius: 4px; /* 선택사항: 버튼에 둥근 모서리 추가 */
+}
+
+body.light-mode .profile-edit-btn:hover {
+  background-color: #f8f9fa;
+  color: #1a3dcc;
+}
