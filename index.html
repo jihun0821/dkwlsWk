@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="matches.css">
     <link rel="stylesheet" href="features.css">
     <link rel="stylesheet" href="modal.css">
+    <link rel="stylesheet" href="add-match-modal.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
     
 <!-- Firebase SDK CDN -->
@@ -319,6 +320,140 @@
                     닉네임이 성공적으로 변경되었습니다!
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 경기 추가 모달 (add-match-modal.html 내용) -->
+    <div id="addMatchModal" class="add-match-modal" style="display:none;">
+        <div class="add-match-modal-content">
+            <span class="add-match-modal-close" id="closeAddMatchModal">&times;</span>
+            <h2>새 경기 추가</h2>
+            
+            <form id="addMatchForm">
+                <!-- 기본 정보 섹션 -->
+                <div class="form-section">
+                    <h3>기본 정보</h3>
+                    <div class="form-row">
+                        <label>경기 ID:</label>
+                        <input type="text" id="matchId" required>
+                    </div>
+                    <div class="form-row">
+                        <label>날짜:</label>
+                        <input type="date" id="matchDate" required>
+                    </div>
+                    <div class="form-row">
+                        <label>리그:</label>
+                        <input type="text" id="matchLeague" value="호실축구" required>
+                    </div>
+                    <div class="form-row">
+                        <label>상태:</label>
+                        <select id="matchStatus" required>
+                            <option value="scheduled">예정됨</option>
+                            <option value="live">진행중</option>
+                            <option value="finished">완료</option>
+                            <option value="cancelled">취소됨</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 팀 정보 섹션 -->
+                <div class="form-section">
+                    <h3>팀 정보 및 점수</h3>
+                    <div class="form-row">
+                        <label>홈 팀:</label>
+                        <input type="text" id="homeTeam" required>
+                        <label>점수:</label>
+                        <input type="number" id="homeScore" min="0" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label>원정 팀:</label>
+                        <input type="text" id="awayTeam" required>
+                        <label>점수:</label>
+                        <input type="number" id="awayScore" min="0" value="0">
+                    </div>
+                </div>
+
+                <!-- 통계 섹션 -->
+                <div class="form-section">
+                    <h3>경기 통계</h3>
+                    <div class="form-row">
+                        <label>홈 점유율(%):</label>
+                        <input type="number" id="homePossession" min="0" max="100" value="50">
+                        <label>홈 슈팅:</label>
+                        <input type="number" id="homeShots" min="0" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label>원정 점유율(%):</label>
+                        <input type="number" id="awayPossession" min="0" max="100" value="50">
+                        <label>원정 슈팅:</label>
+                        <input type="number" id="awayShots" min="0" value="0">
+                    </div>
+                </div>
+
+                <!-- 라인업 섹션 -->
+                <div class="form-section">
+                    <h3>라인업</h3>
+                    <div class="lineup-section">
+                        <!-- 홈 팀 라인업 -->
+                        <div class="team-lineup">
+                            <h4 id="homeTeamTitle">홈 팀</h4>
+                            <div class="grade-group">
+                                <label>3학년:</label>
+                                <div class="player-inputs" id="homeThirdGrade">
+                                    <input type="text" class="player-input" placeholder="선수 이름">
+                                </div>
+                                <button type="button" class="add-player-btn" onclick="addPlayer('homeThirdGrade')">선수 추가</button>
+                            </div>
+                            <div class="grade-group">
+                                <label>2학년:</label>
+                                <div class="player-inputs" id="homeSecondGrade">
+                                    <input type="text" class="player-input" placeholder="선수 이름">
+                                </div>
+                                <button type="button" class="add-player-btn" onclick="addPlayer('homeSecondGrade')">선수 추가</button>
+                            </div>
+                            <div class="grade-group">
+                                <label>1학년:</label>
+                                <div class="player-inputs" id="homeFirstGrade">
+                                    <input type="text" class="player-input" placeholder="선수 이름">
+                                </div>
+                                <button type="button" class="add-player-btn" onclick="addPlayer('homeFirstGrade')">선수 추가</button>
+                            </div>
+                        </div>
+
+                        <!-- 원정 팀 라인업 -->
+                        <div class="team-lineup">
+                            <h4 id="awayTeamTitle">원정 팀</h4>
+                            <div class="grade-group">
+                                <label>3학년:</label>
+                                <div class="player-inputs" id="awayThirdGrade">
+                                    <input type="text" class="player-input" placeholder="선수 이름">
+                                </div>
+                                <button type="button" class="add-player-btn" onclick="addPlayer('awayThirdGrade')">선수 추가</button>
+                            </div>
+                            <div class="grade-group">
+                                <label>2학년:</label>
+                                <div class="player-inputs" id="awaySecondGrade">
+                                    <input type="text" class="player-input" placeholder="선수 이름">
+                                </div>
+                                <button type="button" class="add-player-btn" onclick="addPlayer('awaySecondGrade')">선수 추가</button>
+                            </div>
+                            <div class="grade-group">
+                                <label>1학년:</label>
+                                <div class="player-inputs" id="awayFirstGrade">
+                                    <input type="text" class="player-input" placeholder="선수 이름">
+                                </div>
+                                <button type="button" class="add-player-btn" onclick="addPlayer('awayFirstGrade')">선수 추가</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 버튼들 -->
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn cancel-btn" id="cancelAddMatch">취소</button>
+                    <button type="submit" class="modal-btn save-btn">경기 추가</button>
+                </div>
+            </form>
         </div>
     </div>
 
