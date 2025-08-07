@@ -835,7 +835,7 @@
 
 /* 라이트 모드 지원 */
 body.light-mode #adminAddMatchBtn {
-    background: #2051ff;
+    background: #028dff;
     color: white;
     box-shadow: 0 2px 8px rgba(32, 81, 255, 0.2);
 }
