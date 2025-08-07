@@ -16,10 +16,12 @@ class AdminController {
     }
 
     checkAdminStatus() {
-        const auth = firebase.getAuth();
+        // 중복 선언 제거: const auth = ... → auth = ...
+        auth = firebase.getAuth();
         firebase.onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const db = firebase.getFirestore();
+                // 중복 선언 제거: const db = ... → db = ...
+                db = firebase.getFirestore();
                 const adminDocRef = firebase.doc(db, "admins", user.email);
                 try {
                     const adminDoc = await firebase.getDoc(adminDocRef);
@@ -36,14 +38,6 @@ class AdminController {
                 // 로그아웃 시 버튼 숨김
                 document.getElementById('adminAddMatchBtn').style.display = 'none';
                 this.isAdmin = false;
-            }
-        });
-    }
-
-    setupEventListeners() {
-        document.getElementById('adminAddMatchBtn').addEventListener('click', () => {
-            if (this.isAdmin) {
-                this.handleAddMatch();
             }
         });
     }
