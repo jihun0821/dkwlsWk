@@ -44,7 +44,7 @@ class AdminController {
 
     handleAddMatch() {
         // 경기 추가 기능 구현
-        alert('경기 추가 기능을 구현해주세요!');
+        alert('경기 추가 기능 구현 필요!');
         console.log('관리자가 경기 추가 버튼을 클릭했습니다.');
         
         // 여기에 경기 추가 모달을 여는 코드나
