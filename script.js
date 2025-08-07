@@ -61,6 +61,26 @@ window.onload = function () {
     setupProfileEditModalEvents();
 };
 
+const themeMenuHtml = `
+  <div id="profileSettingsMenu" class="settings-menu">
+    <div class="settings-menu-inner">
+      <div class="settings-menu-title">테마</div>
+      <div class="theme-options">
+        <label class="theme-label">
+          <input type="radio" name="theme" value="system" id="themeSystem"> 시스템
+        </label>
+        <label class="theme-label">
+          <input type="radio" name="theme" value="light" id="themeLight"> 라이트
+        </label>
+        <label class="theme-label">
+          <input type="radio" name="theme" value="dark" id="themeDark"> 다크
+        </label>
+      </div>
+      <hr class="settings-divider">
+    </div>
+  </div>
+`;
+
 function updateUIForAuthState(isLoggedIn, profileData = null) {
     const profileBox = document.getElementById('profile-box');
     
