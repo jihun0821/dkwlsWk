@@ -514,13 +514,14 @@ body.light-mode .profile-modal-content input::placeholder {
   color: #aaa;
 }
 
-body.light-mode .profile-edit-btn {
-  background-color: #ffffff;
+body.light-mode #profile-box button.profile-edit-btn {
+  background: #ffffff;
   color: #2051ff;
-  border-radius: 4px; /* 선택사항: 버튼에 둥근 모서리 추가 */
+  border-radius: 4px;
+  box-shadow: none;
 }
 
-body.light-mode .profile-edit-btn:hover {
-  background-color: #f8f9fa;
+body.light-mode #profile-box button.profile-edit-btn:hover {
+  background: #f8f9fa;
   color: #1a3dcc;
 }
