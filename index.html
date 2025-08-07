@@ -123,6 +123,11 @@
 
     <main>
         <section class="main">
+            <!-- 관리자 전용 경기 추가 버튼 -->
+            <div class="admin-controls">
+                <button id="adminAddMatchBtn" style="display: none;">경기 추가</button>
+            </div>
+
             <h2>&nbsp;&nbsp;&nbsp;끝난 경기</h2>
             <div class="match-list">
                 <div class="match" data-match-id="27">
@@ -321,5 +326,6 @@
     <script type="module" src="auth.js"></script>
     <script src="matchData.js"></script>
     <script src="script.js"></script>
+    <script src="admin-controller.js"></script> <!-- 관리자 컨트롤러 JS 추가 -->
 </body>
 </html>
