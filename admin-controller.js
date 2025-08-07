@@ -1,7 +1,6 @@
 db = db || null;
 auth = auth || null;
 
-// AdminController 클래스
 class AdminController {
     constructor() {
         this.isAdmin = false;
@@ -10,30 +9,23 @@ class AdminController {
 
     init() {
         this.checkAdminStatus();
-        this.setupEventListeners();
+        this.setupEventListeners(); // ← 이거 이제 정상 작동!
     }
 
     checkAdminStatus() {
-        // 중복 선언 제거: const auth = ... → auth = ...
         auth = firebase.getAuth();
         firebase.onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 중복 선언 제거: const db = ... → db = ...
                 db = firebase.getFirestore();
                 const adminDocRef = firebase.doc(db, "admins", user.email);
                 try {
                     const adminDoc = await firebase.getDoc(adminDocRef);
                     this.isAdmin = adminDoc.exists();
-                    if (this.isAdmin) {
-                        document.getElementById('adminAddMatchBtn').style.display = 'block';
-                    } else {
-                        document.getElementById('adminAddMatchBtn').style.display = 'none';
-                    }
+                    document.getElementById('adminAddMatchBtn').style.display = this.isAdmin ? 'block' : 'none';
                 } catch (error) {
                     console.error("관리자 권한 확인 실패:", error);
                 }
             } else {
-                // 로그아웃 시 버튼 숨김
                 document.getElementById('adminAddMatchBtn').style.display = 'none';
                 this.isAdmin = false;
             }
@@ -41,16 +33,22 @@ class AdminController {
     }
 
     handleAddMatch() {
-        // 경기 추가 모달 열기
         if (typeof openAddMatchModal === "function") {
             openAddMatchModal();
         } else {
-            // Fallback (예: 모달 함수가 아직 준비되지 않은 경우)
             alert('경기 추가 기능 구현 필요!');
         }
         console.log('관리자가 경기 추가 버튼을 클릭했습니다.');
     }
+
+    setupEventListeners() {
+        const addMatchBtn = document.getElementById('adminAddMatchBtn');
+        if (addMatchBtn) {
+            addMatchBtn.onclick = () => this.handleAddMatch();
+        }
+    }
 }
+
 
 // --------- add-match-modal.js 코드 통합 -------------
 
