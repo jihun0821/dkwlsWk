@@ -770,3 +770,77 @@
     font-size: 15px;
 }
 
+/* 관리자 전용 경기 추가 버튼 스타일 */
+.admin-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+    padding: 0 25px;
+}
+
+#adminAddMatchBtn {
+    background: #2051ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(32, 81, 255, 0.3);
+    transition: all 0.3s ease;
+    display: none; /* 기본적으로 숨김 */
+    align-items: center;
+    gap: 8px;
+}
+
+#adminAddMatchBtn:hover {
+    background: #1537a6;
+    box-shadow: 0 4px 12px rgba(32, 81, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+#adminAddMatchBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(32, 81, 255, 0.3);
+}
+
+#adminAddMatchBtn::before {
+    content: '➕';
+    font-size: 14px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .admin-controls {
+        padding: 0 15px;
+    }
+    
+    #adminAddMatchBtn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    #adminAddMatchBtn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    
+    #adminAddMatchBtn::before {
+        font-size: 12px;
+    }
+}
+
+/* 라이트 모드 지원 */
+body.light-mode #adminAddMatchBtn {
+    background: #2051ff;
+    color: white;
+    box-shadow: 0 2px 8px rgba(32, 81, 255, 0.2);
+}
+
+body.light-mode #adminAddMatchBtn:hover {
+    background: #1537a6;
+    box-shadow: 0 4px 12px rgba(32, 81, 255, 0.3);
+}
