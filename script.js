@@ -84,30 +84,40 @@ const themeMenuHtml = `
 function updateUIForAuthState(isLoggedIn, profileData = null) {
     const profileBox = document.getElementById('profile-box');
     
-if (isLoggedIn && profileData) {
-  profileBox.innerHTML = `
-    <div class="profile-bar">
-      <img id="profileAvatar" src="${avatarUrl}" alt="프로필" class="profile-avatar">
-      <span class="profile-nickname">${profileData.nickname || '사용자'}</span>
-      <button id="logoutBtn" type="button" class="logout-btn">로그아웃</button>
-      <button id="profileSettingsBtn" type="button" title="설정" class="profile-settings-btn">
-        <span class="material-symbols-outlined">&#9881;</span>
-      </button>
-      ${themeMenuHtml}
-      <button id="openProfileEditBtn" class="profile-edit-btn">프로필 편집</button>
-    </div>
-  `;
-} else {
-  // 비로그인: 테마 메뉴만 보여주기
-  profileBox.innerHTML = `
-    <div class="profile-bar">
-      <button id="profileSettingsBtn" type="button" title="설정" class="profile-settings-btn">
-        <span class="material-symbols-outlined">&#9881;</span>
-      </button>
-      ${themeMenuHtml}
-    </div>
-  `;
-}
+    if (isLoggedIn && profileData) {
+        const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
+        const avatarUrl = profileData.avatar_url || defaultAvatar;
+        profileBox.innerHTML = `
+            <div class="profile-bar">
+                <img id="profileAvatar" src="${avatarUrl}" alt="프로필" class="profile-avatar">
+                <span class="profile-nickname">${profileData.nickname || '사용자'}</span>
+                <button id="logoutBtn" type="button" class="logout-btn">로그아웃</button>
+                <button id="profileSettingsBtn" type="button" title="설정" class="profile-settings-btn">
+                    <span class="material-symbols-outlined">&#9881;</span>
+                </button>
+                <div id="profileSettingsMenu" class="settings-menu">
+                    <div class="settings-menu-inner">
+                        <div class="settings-menu-title">테마</div>
+                        <div class="theme-options">
+                            <label class="theme-label">
+                                <input type="radio" name="theme" value="system" id="themeSystem">
+                                시스템
+                            </label>
+                            <label class="theme-label">
+                                <input type="radio" name="theme" value="light" id="themeLight">
+                                라이트
+                            </label>
+                            <label class="theme-label">
+                                <input type="radio" name="theme" value="dark" id="themeDark">
+                                다크
+                            </label>
+                        </div>
+                        <hr class="settings-divider">
+                        <button id="openProfileEditBtn" class="profile-edit-btn">프로필 편집</button>
+                    </div>
+                </div>
+            </div>
+        `;
         
         document.getElementById('logoutBtn').onclick = logout;
         // 메뉴 열고 닫기 토글
