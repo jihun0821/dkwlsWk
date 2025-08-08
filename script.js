@@ -67,37 +67,22 @@ window.onload = function () {
 // 관리자 권한 확인 함수
 async function checkAdminStatus() {
     const user = auth.currentUser;
-    console.log("=== 관리자 권한 확인 시작 ===");
-    console.log("현재 사용자:", user?.email);
-    
     if (user) {
         try {
             const adminDocRef = window.firebase.doc(db, "admins", user.email);
             const adminDoc = await window.firebase.getDoc(adminDocRef);
-            
-            console.log("Firestore 문서 존재:", adminDoc.exists());
-            console.log("문서 데이터:", adminDoc.data());
-            
             isAdmin = adminDoc.exists();
-            console.log("최종 isAdmin 값:", isAdmin);
             
             if (isAdmin) {
                 const adminWriteBtn = document.getElementById('adminWriteBtn');
                 if (adminWriteBtn) {
                     adminWriteBtn.style.display = 'block';
                 }
-                console.log("관리자 버튼 표시 완료");
             }
         } catch (error) {
             console.error("관리자 권한 확인 실패:", error);
-            isAdmin = false;
         }
-    } else {
-        isAdmin = false;
-        console.log("사용자 로그인되지 않음");
     }
-    
-    console.log("=== 관리자 권한 확인 완료 ===");
 }
 
 // 사용자 포인트 관련 함수들
@@ -225,40 +210,39 @@ const themeMenuHtml = `
 
 // showUserProfile 함수 (포인트 표시 포함)
 async function showUserProfile() {
-    // Firebase 인증 상태 변화 감지
-    window.firebase.onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                const profileDocRef = window.firebase.doc(db, "profiles", user.uid);
-                const profileDoc = await window.firebase.getDoc(profileDocRef);
-                
-                let profileData = {
-                    email: user.email,
-                    nickname: user.displayName || user.email.split('@')[0],
-                    avatar_url: user.photoURL
-                };
-                
-                if (profileDoc.exists()) {
-                    profileData = { ...profileData, ...profileDoc.data() };
-                }
-                
-                // 사용자 포인트 조회
-                const userPoints = await getUserPoints(user.uid);
-                profileData.points = userPoints;
-                
-                // ✅ 관리자 권한 확인 (중요!)
-                await checkAdminStatus();
-                
-                updateUIForAuthState(true, profileData);
-            } catch (error) {
-                console.error("프로필 로드 실패:", error);
-                updateUIForAuthState(false);
+    const user = auth.currentUser;
+    
+    if (user) {
+        try {
+            const profileDocRef = window.firebase.doc(db, "profiles", user.uid);
+            const profileDoc = await window.firebase.getDoc(profileDocRef);
+            
+            let profileData = {
+                email: user.email,
+                nickname: user.displayName || user.email.split('@')[0],
+                avatar_url: user.photoURL
+            };
+            
+            if (profileDoc.exists()) {
+                profileData = { ...profileData, ...profileDoc.data() };
             }
-        } else {
-            isAdmin = false;
+            
+            // 사용자 포인트 조회
+            const userPoints = await getUserPoints(user.uid);
+            profileData.points = userPoints;
+            
+            // 관리자 권한 확인
+            await checkAdminStatus();
+            
+            updateUIForAuthState(true, profileData);
+        } catch (error) {
+            console.error("프로필 로드 실패:", error);
             updateUIForAuthState(false);
         }
-    });
+    } else {
+        isAdmin = false;
+        updateUIForAuthState(false);
+    }
 }
 
 function updateUIForAuthState(isLoggedIn, profileData = null) {
@@ -618,16 +602,9 @@ async function getMatchDetailsById(matchId) {
 
 // loadMatchDetails 함수 (관리자 버튼 포함)
 async function loadMatchDetails(matchId) {
-    console.log("=== loadMatchDetails 시작 ===");
-    console.log("matchId:", matchId);
-    console.log("현재 isAdmin 값:", isAdmin);
-
     const matchDetails = await getMatchDetailsById(matchId);
     if (!matchDetails) return;
-
-    console.log("경기 상태:", matchDetails.status);
-    console.log("기존 결과:", matchDetails.adminResult);
-
+    
     panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
 
     const isLoggedIn = !!auth.currentUser;
@@ -635,16 +612,9 @@ async function loadMatchDetails(matchId) {
     const stats = await getVotingStatsFromFirestore(matchId);
 
     let predictionHtml = "";
-
-    // ✅ 관리자 버튼 표시 조건 확인 (디버깅 추가)
-    const showAdminButtons = matchDetails.status === "finished" && isAdmin && !matchDetails.adminResult;
-    console.log("관리자 버튼 표시 조건:");
-    console.log("- 경기 상태 finished:", matchDetails.status === "finished");
-    console.log("- 관리자 권한:", isAdmin);
-    console.log("- 결과 미설정:", !matchDetails.adminResult);
-    console.log("- 최종 표시 여부:", showAdminButtons);
-
-    if (showAdminButtons) {
+    
+    // 경기가 finished 상태이고 관리자인 경우 결과 설정 버튼 표시
+    if (matchDetails.status === "finished" && isAdmin && !matchDetails.adminResult) {
         predictionHtml = `
             <h3>경기 결과 설정 (관리자)</h3>
             <div class="admin-result-btns">
@@ -654,7 +624,6 @@ async function loadMatchDetails(matchId) {
             </div>
             <h3>승부예측 결과</h3><div id="votingStats"></div>
         `;
-        console.log("관리자 버튼 HTML 생성 완료");
     }
     // 관리자가 결과를 이미 설정한 경우
     else if (matchDetails.status === "finished" && matchDetails.adminResult) {
@@ -663,7 +632,7 @@ async function loadMatchDetails(matchId) {
             'draw': '무승부', 
             'awayWin': '원정팀 승'
         }[matchDetails.adminResult] || '결과 미정';
-
+        
         predictionHtml = `
             <h3>경기 결과: ${resultText}</h3>
             <h3>승부예측 결과</h3><div id="votingStats"></div>
@@ -719,8 +688,72 @@ async function loadMatchDetails(matchId) {
             }
         });
     });
+}
 
-    console.log("=== loadMatchDetails 완료 ===");
+function setupMatchClickListeners() {
+    document.querySelectorAll('.match').forEach(match => {
+        match.addEventListener('click', () => {
+            const matchId = match.dataset.matchId;
+            openPanel(matchId);
+        });
+    });
+}
+
+// ✅ Firestore에서 모든 경기 정보 가져오기 (비동기)
+async function getAllMatchData() {
+    const matchMap = {};
+    try {
+        const querySnapshot = await window.firebase.getDocs(window.firebase.collection(db, "matches"));
+        querySnapshot.forEach((doc) => {
+            matchMap[doc.id] = doc.data();
+        });
+    } catch (error) {
+        console.error("경기 목록 불러오기 실패:", error);
+    }
+    return matchMap;
+}
+
+// ✅ 비동기로 변경된 renderMatches 함수
+async function renderMatches() {
+    const matchContainer = document.querySelector("section.main");
+    const allMatches = Object.values(await getAllMatchData());
+    const matchesToShow = allMatches.slice((currentPage - 1) * matchesPerPage, currentPage * matchesPerPage);
+
+    document.querySelectorAll(".match-list").forEach(el => el.remove());
+    const pagination = document.querySelector(".pagination-container");
+
+    const html = matchesToShow.map(match => `
+        <div class="match-list">
+            <div class="match" data-match-id="${match.id}">
+                <div class="match-info">
+                    <div class="match-date">${match.date}</div>
+                    <div class="match-teams">
+                        <span class="team home">${match.homeTeam}</span>
+                        <span class="score">${match.status === "cancelled" ? "취소" : `${match.homeScore} - ${match.awayScore}`}</span>
+                        <span class="team away">${match.awayTeam}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join("");
+
+    pagination.insertAdjacentHTML("beforebegin", html);
+    setupMatchClickListeners();
+    updateButtons(); // 페이지 버튼도 함께 갱신
+}
+
+async function updateButtons() {
+    const totalPages = await getTotalPages();
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+}
+
+// 페이지네이션 이벤트 (중복되지 않게 1회만!)
+prevBtn?.addEventListener('click', async () => {
+    if (currentPage > 1) {
+        currentPage--;
+        await renderMatches();
+    }
 });
 
 nextBtn?.addEventListener('click', async () => {
