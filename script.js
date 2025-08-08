@@ -8,6 +8,9 @@ const panelTitle = document.getElementById("panelTitle");
 let currentPage = 6;
 const matchesPerPage = 5;
 
+// 관리자 권한 관련 전역 변수
+let isAdmin = false;
+
 async function getTotalPages() {
     const allMatches = await getAllMatchData();
     return Math.ceil(Object.keys(allMatches).length / matchesPerPage);
@@ -61,6 +64,130 @@ window.onload = function () {
     setupProfileEditModalEvents();
 };
 
+// 관리자 권한 확인 함수
+async function checkAdminStatus() {
+    const user = auth.currentUser;
+    if (user) {
+        try {
+            const adminDocRef = window.firebase.doc(db, "admins", user.email);
+            const adminDoc = await window.firebase.getDoc(adminDocRef);
+            isAdmin = adminDoc.exists();
+            
+            if (isAdmin) {
+                const adminWriteBtn = document.getElementById('adminWriteBtn');
+                if (adminWriteBtn) {
+                    adminWriteBtn.style.display = 'block';
+                }
+            }
+        } catch (error) {
+            console.error("관리자 권한 확인 실패:", error);
+        }
+    }
+}
+
+// 사용자 포인트 관련 함수들
+async function getUserPoints(uid) {
+    try {
+        const pointsDocRef = window.firebase.doc(db, "user_points", uid);
+        const pointsDoc = await window.firebase.getDoc(pointsDocRef);
+        
+        if (pointsDoc.exists()) {
+            return pointsDoc.data().points || 0;
+        } else {
+            // 포인트 문서가 없으면 0포인트로 초기화
+            await window.firebase.setDoc(pointsDocRef, { points: 0, uid: uid });
+            return 0;
+        }
+    } catch (error) {
+        console.error("포인트 조회 실패:", error);
+        return 0;
+    }
+}
+
+async function updateUserPoints(uid, pointsToAdd) {
+    try {
+        const pointsDocRef = window.firebase.doc(db, "user_points", uid);
+        const pointsDoc = await window.firebase.getDoc(pointsDocRef);
+        
+        let currentPoints = 0;
+        if (pointsDoc.exists()) {
+            currentPoints = pointsDoc.data().points || 0;
+        }
+        
+        const newPoints = currentPoints + pointsToAdd;
+        await window.firebase.setDoc(pointsDocRef, { 
+            points: newPoints, 
+            uid: uid,
+            lastUpdated: new Date()
+        });
+        
+        return newPoints;
+    } catch (error) {
+        console.error("포인트 업데이트 실패:", error);
+        throw error;
+    }
+}
+
+// 관리자 결과 선택 및 포인트 지급 함수
+async function setMatchResult(matchId, result) {
+    if (!isAdmin) {
+        alert("관리자 권한이 필요합니다.");
+        return;
+    }
+    
+    try {
+        // 경기 상태를 finished로 변경하고 결과 저장
+        const matchRef = window.firebase.doc(db, "matches", matchId);
+        await window.firebase.setDoc(matchRef, {
+            status: "finished",
+            adminResult: result,
+            resultSetAt: new Date(),
+            resultSetBy: auth.currentUser.email
+        }, { merge: true });
+        
+        // 해당 경기의 모든 투표 조회
+        const votesQuery = window.firebase.query(
+            window.firebase.collection(db, 'votes'),
+            window.firebase.where('matchId', '==', matchId)
+        );
+        
+        const votesSnapshot = await window.firebase.getDocs(votesQuery);
+        const winnerUids = [];
+        
+        // 맞춘 사용자들 찾기
+        votesSnapshot.forEach(doc => {
+            const voteData = doc.data();
+            if (voteData.voteType === result) {
+                winnerUids.push(voteData.uid);
+            }
+        });
+        
+        // 맞춘 사용자들에게 100포인트 지급
+        const pointPromises = winnerUids.map(async (uid) => {
+            try {
+                await updateUserPoints(uid, 100);
+                console.log(`사용자 ${uid}에게 100포인트 지급 완료`);
+            } catch (error) {
+                console.error(`사용자 ${uid} 포인트 지급 실패:`, error);
+            }
+        });
+        
+        await Promise.all(pointPromises);
+        
+        alert(`경기 결과가 설정되었습니다. ${winnerUids.length}명의 사용자에게 100포인트가 지급되었습니다.`);
+        
+        // 패널 새로고침
+        loadMatchDetails(matchId);
+        
+    } catch (error) {
+        console.error("경기 결과 설정 실패:", error);
+        alert("경기 결과 설정에 실패했습니다.");
+    }
+}
+
+// 전역 함수로 노출 (HTML onclick에서 사용하기 위해)
+window.setMatchResult = setMatchResult;
+
 const themeMenuHtml = `
   <div id="profileSettingsMenu" class="settings-menu">
     <div class="settings-menu-inner">
@@ -81,16 +208,58 @@ const themeMenuHtml = `
   </div>
 `;
 
+// showUserProfile 함수 (포인트 표시 포함)
+async function showUserProfile() {
+    const user = auth.currentUser;
+    
+    if (user) {
+        try {
+            const profileDocRef = window.firebase.doc(db, "profiles", user.uid);
+            const profileDoc = await window.firebase.getDoc(profileDocRef);
+            
+            let profileData = {
+                email: user.email,
+                nickname: user.displayName || user.email.split('@')[0],
+                avatar_url: user.photoURL
+            };
+            
+            if (profileDoc.exists()) {
+                profileData = { ...profileData, ...profileDoc.data() };
+            }
+            
+            // 사용자 포인트 조회
+            const userPoints = await getUserPoints(user.uid);
+            profileData.points = userPoints;
+            
+            // 관리자 권한 확인
+            await checkAdminStatus();
+            
+            updateUIForAuthState(true, profileData);
+        } catch (error) {
+            console.error("프로필 로드 실패:", error);
+            updateUIForAuthState(false);
+        }
+    } else {
+        isAdmin = false;
+        updateUIForAuthState(false);
+    }
+}
+
 function updateUIForAuthState(isLoggedIn, profileData = null) {
     const profileBox = document.getElementById('profile-box');
     
     if (isLoggedIn && profileData) {
         const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
         const avatarUrl = profileData.avatar_url || defaultAvatar;
+        const points = profileData.points || 0;
+        
         profileBox.innerHTML = `
             <div class="profile-bar">
                 <img id="profileAvatar" src="${avatarUrl}" alt="프로필" class="profile-avatar">
-                <span class="profile-nickname">${profileData.nickname || '사용자'}</span>
+                <div class="profile-info">
+                    <span class="profile-nickname">${profileData.nickname || '사용자'}</span>
+                    <span class="profile-points">${points}P</span>
+                </div>
                 <button id="logoutBtn" type="button" class="logout-btn">로그아웃</button>
                 <button id="profileSettingsBtn" type="button" title="설정" class="profile-settings-btn">
                     <span class="material-symbols-outlined">&#9881;</span>
@@ -120,20 +289,19 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
         `;
         
         document.getElementById('logoutBtn').onclick = logout;
-        // 메뉴 열고 닫기 토글
         const settingsBtn = document.getElementById('profileSettingsBtn');
         const settingsMenu = document.getElementById('profileSettingsMenu');
         settingsBtn.onclick = (e) => {
             e.stopPropagation();
             settingsMenu.style.display = (settingsMenu.style.display === 'none' || settingsMenu.style.display === '') ? 'block' : 'none';
         };
-        // 메뉴 바깥 클릭시 닫기
+        
         document.addEventListener('click', function hideMenu(e) {
             if (settingsMenu && !settingsMenu.contains(e.target) && e.target !== settingsBtn) {
                 settingsMenu.style.display = 'none';
             }
         }, { once: true });
-        // 테마 라디오 반영
+        
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'light') document.getElementById('themeLight').checked = true;
         else if (savedTheme === 'dark') document.getElementById('themeDark').checked = true;
@@ -141,42 +309,40 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
         document.getElementById('themeSystem').onclick = () => { setTheme('system'); };
         document.getElementById('themeLight').onclick = () => { setTheme('light'); };
         document.getElementById('themeDark').onclick = () => { setTheme('dark'); };
-        // 프로필 편집 버튼
+        
         document.getElementById('openProfileEditBtn').onclick = () => {
             openProfileEditModal(profileData);
             settingsMenu.style.display = 'none';
         };
     } else {
-profileBox.innerHTML = `
-    <div class="profile-container">
-        <button id="loginBtn" type="button">로그인</button>
-        <button id="profileSettingsBtn" type="button" title="설정" class="settings-button">
-            <span class="material-symbols-outlined">⚙</span>
-        </button>
-        <div id="profileSettingsMenu" class="settings-menu">
-            <div class="settings-content">
-                <div class="settings-title">테마</div>
-                <div class="theme-options">
-                    <label class="theme-option">
-                        <input type="radio" name="theme" value="system" id="themeSystem">
-                        시스템
-                    </label>
-                    <label class="theme-option">
-                        <input type="radio" name="theme" value="light" id="themeLight">
-                        라이트
-                    </label>
-                    <label class="theme-option">
-                        <input type="radio" name="theme" value="dark" id="themeDark">
-                        다크
-                    </label>
+        profileBox.innerHTML = `
+            <div class="profile-container">
+                <button id="loginBtn" type="button">로그인</button>
+                <button id="profileSettingsBtn" type="button" title="설정" class="settings-button">
+                    <span class="material-symbols-outlined">⚙</span>
+                </button>
+                <div id="profileSettingsMenu" class="settings-menu">
+                    <div class="settings-content">
+                        <div class="settings-title">테마</div>
+                        <div class="theme-options">
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="system" id="themeSystem">
+                                시스템
+                            </label>
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="light" id="themeLight">
+                                라이트
+                            </label>
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="dark" id="themeDark">
+                                다크
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-`;
+        `;
 
-        
-        // 로그인 버튼 이벤트
         document.getElementById('loginBtn').onclick = () => {
             const loginModal = document.getElementById('loginModal');
             if (loginModal) {
@@ -186,7 +352,6 @@ profileBox.innerHTML = `
             }
         };
         
-        // 설정 버튼 이벤트
         const settingsBtn = document.getElementById('profileSettingsBtn');
         const settingsMenu = document.getElementById('profileSettingsMenu');
         settingsBtn.onclick = (e) => {
@@ -194,14 +359,12 @@ profileBox.innerHTML = `
             settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
         };
         
-        // 메뉴 외부 클릭 시 닫기
         document.addEventListener('click', (e) => {
             if (settingsMenu && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
                 settingsMenu.style.display = 'none';
             }
         });
         
-        // 테마 변경 이벤트
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'light') document.getElementById('themeLight').checked = true;
         else if (savedTheme === 'dark') document.getElementById('themeDark').checked = true;
@@ -233,7 +396,6 @@ function setTheme(mode) {
 function toggleTheme() {
     document.body.classList.toggle("light-mode");
     localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
-    // UI 갱신(아이콘 즉시 변경)
     showUserProfile();
 }
 
@@ -255,7 +417,6 @@ function openProfileEditModal(profileData) {
 
 // [추가!] 프로필 편집 모달 이벤트 설정
 function setupProfileEditModalEvents() {
-    // 프로필 편집 모달 닫기/취소 버튼 이벤트
     const closeProfileEditModal = document.getElementById('closeProfileEditModal');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const profileEditModal = document.getElementById('profileEditModal');
@@ -272,7 +433,6 @@ function setupProfileEditModalEvents() {
         };
     }
 
-    // 프로필 편집 모달 배경 클릭 시 닫기
     if (profileEditModal) {
         profileEditModal.onclick = (e) => {
             if (e.target === profileEditModal) {
@@ -308,10 +468,8 @@ if (saveNicknameBtn) {
         const user = auth.currentUser;
         if (!user) return;
         try {
-            // Firestore 수정
             const docRef = window.firebase.doc(db, 'profiles', user.uid);
             await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
-            // Auth displayName도 수정
             await window.firebase.updateProfile(user, { displayName: newNickname });
             document.getElementById('editSuccessMessage').style.display = "block";
             showUserProfile();
@@ -376,7 +534,6 @@ async function hasUserVoted(matchId) {
 function renderVotingGraph(container, stats) {
     const totalVotes = stats.total;
     
-    // 총 투표수가 0인 경우 처리
     if (totalVotes === 0) {
         container.innerHTML = `
             <div class="voting-stats">
@@ -443,7 +600,7 @@ async function getMatchDetailsById(matchId) {
     }
 }
 
-// Firebase 기반 loadMatchDetails 함수 (중복 제거, 이것만 사용)
+// loadMatchDetails 함수 (관리자 버튼 포함)
 async function loadMatchDetails(matchId) {
     const matchDetails = await getMatchDetailsById(matchId);
     if (!matchDetails) return;
@@ -455,7 +612,34 @@ async function loadMatchDetails(matchId) {
     const stats = await getVotingStatsFromFirestore(matchId);
 
     let predictionHtml = "";
-    if (matchDetails.status === "scheduled") {
+    
+    // 경기가 finished 상태이고 관리자인 경우 결과 설정 버튼 표시
+    if (matchDetails.status === "finished" && isAdmin && !matchDetails.adminResult) {
+        predictionHtml = `
+            <h3>경기 결과 설정 (관리자)</h3>
+            <div class="admin-result-btns">
+                <button class="admin-result-btn home-win" onclick="setMatchResult('${matchId}', 'homeWin')">홈팀 승</button>
+                <button class="admin-result-btn draw" onclick="setMatchResult('${matchId}', 'draw')">무승부</button>
+                <button class="admin-result-btn away-win" onclick="setMatchResult('${matchId}', 'awayWin')">원정팀 승</button>
+            </div>
+            <h3>승부예측 결과</h3><div id="votingStats"></div>
+        `;
+    }
+    // 관리자가 결과를 이미 설정한 경우
+    else if (matchDetails.status === "finished" && matchDetails.adminResult) {
+        const resultText = {
+            'homeWin': '홈팀 승',
+            'draw': '무승부', 
+            'awayWin': '원정팀 승'
+        }[matchDetails.adminResult] || '결과 미정';
+        
+        predictionHtml = `
+            <h3>경기 결과: ${resultText}</h3>
+            <h3>승부예측 결과</h3><div id="votingStats"></div>
+        `;
+    }
+    // 예정된 경기의 승부예측
+    else if (matchDetails.status === "scheduled") {
         if (!isLoggedIn || userVoted) {
             predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
         } else {
@@ -467,7 +651,9 @@ async function loadMatchDetails(matchId) {
                     <button class="prediction-btn away-win" data-vote="awayWin">2</button>
                 </div>`;
         }
-    } else {
+    }
+    // 기타 경기 상태
+    else {
         predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
     }
 
@@ -486,8 +672,9 @@ async function loadMatchDetails(matchId) {
     const statsContainer = panelContent.querySelector('#votingStats');
     if (statsContainer) renderVotingGraph(statsContainer, stats);
 
-    setupPanelTabs(matchId); // 탭 이벤트 연결!
+    setupPanelTabs(matchId);
 
+    // 일반 사용자 승부예측 버튼 이벤트
     const buttons = panelContent.querySelectorAll('.prediction-btn');
     buttons.forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -704,70 +891,67 @@ function setupChat(matchId) {
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
     const loginNotice = document.querySelector('.chat-login-notice');
-  chatBox.innerHTML = "";
+    chatBox.innerHTML = "";
 
-  if (!auth.currentUser) {
-    loginNotice.style.display = "block";
-    chatForm.style.display = "none";
-    chatBox.innerHTML = "<p style='text-align:center;color:#aaa;'>로그인 후 채팅을 이용할 수 있습니다.</p>";
-    return;
-  } else {
-    loginNotice.style.display = "none";
-    chatForm.style.display = "flex";
-  }
-
-  // 기존 setInterval로 불러오는 부분 삭제하고, onSnapshot으로 실시간 반영
-  if (window.chatUnsubscribe) window.chatUnsubscribe();
-
-  // Firestore의 onSnapshot 메서드로 실시간 수신
-  // SDK v10+ 기준, import 필요: onSnapshot
-  // window.firebase.onSnapshot이 있는지 확인(없으면 import 문 추가 필요)
-  // 아래는 CDN 환경 가정, window.firebase에 onSnapshot이 연결되어 있다고 가정
-  window.chatUnsubscribe = window.firebase.onSnapshot(
-    window.firebase.query(
-      chatCollection(matchId),
-      window.firebase.where('matchId', '==', matchId)
-    ),
-    (snapshot) => {
-      let html = '';
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        const isMe = msg.uid === auth.currentUser.uid;
-        html += `
-          <div class="chat-msg${isMe ? " me" : ""}">
-            <span class="chat-nick">${escapeHtml(msg.nickname)}</span>
-            <span class="chat-text">${escapeHtml(msg.text)}</span>
-            <span class="chat-time">${msg.time ? new Date(msg.time.seconds * 1000).toLocaleTimeString() : ""}</span>
-          </div>
-        `;
-      });
-      chatBox.innerHTML = html;
-      chatBox.scrollTop = chatBox.scrollHeight;
+    if (!auth.currentUser) {
+        loginNotice.style.display = "block";
+        chatForm.style.display = "none";
+        chatBox.innerHTML = "<p style='text-align:center;color:#aaa;'>로그인 후 채팅을 이용할 수 있습니다.</p>";
+        return;
+    } else {
+        loginNotice.style.display = "none";
+        chatForm.style.display = "flex";
     }
-  );
 
-  // 메시지 전송
-  chatForm.onsubmit = async (e) => {
-    e.preventDefault();
-    const text = chatInput.value.trim();
-    if (!text) return;
-    const user = auth.currentUser;
-    if (!user) return;
-    const profileSnap = await window.firebase.getDoc(window.firebase.doc(db, 'profiles', user.uid));
-    const nickname = profileSnap.exists() ? profileSnap.data().nickname : user.email.split('@')[0];
-    await window.firebase.setDoc(
-      window.firebase.doc(chatCollection(matchId), Date.now().toString() + "_" + user.uid),
-      {
-        matchId,
-        uid: user.uid,
-        nickname,
-        text,
-        time: new Date()
-      }
+    // 기존 setInterval로 불러오는 부분 삭제하고, onSnapshot으로 실시간 반영
+    if (window.chatUnsubscribe) window.chatUnsubscribe();
+
+    // Firestore의 onSnapshot 메서드로 실시간 수신
+    window.chatUnsubscribe = window.firebase.onSnapshot(
+        window.firebase.query(
+            chatCollection(matchId),
+            window.firebase.where('matchId', '==', matchId)
+        ),
+        (snapshot) => {
+            let html = '';
+            snapshot.forEach(doc => {
+                const msg = doc.data();
+                const isMe = msg.uid === auth.currentUser.uid;
+                html += `
+                    <div class="chat-msg${isMe ? " me" : ""}">
+                        <span class="chat-nick">${escapeHtml(msg.nickname)}</span>
+                        <span class="chat-text">${escapeHtml(msg.text)}</span>
+                        <span class="chat-time">${msg.time ? new Date(msg.time.seconds * 1000).toLocaleTimeString() : ""}</span>
+                    </div>
+                `;
+            });
+            chatBox.innerHTML = html;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
     );
-    chatInput.value = "";
-    setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
-  };
+
+    // 메시지 전송
+    chatForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text) return;
+        const user = auth.currentUser;
+        if (!user) return;
+        const profileSnap = await window.firebase.getDoc(window.firebase.doc(db, 'profiles', user.uid));
+        const nickname = profileSnap.exists() ? profileSnap.data().nickname : user.email.split('@')[0];
+        await window.firebase.setDoc(
+            window.firebase.doc(chatCollection(matchId), Date.now().toString() + "_" + user.uid),
+            {
+                matchId,
+                uid: user.uid,
+                nickname,
+                text,
+                time: new Date()
+            }
+        );
+        chatInput.value = "";
+        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+    };
 }
 
 // =================== [공지 일주일 닫기 기능 추가] ===================
@@ -790,22 +974,22 @@ function checkNoticeVisibility() {
     const noticeClosed = localStorage.getItem('noticeClosed');
     
     if (noticeElement) {
-      if (noticeClosed) {
-          const closedTime = parseInt(noticeClosed);
-          const currentTime = new Date().getTime();
-          const oneWeek = 7 * 24 * 60 * 60 * 1000; // 일주일을 밀리초로 변환
-          
-          // 일주일이 지났는지 확인
-          if (currentTime - closedTime < oneWeek) {
-              // 아직 일주일이 안 지났으면 공지 숨기기
-              noticeElement.style.display = 'none';
-          } else {
-              // 일주일이 지났으면 localStorage에서 제거하고 공지 표시
-              localStorage.removeItem('noticeClosed');
-              noticeElement.style.display = 'block';
-          }
-      } else {
-          noticeElement.style.display = 'block';
-      }
+        if (noticeClosed) {
+            const closedTime = parseInt(noticeClosed);
+            const currentTime = new Date().getTime();
+            const oneWeek = 7 * 24 * 60 * 60 * 1000; // 일주일을 밀리초로 변환
+            
+            // 일주일이 지났는지 확인
+            if (currentTime - closedTime < oneWeek) {
+                // 아직 일주일이 안 지났으면 공지 숨기기
+                noticeElement.style.display = 'none';
+            } else {
+                // 일주일이 지났으면 localStorage에서 제거하고 공지 표시
+                localStorage.removeItem('noticeClosed');
+                noticeElement.style.display = 'block';
+            }
+        } else {
+            noticeElement.style.display = 'block';
+        }
     }
 }
