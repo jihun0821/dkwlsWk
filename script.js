@@ -443,7 +443,7 @@ async function getMatchDetailsById(matchId) {
     }
 }
 
-// Firebase 기반 loadMatchDetails 함수 (관리자 기능 통합)
+// Firebase 기반 loadMatchDetails 함수 (중복 제거, 이것만 사용)
 async function loadMatchDetails(matchId) {
     const matchDetails = await getMatchDetailsById(matchId);
     if (!matchDetails) return;
@@ -480,34 +480,11 @@ async function loadMatchDetails(matchId) {
             <div class="team-name">${matchDetails.awayTeam}</div>
         </div>
         <div class="prediction-container">${predictionHtml}</div>
-        <div id="adminSection"></div>
         ${renderPanelTabs(matchDetails, matchId)}
     `;
 
     const statsContainer = panelContent.querySelector('#votingStats');
     if (statsContainer) renderVotingGraph(statsContainer, stats);
-
-    // 🔥 경기 status가 finished면, 관리자 권한 확인 후 결과 선택 UI 노출
-    if (matchDetails.status === "finished") {
-        checkAdminStatus((isAdmin) => {
-            if (isAdmin) {
-                const adminSection = document.getElementById("adminSection");
-                if (adminSection) {
-                    renderAdminResultSelector(matchId, adminSection, async (selected, matchId) => {
-                        if (confirm(`"${selected}"을(를) 정답으로 설정하고 포인트를 지급할까요?`)) {
-                            try {
-                                await awardPointsForMatch(matchId, selected);
-                                alert('포인트가 성공적으로 지급되었습니다!');
-                            } catch (error) {
-                                console.error('포인트 지급 실패:', error);
-                                alert('포인트 지급 중 오류가 발생했습니다.');
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
 
     setupPanelTabs(matchId); // 탭 이벤트 연결!
 
