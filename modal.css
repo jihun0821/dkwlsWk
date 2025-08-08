@@ -1459,3 +1459,141 @@ body.light-mode .tooltip::after {
     background: #333;
     color: #fff;
 }
+
+/* 관리자 결과 설정 버튼 스타일 */
+.admin-result-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.admin-result-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.admin-result-btn.home-win {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.admin-result-btn.draw {
+    background: linear-gradient(135deg, #FF9800, #f57c00);
+    color: white;
+}
+
+.admin-result-btn.away-win {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+}
+
+.admin-result-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.admin-result-btn:active {
+    transform: translateY(0);
+}
+
+/* 포인트 표시 스타일 */
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 8px;
+}
+
+.profile-nickname {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.profile-points {
+    font-size: 12px;
+    color: #667eea;
+    font-weight: 600;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 2px;
+}
+
+/* 다크 모드에서 포인트 색상 조정 */
+body:not(.light-mode) .profile-points {
+    color: #8b9cf4;
+    background: rgba(139, 156, 244, 0.2);
+}
+
+/* 라이트 모드에서 포인트 색상 조정 */
+body.light-mode .profile-points {
+    color: #5a67d8;
+    background: rgba(90, 103, 216, 0.1);
+}
+
+/* 경기 결과 표시 스타일 */
+.match-result-display {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-align: center;
+    margin: 10px 0;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* 관리자 권한 표시 (선택사항) */
+.admin-badge {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+    font-weight: bold;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .admin-result-btns {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .admin-result-btn {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .profile-info {
+        align-items: center;
+        text-align: center;
+    }
+}
+
+/* 포인트 지급 성공 메시지 스타일 */
+.point-success-message {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+/* 다크모드에서 성공 메시지 */
+body:not(.light-mode) .point-success-message {
+    background: #1e5631;
+    border: 1px solid #28a745;
+    color: #d1f2eb;
+}
