@@ -1,6 +1,3 @@
-// admin-points.js 모듈 import 추가
-import { checkAdminStatus, renderAdminResultSelector, awardPointsForMatch } from './admin-points.js';
-
 // 테마 버튼
 const matchDetailsPanel = document.getElementById("matchDetailsPanel");
 const overlay = document.getElementById("overlay");
