@@ -128,13 +128,13 @@ async function checkAdminStatus() {
     });
 }
 
-// 사용자 포인트 관련 함수들 (실시간 업데이트 개선)
-// 2. getUserPoints 함수 수정 (더 정확한 조회)
+// 1. getUserPoints 함수 수정 - firebase 네임스페이스 통일
 async function getUserPoints(uid) {
     try {
         console.log("포인트 조회 시작 - UID:", uid);
-        const pointsDocRef = window.firebase.doc(db, "user_points", uid);
-        const pointsDoc = await window.firebase.getDoc(pointsDocRef);
+        // ✅ firebase.doc 대신 window.firebase.doc 사용
+        const pointsDocRef = firebase.doc(db, "user_points", uid);
+        const pointsDoc = await firebase.getDoc(pointsDocRef);
         
         if (pointsDoc.exists()) {
             const points = pointsDoc.data().points || 0;
@@ -143,7 +143,7 @@ async function getUserPoints(uid) {
         } else {
             console.log("포인트 문서가 존재하지 않음, 0으로 초기화");
             // 포인트 문서가 없으면 0포인트로 초기화
-            await window.firebase.setDoc(pointsDocRef, { points: 0, uid: uid });
+            await firebase.setDoc(pointsDocRef, { points: 0, uid: uid });
             return 0;
         }
     } catch (error) {
@@ -152,15 +152,16 @@ async function getUserPoints(uid) {
     }
 }
 
-// 4. updateUserPoints 함수 수정 (더 안정적인 업데이트)
+// 3. updateUserPoints 함수 수정 - firebase 네임스페이스 통일
 async function updateUserPoints(uid, pointsToAdd) {
     try {
         console.log(`포인트 업데이트 시작 - UID: ${uid}, 추가 포인트: ${pointsToAdd}`);
         
-        const pointRef = window.firebase.doc(db, "user_points", uid);
+        // ✅ firebase.doc 사용으로 통일
+        const pointRef = firebase.doc(db, "user_points", uid);
         
         // 트랜잭션을 사용해서 더 안정적으로 포인트 업데이트
-        const updatedPoints = await window.firebase.runTransaction(db, async (transaction) => {
+        const updatedPoints = await firebase.runTransaction(db, async (transaction) => {
             const pointDoc = await transaction.get(pointRef);
             let currentPoints = 0;
             
@@ -181,16 +182,6 @@ async function updateUserPoints(uid, pointsToAdd) {
         
         console.log(`포인트 업데이트 완료 - 새 포인트: ${updatedPoints}`);
         
-        // 현재 로그인한 사용자인 경우 UI 강제 갱신
-        const currentUser = auth.currentUser;
-        if (currentUser && currentUser.uid === uid) {
-            console.log("현재 사용자의 포인트 업데이트, UI 갱신 중...");
-            // 약간의 딜레이 후 프로필 갱신
-            setTimeout(async () => {
-                await showUserProfile();
-            }, 1000);
-        }
-        
         return updatedPoints;
     } catch (error) {
         console.error("포인트 업데이트 실패:", error);
@@ -198,7 +189,7 @@ async function updateUserPoints(uid, pointsToAdd) {
     }
 }
 
-// 3. setupPointsListener 함수 개선 (오류 처리 강화)
+// 2. setupPointsListener 함수 수정 - firebase 네임스페이스 통일
 function setupPointsListener(uid) {
     console.log("포인트 리스너 설정 - UID:", uid);
     
@@ -207,9 +198,9 @@ function setupPointsListener(uid) {
         window.pointsUnsubscribe();
     }
     
-    // 포인트 문서 실시간 감지
-    const pointsDocRef = window.firebase.doc(db, "user_points", uid);
-    window.pointsUnsubscribe = window.firebase.onSnapshot(pointsDocRef, (doc) => {
+    // ✅ firebase.doc 사용으로 통일
+    const pointsDocRef = firebase.doc(db, "user_points", uid);
+    window.pointsUnsubscribe = firebase.onSnapshot(pointsDocRef, (doc) => {
         if (doc.exists()) {
             const newPoints = doc.data().points || 0;
             console.log("실시간 포인트 업데이트:", newPoints);
@@ -220,7 +211,7 @@ function setupPointsListener(uid) {
                 pointsElement.textContent = `${newPoints}P`;
                 console.log("UI 포인트 업데이트 완료:", newPoints);
                 
-                // 포인트 변경 애니메이션 효과 (선택사항)
+                // 포인트 변경 애니메이션 효과
                 pointsElement.classList.add('points-updated');
                 setTimeout(() => {
                     pointsElement.classList.remove('points-updated');
@@ -236,7 +227,8 @@ function setupPointsListener(uid) {
     });
 }
 
-// 5. setMatchResult 함수도 수정 (더 확실한 갱신)
+
+// 5. setMatchResult 함수도 firebase 네임스페이스 통일
 async function setMatchResult(matchId, result) {
     const user = auth.currentUser;
     if (!user) {
@@ -244,28 +236,28 @@ async function setMatchResult(matchId, result) {
         return;
     }
     
-    // 관리자 권한 체크
-    const adminDocRef = window.firebase.doc(db, "admins", user.email);
-    const adminDoc = await window.firebase.getDoc(adminDocRef);
+    // 관리자 권한 체크 - ✅ firebase.doc 사용
+    const adminDocRef = firebase.doc(db, "admins", user.email);
+    const adminDoc = await firebase.getDoc(adminDocRef);
     if (!adminDoc.exists()) {
         alert("관리자만 결과 설정 가능");
         return;
     }
 
     try {
-        // 경기 결과 저장
-        const matchRef = window.firebase.doc(db, "matches", matchId);
-        await window.firebase.setDoc(matchRef, {
+        // 경기 결과 저장 - ✅ firebase.doc 사용
+        const matchRef = firebase.doc(db, "matches", matchId);
+        await firebase.setDoc(matchRef, {
             status: "finished",
             adminResult: result
         }, { merge: true });
 
-        // votes 에서 이 경기(matchId)에 참여한 사람 중 result와 같은 사람들 찾기
-        const votesQuery = window.firebase.query(
-          window.firebase.collection(db, "votes"),
-          window.firebase.where("matchId", "==", matchId)
+        // votes 조회 - ✅ firebase.query 사용
+        const votesQuery = firebase.query(
+          firebase.collection(db, "votes"),
+          firebase.where("matchId", "==", matchId)
         );
-        const votesSnapshot = await window.firebase.getDocs(votesQuery);
+        const votesSnapshot = await firebase.getDocs(votesQuery);
         const winners = [];
         votesSnapshot.forEach(doc => {
             if (doc.data().voteType === result) {
@@ -314,15 +306,16 @@ const themeMenuHtml = `
   </div>
 `;
 
-// 1. showUserProfile 함수 수정 (디버깅 로그 추가)
+// 4. showUserProfile 함수 수정 - firebase 네임스페이스 통일
 async function showUserProfile() {
     const user = auth.currentUser;
     console.log("showUserProfile 실행 - 사용자:", user?.email);
     
     if (user) {
         try {
-            const profileDocRef = window.firebase.doc(db, "profiles", user.uid);
-            const profileDoc = await window.firebase.getDoc(profileDocRef);
+            // ✅ firebase.doc 사용으로 통일
+            const profileDocRef = firebase.doc(db, "profiles", user.uid);
+            const profileDoc = await firebase.getDoc(profileDocRef);
             
             let profileData = {
                 email: user.email,
@@ -359,6 +352,7 @@ async function showUserProfile() {
         }
     }
 }
+
 
 function updateUIForAuthState(isLoggedIn, profileData = null) {
     const profileBox = document.getElementById('profile-box');
@@ -598,29 +592,29 @@ if (saveNicknameBtn) {
     };
 }
 
-// 3. 승부예측 투표 후에도 프로필 갱신 (saveVoteToFirestore는 포인트 변경 없지만, 혹시를 위해)
+// 6. saveVoteToFirestore도 firebase 네임스페이스 통일
 async function saveVoteToFirestore(matchId, voteType) {
     const user = auth.currentUser;
     if (!user) return;
 
-    // votes 저장 (중복방지)
-    const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
-    const voteSnap = await window.firebase.getDoc(voteRef);
+    // votes 저장 (중복방지) - ✅ firebase.doc 사용
+    const voteRef = firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
+    const voteSnap = await firebase.getDoc(voteRef);
 
     if (voteSnap.exists()) return null;
 
-    await window.firebase.setDoc(voteRef, {
+    await firebase.setDoc(voteRef, {
         matchId,
         uid: user.uid,
         voteType,
         votedAt: new Date()
     });
 
-    // user_points 자동 생성 (없을 경우)
-    const pointRef = window.firebase.doc(db, 'user_points', user.uid);
-    const pointSnap = await window.firebase.getDoc(pointRef);
+    // user_points 자동 생성 (없을 경우) - ✅ firebase.doc 사용
+    const pointRef = firebase.doc(db, 'user_points', user.uid);
+    const pointSnap = await firebase.getDoc(pointRef);
     if (!pointSnap.exists()) {
-        await window.firebase.setDoc(pointRef, {
+        await firebase.setDoc(pointRef, {
             points: 0,
             uid: user.uid
         });
@@ -628,12 +622,15 @@ async function saveVoteToFirestore(matchId, voteType) {
         // 새로 생성된 경우 포인트 리스너 다시 설정
         setupPointsListener(user.uid);
         
-        // ✅ 새 포인트 문서 생성 시에도 프로필 갱신
+        // 새 포인트 문서 생성 시에도 프로필 갱신
         showUserProfile();
     }
 
     return true;
 }
+
+// 전역 함수로 노출
+window.setMatchResult = setMatchResult;
 
 function updatePointsDisplay(newPoints) {
     const pointsElement = document.querySelector('.profile-points');
