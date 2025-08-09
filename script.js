@@ -64,25 +64,65 @@ window.onload = function () {
     setupProfileEditModalEvents();
 };
 
-// 관리자 권한 확인 함수
+// 관리자 권한 확인 함수 (수정된 버전)
 async function checkAdminStatus() {
-    const user = auth.currentUser;
-    if (user) {
-        try {
-            const adminDocRef = window.firebase.doc(db, "admins", user.email);
-            const adminDoc = await window.firebase.getDoc(adminDocRef);
-            isAdmin = adminDoc.exists();
-            
-            if (isAdmin) {
-                const adminWriteBtn = document.getElementById('adminWriteBtn');
-                if (adminWriteBtn) {
-                    adminWriteBtn.style.display = 'block';
-                }
-            }
-        } catch (error) {
-            console.error("관리자 권한 확인 실패:", error);
-        }
+    // Firebase가 초기화되지 않았으면 대기
+    if (!window.firebase || !window.firebase.getFirestore || !window.firebase.getAuth) {
+        console.error("Firebase SDK가 아직 로드되지 않았습니다.");
+        return;
     }
+
+    // 전역 변수 초기화 (admin-controller.js 패턴 참고)
+    if (!auth) auth = window.firebase.getAuth();
+    if (!db) db = window.firebase.getFirestore();
+    
+    // onAuthStateChanged를 사용하여 인증 상태 변화 감지
+    window.firebase.onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                const adminDocRef = window.firebase.doc(db, "admins", user.email);
+                const adminDoc = await window.firebase.getDoc(adminDocRef);
+                isAdmin = adminDoc.exists();
+                
+                // 관리자 UI 요소들 표시/숨김 처리
+                const adminElements = [
+                    'adminResultBtnGroup',
+                    'adminAddMatchBtn',
+                    'adminWriteBtn'
+                ];
+                
+                adminElements.forEach(elementId => {
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        element.style.display = isAdmin ? 'block' : 'none';
+                    }
+                });
+                
+                console.log(`관리자 권한: ${isAdmin ? '있음' : '없음'}`);
+                
+            } catch (error) {
+                console.error("관리자 권한 확인 실패:", error);
+                isAdmin = false;
+            }
+        } else {
+            // 로그아웃 상태일 때
+            isAdmin = false;
+            
+            // 모든 관리자 UI 요소 숨김
+            const adminElements = [
+                'adminResultBtnGroup',
+                'adminAddMatchBtn', 
+                'adminWriteBtn'
+            ];
+            
+            adminElements.forEach(elementId => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.style.display = 'none';
+                }
+            });
+        }
+    });
 }
 
 // 사용자 포인트 관련 함수들
