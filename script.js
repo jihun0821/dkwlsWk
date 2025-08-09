@@ -108,7 +108,7 @@ window.firebase.onAuthStateChanged(auth, async (user) => {
 
         // ✅ 로그인 상태 → 프로필 표시 & 포인트 리스너 연결
         showUserProfile();
-        setupPointsListener();
+        setupPointsListener(user.uid);
 
     } else {
         // ❌ 로그아웃 상태
