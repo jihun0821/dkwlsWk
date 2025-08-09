@@ -165,7 +165,7 @@ async function getUserPoints(uid) {
     }
 }
 
-// updateUserPoints 함수 - firebase 네임스페이스 통일
+// updateUserPoints 함수 - firebase 네임스페이스 통일 (트랜잭션 수정)
 async function updateUserPoints(uid, pointsToAdd) {
     try {
         console.log(`포인트 업데이트 시작 - UID: ${uid}, 추가 포인트: ${pointsToAdd}`);
@@ -173,7 +173,7 @@ async function updateUserPoints(uid, pointsToAdd) {
         const pointRef = window.firebase.doc(db, "user_points", uid);
         
         // 트랜잭션을 사용해서 더 안정적으로 포인트 업데이트
-        const updatedPoints = await window.firebase.runTransaction(db, async (transaction) => {
+        const updatedPoints = await window.firebase.runTransaction(async (transaction) => {
             const pointDoc = await transaction.get(pointRef);
             let currentPoints = 0;
             
@@ -197,7 +197,32 @@ async function updateUserPoints(uid, pointsToAdd) {
         return updatedPoints;
     } catch (error) {
         console.error("포인트 업데이트 실패:", error);
-        throw error;
+        
+        // 트랜잭션이 실패하면 일반적인 업데이트 방식으로 재시도
+        try {
+            console.log("트랜잭션 실패, 일반 업데이트로 재시도");
+            const pointRef = window.firebase.doc(db, "user_points", uid);
+            const pointDoc = await window.firebase.getDoc(pointRef);
+            let currentPoints = 0;
+            
+            if (pointDoc.exists()) {
+                currentPoints = pointDoc.data().points || 0;
+            }
+            
+            const newPoints = currentPoints + pointsToAdd;
+            
+            await window.firebase.setDoc(pointRef, {
+                points: newPoints,
+                uid: uid,
+                lastUpdated: new Date()
+            }, { merge: true });
+            
+            console.log(`일반 업데이트 완료 - 새 포인트: ${newPoints}`);
+            return newPoints;
+        } catch (fallbackError) {
+            console.error("일반 업데이트도 실패:", fallbackError);
+            throw fallbackError;
+        }
     }
 }
 
