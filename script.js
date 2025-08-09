@@ -339,6 +339,9 @@ async function showUserProfile() {
             console.log("showUserProfile - 조회된 포인트:", userPoints);
             profileData.points = userPoints;
             
+            // ✅ 전역 변수에 프로필 데이터 저장 (다른 곳에서 참조할 수 있도록)
+            window.currentUserProfile = profileData;
+            
             // UI 업데이트 (중복 호출 방지를 위해 한 번만 호출)
             updateUIForAuthState(true, profileData);
             
@@ -348,6 +351,7 @@ async function showUserProfile() {
         }
     } else {
         isAdmin = false;
+        window.currentUserProfile = null;
         updateUIForAuthState(false);
         
         // 로그아웃 시 포인트 리스너 해제
