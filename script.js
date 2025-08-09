@@ -144,24 +144,22 @@ async function getUserPoints(uid) {
     }
 }
 
+// 업데이트된 포인트 업데이트 함수
 async function updateUserPoints(uid, pointsToAdd) {
     try {
-        const pointsDocRef = window.firebase.doc(db, "user_points", uid);
-        const pointsDoc = await window.firebase.getDoc(pointsDocRef);
-        
-        let currentPoints = 0;
-        if (pointsDoc.exists()) {
-            currentPoints = pointsDoc.data().points || 0;
+        const pointRef = window.firebase.doc(db, "user_points", uid);
+        const pointDoc = await window.firebase.getDoc(pointRef);
+        let curPoint = 0;
+        if (pointDoc.exists()) {
+            curPoint = pointDoc.data().points || 0;
         }
-        
-        const newPoints = currentPoints + pointsToAdd;
-        await window.firebase.setDoc(pointsDocRef, { 
-            points: newPoints, 
+        await window.firebase.setDoc(pointRef, {
+            points: curPoint + pointsToAdd,
             uid: uid,
             lastUpdated: new Date()
-        });
+        }, { merge: true });
         
-        return newPoints;
+        return curPoint + pointsToAdd;
     } catch (error) {
         console.error("포인트 업데이트 실패:", error);
         throw error;
@@ -205,15 +203,9 @@ async function setMatchResult(matchId, result) {
         }
     });
 
-    // 각 winner에게 100포인트씩 지급
+    // 각 winner에게 100포인트씩 지급 (업데이트된 함수 사용)
     for (const uid of winners) {
-        const pointRef = firebase.doc(db, "user_points", uid);
-        const pointDoc = await firebase.getDoc(pointRef);
-        let curPoint = pointDoc.exists() ? (pointDoc.data().points || 0) : 0;
-        await firebase.setDoc(pointRef, {
-            points: curPoint + 100,
-            uid
-        }, { merge: true });
+        await updateUserPoints(uid, 100);
     }
     alert(`${winners.length}명에게 100포인트 지급 완료!`);
 }
@@ -516,11 +508,12 @@ if (saveNicknameBtn) {
     };
 }
 
-// Firebase 투표 저장
+// 업데이트된 투표 저장 함수 (포인트 문서 자동 생성 포함)
 async function saveVoteToFirestore(matchId, voteType) {
     const user = auth.currentUser;
     if (!user) return;
 
+    // votes 저장 (중복방지)
     const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
     const voteSnap = await window.firebase.getDoc(voteRef);
 
@@ -532,6 +525,17 @@ async function saveVoteToFirestore(matchId, voteType) {
         voteType,
         votedAt: new Date()
     });
+
+    // user_points 자동 생성 (없을 경우)
+    const pointRef = window.firebase.doc(db, 'user_points', user.uid);
+    const pointSnap = await window.firebase.getDoc(pointRef);
+    if (!pointSnap.exists()) {
+        await window.firebase.setDoc(pointRef, {
+            points: 0,
+            uid: user.uid
+        });
+    }
+
     return true;
 }
 
