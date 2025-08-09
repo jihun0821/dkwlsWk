@@ -147,7 +147,7 @@ async function getUserPoints(uid) {
     }
 }
 
-// 업데이트된 포인트 업데이트 함수 (프로필 자동 갱신 추가)
+// 2. updateUserPoints 함수 수정 (현재 사용자의 경우 프로필 자동 갱신)
 async function updateUserPoints(uid, pointsToAdd) {
     try {
         const pointRef = window.firebase.doc(db, "user_points", uid);
@@ -162,10 +162,13 @@ async function updateUserPoints(uid, pointsToAdd) {
             lastUpdated: new Date()
         }, { merge: true });
         
-        // 포인트 업데이트 후 프로필 다시 렌더링
+        // ✅ 포인트 업데이트 후 현재 사용자라면 프로필 다시 렌더링
         const currentUser = auth.currentUser;
         if (currentUser && currentUser.uid === uid) {
-            showUserProfile();
+            // 짧은 딜레이 후 프로필 갱신 (Firestore 반영 시간 고려)
+            setTimeout(() => {
+                showUserProfile();
+            }, 500);
         }
         
         return curPoint + pointsToAdd;
@@ -175,7 +178,7 @@ async function updateUserPoints(uid, pointsToAdd) {
     }
 }
 
-// 포인트 실시간 감지 리스너 설정
+// 5. setupPointsListener 함수 개선 (더 효율적인 실시간 업데이트)
 function setupPointsListener(uid) {
     // 기존 리스너가 있으면 해제
     if (window.pointsUnsubscribe) {
@@ -188,16 +191,17 @@ function setupPointsListener(uid) {
         if (doc.exists()) {
             const newPoints = doc.data().points || 0;
             
-            // UI에서 포인트 표시 부분만 업데이트
-            const pointsElement = document.querySelector('.profile-points');
-            if (pointsElement) {
-                pointsElement.textContent = `${newPoints}P`;
-            }
+            // ✅ UI에서 포인트 표시 부분만 효율적으로 업데이트
+            updatePointsDisplay(newPoints);
+            
+            console.log(`포인트 실시간 업데이트: ${newPoints}P`);
         }
+    }, (error) => {
+        console.error("포인트 실시간 감지 오류:", error);
     });
 }
 
-// 경기 결과 설정 함수 (포인트 지급 후 알림 개선)
+// 1. setMatchResult 함수 수정 (포인트 지급 후 프로필 갱신 추가)
 async function setMatchResult(matchId, result) {
     const auth = firebase.getAuth();
     const user = auth.currentUser;
@@ -239,6 +243,9 @@ async function setMatchResult(matchId, result) {
     for (const uid of winners) {
         await updateUserPoints(uid, 100);
     }
+    
+    // ✅ 포인트 지급 후 프로필 다시 로드
+    showUserProfile();
     
     alert(`${winners.length}명에게 100포인트 지급 완료!\n포인트가 자동으로 업데이트됩니다.`);
     
@@ -554,7 +561,7 @@ if (saveNicknameBtn) {
     };
 }
 
-// 업데이트된 투표 저장 함수 (포인트 문서 자동 생성 및 실시간 감지 포함)
+// 3. 승부예측 투표 후에도 프로필 갱신 (saveVoteToFirestore는 포인트 변경 없지만, 혹시를 위해)
 async function saveVoteToFirestore(matchId, voteType) {
     const user = auth.currentUser;
     if (!user) return;
@@ -583,9 +590,25 @@ async function saveVoteToFirestore(matchId, voteType) {
         
         // 새로 생성된 경우 포인트 리스너 다시 설정
         setupPointsListener(user.uid);
+        
+        // ✅ 새 포인트 문서 생성 시에도 프로필 갱신
+        showUserProfile();
     }
 
     return true;
+}
+
+function updatePointsDisplay(newPoints) {
+    const pointsElement = document.querySelector('.profile-points');
+    if (pointsElement) {
+        pointsElement.textContent = `${newPoints}P`;
+        
+        // 포인트 변경 애니메이션 효과 (선택사항)
+        pointsElement.classList.add('points-updated');
+        setTimeout(() => {
+            pointsElement.classList.remove('points-updated');
+        }, 1000);
+    }
 }
 
 async function getVotingStatsFromFirestore(matchId) {
