@@ -128,7 +128,7 @@ async function checkAdminStatus() {
     });
 }
 
-// 사용자 포인트 관련 함수들
+// 사용자 포인트 관련 함수들 (실시간 업데이트 개선)
 async function getUserPoints(uid) {
     try {
         const pointsDocRef = window.firebase.doc(db, "user_points", uid);
@@ -147,7 +147,7 @@ async function getUserPoints(uid) {
     }
 }
 
-// 업데이트된 포인트 업데이트 함수
+// 업데이트된 포인트 업데이트 함수 (프로필 자동 갱신 추가)
 async function updateUserPoints(uid, pointsToAdd) {
     try {
         const pointRef = window.firebase.doc(db, "user_points", uid);
@@ -162,6 +162,12 @@ async function updateUserPoints(uid, pointsToAdd) {
             lastUpdated: new Date()
         }, { merge: true });
         
+        // 포인트 업데이트 후 프로필 다시 렌더링
+        const currentUser = auth.currentUser;
+        if (currentUser && currentUser.uid === uid) {
+            showUserProfile();
+        }
+        
         return curPoint + pointsToAdd;
     } catch (error) {
         console.error("포인트 업데이트 실패:", error);
@@ -169,7 +175,29 @@ async function updateUserPoints(uid, pointsToAdd) {
     }
 }
 
-// 경기 결과 설정 함수 (관리자만)
+// 포인트 실시간 감지 리스너 설정
+function setupPointsListener(uid) {
+    // 기존 리스너가 있으면 해제
+    if (window.pointsUnsubscribe) {
+        window.pointsUnsubscribe();
+    }
+    
+    // 포인트 문서 실시간 감지
+    const pointsDocRef = window.firebase.doc(db, "user_points", uid);
+    window.pointsUnsubscribe = window.firebase.onSnapshot(pointsDocRef, (doc) => {
+        if (doc.exists()) {
+            const newPoints = doc.data().points || 0;
+            
+            // UI에서 포인트 표시 부분만 업데이트
+            const pointsElement = document.querySelector('.profile-points');
+            if (pointsElement) {
+                pointsElement.textContent = `${newPoints}P`;
+            }
+        }
+    });
+}
+
+// 경기 결과 설정 함수 (포인트 지급 후 알림 개선)
 async function setMatchResult(matchId, result) {
     const auth = firebase.getAuth();
     const user = auth.currentUser;
@@ -177,6 +205,7 @@ async function setMatchResult(matchId, result) {
         alert('로그인 필요');
         return;
     }
+    
     // 관리자 권한 체크
     const db = firebase.getFirestore();
     const adminDocRef = firebase.doc(db, "admins", user.email);
@@ -206,11 +235,15 @@ async function setMatchResult(matchId, result) {
         }
     });
 
-    // 각 winner에게 100포인트씩 지급 (업데이트된 함수 사용)
+    // 각 winner에게 100포인트씩 지급
     for (const uid of winners) {
         await updateUserPoints(uid, 100);
     }
-    alert(`${winners.length}명에게 100포인트 지급 완료!`);
+    
+    alert(`${winners.length}명에게 100포인트 지급 완료!\n포인트가 자동으로 업데이트됩니다.`);
+    
+    // 패널 새로고침으로 결과 반영
+    loadMatchDetails(matchId);
 }
 
 // 전역 함수로 노출 (HTML onclick에서 사용하기 위해)
@@ -236,7 +269,7 @@ const themeMenuHtml = `
   </div>
 `;
 
-// showUserProfile 함수 (포인트 표시 포함)
+// showUserProfile 함수에 포인트 실시간 감지 추가
 async function showUserProfile() {
     const user = auth.currentUser;
     
@@ -263,6 +296,10 @@ async function showUserProfile() {
             await checkAdminStatus();
             
             updateUIForAuthState(true, profileData);
+            
+            // 포인트 실시간 감지를 위한 listener 설정
+            setupPointsListener(user.uid);
+            
         } catch (error) {
             console.error("프로필 로드 실패:", error);
             updateUIForAuthState(false);
@@ -270,6 +307,12 @@ async function showUserProfile() {
     } else {
         isAdmin = false;
         updateUIForAuthState(false);
+        
+        // 로그아웃 시 포인트 리스너 해제
+        if (window.pointsUnsubscribe) {
+            window.pointsUnsubscribe();
+            window.pointsUnsubscribe = null;
+        }
     }
 }
 
@@ -511,7 +554,7 @@ if (saveNicknameBtn) {
     };
 }
 
-// 업데이트된 투표 저장 함수 (포인트 문서 자동 생성 포함)
+// 업데이트된 투표 저장 함수 (포인트 문서 자동 생성 및 실시간 감지 포함)
 async function saveVoteToFirestore(matchId, voteType) {
     const user = auth.currentUser;
     if (!user) return;
@@ -537,6 +580,9 @@ async function saveVoteToFirestore(matchId, voteType) {
             points: 0,
             uid: user.uid
         });
+        
+        // 새로 생성된 경우 포인트 리스너 다시 설정
+        setupPointsListener(user.uid);
     }
 
     return true;
