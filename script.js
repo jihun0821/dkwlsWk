@@ -137,8 +137,6 @@ window.firebase.onAuthStateChanged(auth, async (user) => {
         }
     }
 });
-}
-
 
 // 1. getUserPoints 함수 - 확실히 firebase 네임스페이스로 수정
 async function getUserPoints(uid) {
