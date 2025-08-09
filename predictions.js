@@ -1,4 +1,3 @@
-
 // predictions.js
 let currentUser = null;
 let currentCategory = null;
@@ -325,3 +324,81 @@ function closePredictionModal() {
     }
 }
 window.closePredictionModal = closePredictionModal;
+
+const usersPerPage = 15;
+let currentPage = 1;
+let allUsers = []; // [{uid, nickname, points, totalVotes, correctVotes, successRate}]
+
+async function loadLeaderboard() {
+    const db = firebase.getFirestore();
+    // 전체 사용자 uid, 닉네임
+    const usersSnapshot = await firebase.getDocs(firebase.collection(db, "profiles"));
+    const userList = [];
+    usersSnapshot.forEach(doc => {
+        userList.push({ uid: doc.id, nickname: doc.data().nickname || doc.id });
+    });
+
+    // 포인트
+    const pointSnapshot = await firebase.getDocs(firebase.collection(db, "user_points"));
+    const pointsDict = {};
+    pointSnapshot.forEach(doc => {
+        pointsDict[doc.id] = doc.data().points || 0;
+    });
+
+    // 전체 votes
+    const votesSnapshot = await firebase.getDocs(firebase.collection(db, "votes"));
+    // finished 경기 결과
+    const matchesSnapshot = await firebase.getDocs(firebase.collection(db, "matches"));
+    const finishedMatches = {};
+    matchesSnapshot.forEach(doc => {
+        if (doc.data().status === "finished" && doc.data().adminResult) {
+            finishedMatches[doc.id] = doc.data().adminResult;
+        }
+    });
+
+    // uid별 집계
+    const userStats = {};
+    votesSnapshot.forEach(doc => {
+        const { uid, matchId, voteType } = doc.data();
+        if (!userStats[uid]) userStats[uid] = { total: 0, correct: 0 };
+        userStats[uid].total++;
+        // 맞춘 경기 체크
+        if (finishedMatches[matchId] && finishedMatches[matchId] === voteType) {
+            userStats[uid].correct++;
+        }
+    });
+
+    // 합쳐서 allUsers 만듦
+    allUsers = userList.map(user => {
+        const stat = userStats[user.uid] || { total: 0, correct: 0 };
+        const points = pointsDict[user.uid] || 0;
+        return {
+            ...user,
+            points,
+            totalVotes: stat.total,
+            correctVotes: stat.correct,
+            successRate: stat.total ? Math.round((stat.correct / stat.total) * 100) : 0
+        };
+    });
+
+    // 포인트순 내림차순
+    allUsers.sort((a, b) => b.points - a.points);
+
+    renderLeaderboardTable();
+}
+
+function renderLeaderboardTable() {
+    const tableBody = document.getElementById('leaderboardBody');
+    const start = (currentPage - 1) * usersPerPage;
+    const pageUsers = allUsers.slice(start, start + usersPerPage);
+    tableBody.innerHTML = pageUsers.map((user, idx) => `
+        <tr>
+            <td>${start + idx + 1}</td>
+            <td>${user.nickname}</td>
+            <td>${user.totalVotes}</td>
+            <td>${user.successRate}%</td>
+            <td>${user.points}</td>
+        </tr>
+    `).join('');
+    // 페이지네이션 버튼 활성/비활성 등 추가 구현
+}
