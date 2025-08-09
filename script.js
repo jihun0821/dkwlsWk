@@ -128,26 +128,27 @@ async function checkAdminStatus() {
     });
 }
 
-// 1. getUserPoints 함수 수정 - firebase 네임스페이스 통일
+
+// 1. getUserPoints 함수 - 확실히 firebase 네임스페이스로 수정
 async function getUserPoints(uid) {
     try {
-        console.log("포인트 조회 시작 - UID:", uid);
-        // ✅ firebase.doc 대신 window.firebase.doc 사용
+        console.log("getUserPoints - 포인트 조회 시작 - UID:", uid);
+        
+        // ✅ 확실히 firebase. 네임스페이스 사용
         const pointsDocRef = firebase.doc(db, "user_points", uid);
         const pointsDoc = await firebase.getDoc(pointsDocRef);
         
         if (pointsDoc.exists()) {
             const points = pointsDoc.data().points || 0;
-            console.log("Firestore에서 조회된 포인트:", points);
+            console.log("getUserPoints - Firestore에서 조회된 포인트:", points);
             return points;
         } else {
-            console.log("포인트 문서가 존재하지 않음, 0으로 초기화");
-            // 포인트 문서가 없으면 0포인트로 초기화
+            console.log("getUserPoints - 포인트 문서가 존재하지 않음, 0으로 초기화");
             await firebase.setDoc(pointsDocRef, { points: 0, uid: uid });
             return 0;
         }
     } catch (error) {
-        console.error("포인트 조회 실패:", error);
+        console.error("getUserPoints - 포인트 조회 실패:", error);
         return 0;
     }
 }
@@ -306,14 +307,13 @@ const themeMenuHtml = `
   </div>
 `;
 
-// 4. showUserProfile 함수 수정 - firebase 네임스페이스 통일
+// 2. showUserProfile 함수 수정 - 포인트 조회를 더 확실하게
 async function showUserProfile() {
     const user = auth.currentUser;
     console.log("showUserProfile 실행 - 사용자:", user?.email);
     
     if (user) {
         try {
-            // ✅ firebase.doc 사용으로 통일
             const profileDocRef = firebase.doc(db, "profiles", user.uid);
             const profileDoc = await firebase.getDoc(profileDocRef);
             
@@ -327,15 +327,19 @@ async function showUserProfile() {
                 profileData = { ...profileData, ...profileDoc.data() };
             }
             
-            // 사용자 포인트 조회 (디버깅 로그 추가)
+            // ✅ 포인트 조회를 더 확실하게 처리
+            console.log("showUserProfile - 포인트 조회 시작");
             const userPoints = await getUserPoints(user.uid);
-            console.log("조회된 포인트:", userPoints);
+            console.log("showUserProfile - 조회된 포인트:", userPoints);
             profileData.points = userPoints;
             
+            // UI 업데이트
             updateUIForAuthState(true, profileData);
             
-            // 포인트 실시간 감지를 위한 listener 설정
-            setupPointsListener(user.uid);
+            // ✅ UI 업데이트 후 약간의 딜레이를 두고 포인트 리스너 설정
+            setTimeout(() => {
+                setupPointsListener(user.uid);
+            }, 100);
             
         } catch (error) {
             console.error("프로필 로드 실패:", error);
@@ -354,6 +358,7 @@ async function showUserProfile() {
 }
 
 
+// 3. updateUIForAuthState 함수에서 포인트 표시 부분 확인
 function updateUIForAuthState(isLoggedIn, profileData = null) {
     const profileBox = document.getElementById('profile-box');
     
@@ -361,6 +366,8 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
         const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
         const avatarUrl = profileData.avatar_url || defaultAvatar;
         const points = profileData.points || 0;
+        
+        console.log("updateUIForAuthState - 표시할 포인트:", points); // 디버깅 로그 추가
         
         profileBox.innerHTML = `
             <div class="profile-bar">
@@ -397,6 +404,7 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
             </div>
         `;
         
+        // 이벤트 리스너들 설정...
         document.getElementById('logoutBtn').onclick = logout;
         const settingsBtn = document.getElementById('profileSettingsBtn');
         const settingsMenu = document.getElementById('profileSettingsMenu');
@@ -423,7 +431,15 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
             openProfileEditModal(profileData);
             settingsMenu.style.display = 'none';
         };
+        
+        // ✅ UI 렌더링 완료 후 포인트 요소 확인
+        setTimeout(() => {
+            const pointsElement = document.querySelector('.profile-points');
+            console.log("updateUIForAuthState - 렌더링된 포인트 요소:", pointsElement ? pointsElement.textContent : '없음');
+        }, 50);
+        
     } else {
+        // 로그아웃 상태 UI...
         profileBox.innerHTML = `
             <div class="profile-container">
                 <button id="loginBtn" type="button">로그인</button>
@@ -1157,3 +1173,45 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }, 2000);
 });
+
+// 4. 디버깅을 위한 직접적인 포인트 표시 함수
+function forceUpdatePointsUI(points) {
+    const pointsElement = document.querySelector('.profile-points');
+    if (pointsElement) {
+        pointsElement.textContent = `${points}P`;
+        console.log("forceUpdatePointsUI - 포인트 강제 업데이트:", points);
+        
+        // 애니메이션 효과
+        pointsElement.classList.add('points-updated');
+        setTimeout(() => {
+            pointsElement.classList.remove('points-updated');
+        }, 1000);
+    } else {
+        console.error("forceUpdatePointsUI - 포인트 요소를 찾을 수 없습니다.");
+    }
+}
+
+// 전역 함수로 노출
+window.forceUpdatePointsUI = forceUpdatePointsUI;
+
+// 5. 즉시 테스트할 수 있는 함수
+async function testPointsDisplay() {
+    const user = auth.currentUser;
+    if (!user) {
+        console.log("로그인된 사용자가 없습니다.");
+        return;
+    }
+    
+    console.log("=== 포인트 표시 테스트 시작 ===");
+    
+    // 1. Firestore에서 포인트 조회
+    const points = await getUserPoints(user.uid);
+    console.log("테스트 - 조회된 포인트:", points);
+    
+    // 2. UI에 직접 반영
+    forceUpdatePointsUI(points);
+    
+    console.log("=== 포인트 표시 테스트 완료 ===");
+}
+
+window.testPointsDisplay = testPointsDisplay;
