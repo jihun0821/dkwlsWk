@@ -325,8 +325,9 @@ function closePredictionModal() {
 }
 window.closePredictionModal = closePredictionModal;
 
-const usersPerPage = 15;
-let currentPage = 1;
+// 리더보드용 페이지 변수 (predictions.js에서만 사용)
+const leaderboardUsersPerPage = 15;
+let leaderboardCurrentPage = 1;
 let allUsers = []; // [{uid, nickname, points, totalVotes, correctVotes, successRate}]
 
 async function loadLeaderboard() {
@@ -389,8 +390,8 @@ async function loadLeaderboard() {
 
 function renderLeaderboardTable() {
     const tableBody = document.getElementById('leaderboardBody');
-    const start = (currentPage - 1) * usersPerPage;
-    const pageUsers = allUsers.slice(start, start + usersPerPage);
+    const start = (leaderboardCurrentPage - 1) * leaderboardUsersPerPage;
+    const pageUsers = allUsers.slice(start, start + leaderboardUsersPerPage);
     tableBody.innerHTML = pageUsers.map((user, idx) => `
         <tr>
             <td>${start + idx + 1}</td>
