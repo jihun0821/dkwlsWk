@@ -168,61 +168,54 @@ async function updateUserPoints(uid, pointsToAdd) {
     }
 }
 
-// 관리자 결과 선택 및 포인트 지급 함수
+// 경기 결과 설정 함수 (관리자만)
 async function setMatchResult(matchId, result) {
-    if (!isAdmin) {
-        alert("관리자 권한이 필요합니다.");
+    const auth = firebase.getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+        alert('로그인 필요');
         return;
     }
-    
-    try {
-        // 경기 상태를 finished로 변경하고 결과 저장
-        const matchRef = window.firebase.doc(db, "matches", matchId);
-        await window.firebase.setDoc(matchRef, {
-            status: "finished",
-            adminResult: result,
-            resultSetAt: new Date(),
-            resultSetBy: auth.currentUser.email
-        }, { merge: true });
-        
-        // 해당 경기의 모든 투표 조회
-        const votesQuery = window.firebase.query(
-            window.firebase.collection(db, 'votes'),
-            window.firebase.where('matchId', '==', matchId)
-        );
-        
-        const votesSnapshot = await window.firebase.getDocs(votesQuery);
-        const winnerUids = [];
-        
-        // 맞춘 사용자들 찾기
-        votesSnapshot.forEach(doc => {
-            const voteData = doc.data();
-            if (voteData.voteType === result) {
-                winnerUids.push(voteData.uid);
-            }
-        });
-        
-        // 맞춘 사용자들에게 100포인트 지급
-        const pointPromises = winnerUids.map(async (uid) => {
-            try {
-                await updateUserPoints(uid, 100);
-                console.log(`사용자 ${uid}에게 100포인트 지급 완료`);
-            } catch (error) {
-                console.error(`사용자 ${uid} 포인트 지급 실패:`, error);
-            }
-        });
-        
-        await Promise.all(pointPromises);
-        
-        alert(`경기 결과가 설정되었습니다. ${winnerUids.length}명의 사용자에게 100포인트가 지급되었습니다.`);
-        
-        // 패널 새로고침
-        loadMatchDetails(matchId);
-        
-    } catch (error) {
-        console.error("경기 결과 설정 실패:", error);
-        alert("경기 결과 설정에 실패했습니다.");
+    // 관리자 권한 체크
+    const db = firebase.getFirestore();
+    const adminDocRef = firebase.doc(db, "admins", user.email);
+    const adminDoc = await firebase.getDoc(adminDocRef);
+    if (!adminDoc.exists()) {
+        alert("관리자만 결과 설정 가능");
+        return;
     }
+
+    // 경기 결과 저장
+    const matchRef = firebase.doc(db, "matches", matchId);
+    await firebase.setDoc(matchRef, {
+        status: "finished",
+        adminResult: result
+    }, { merge: true });
+
+    // votes 에서 이 경기(matchId)에 참여한 사람 중 result와 같은 사람들 찾기
+    const votesQuery = firebase.query(
+      firebase.collection(db, "votes"),
+      firebase.where("matchId", "==", matchId)
+    );
+    const votesSnapshot = await firebase.getDocs(votesQuery);
+    const winners = [];
+    votesSnapshot.forEach(doc => {
+        if (doc.data().voteType === result) {
+            winners.push(doc.data().uid);
+        }
+    });
+
+    // 각 winner에게 100포인트씩 지급
+    for (const uid of winners) {
+        const pointRef = firebase.doc(db, "user_points", uid);
+        const pointDoc = await firebase.getDoc(pointRef);
+        let curPoint = pointDoc.exists() ? (pointDoc.data().points || 0) : 0;
+        await firebase.setDoc(pointRef, {
+            points: curPoint + 100,
+            uid
+        }, { merge: true });
+    }
+    alert(`${winners.length}명에게 100포인트 지급 완료!`);
 }
 
 // 전역 함수로 노출 (HTML onclick에서 사용하기 위해)
