@@ -36,7 +36,7 @@ window.onload = function () {
         db = window.firebase.getFirestore();
         auth = window.firebase.getAuth();
         
-        // ✅ 관리자 권한 확인 추가 (이 줄이 빠져있었음!)
+        // ✅ 관리자 권한 확인 추가
         checkAdminStatus();
     } else {
         console.error("Firebase SDK가 아직 로드되지 않았습니다.");
@@ -72,7 +72,7 @@ async function checkAdminStatus() {
         return;
     }
 
-    // 전역 변수 초기화 (admin-controller.js 패턴 참고)
+    // 전역 변수 초기화
     if (!auth) auth = window.firebase.getAuth();
     if (!db) db = window.firebase.getFirestore();
     
@@ -136,12 +136,17 @@ async function checkAdminStatus() {
     });
 }
 
-// 1. getUserPoints 함수 - 확실히 firebase 네임스페이스로 수정
+// ✅ AuthManager의 getUserPoints를 활용하는 전역 함수
 async function getUserPoints(uid) {
+    // AuthManager 인스턴스가 있으면 그것을 활용, 없으면 직접 조회
+    if (window.authManager && window.authManager.getUserPoints) {
+        return await window.authManager.getUserPoints(uid);
+    }
+    
+    // Fallback: 직접 조회
     try {
         console.log("getUserPoints - 포인트 조회 시작 - UID:", uid);
         
-        // ✅ 확실히 window.firebase. 네임스페이스 사용으로 통일
         const pointsDocRef = window.firebase.doc(db, "user_points", uid);
         const pointsDoc = await window.firebase.getDoc(pointsDocRef);
         
@@ -160,12 +165,11 @@ async function getUserPoints(uid) {
     }
 }
 
-// 3. updateUserPoints 함수 수정 - firebase 네임스페이스 통일
+// updateUserPoints 함수 - firebase 네임스페이스 통일
 async function updateUserPoints(uid, pointsToAdd) {
     try {
         console.log(`포인트 업데이트 시작 - UID: ${uid}, 추가 포인트: ${pointsToAdd}`);
         
-        // ✅ window.firebase.doc 사용으로 통일
         const pointRef = window.firebase.doc(db, "user_points", uid);
         
         // 트랜잭션을 사용해서 더 안정적으로 포인트 업데이트
@@ -197,7 +201,7 @@ async function updateUserPoints(uid, pointsToAdd) {
     }
 }
 
-// 2. setupPointsListener 함수 수정 - firebase 네임스페이스 통일
+// setupPointsListener 함수 - firebase 네임스페이스 통일
 function setupPointsListener(uid) {
     console.log("포인트 리스너 설정 - UID:", uid);
     
@@ -206,7 +210,6 @@ function setupPointsListener(uid) {
         window.pointsUnsubscribe();
     }
     
-    // ✅ window.firebase.doc 사용으로 통일
     const pointsDocRef = window.firebase.doc(db, "user_points", uid);
     window.pointsUnsubscribe = window.firebase.onSnapshot(pointsDocRef, (doc) => {
         if (doc.exists()) {
@@ -235,7 +238,7 @@ function setupPointsListener(uid) {
     });
 }
 
-// 5. setMatchResult 함수도 firebase 네임스페이스 통일
+// setMatchResult 함수 - firebase 네임스페이스 통일
 async function setMatchResult(matchId, result) {
     const user = auth.currentUser;
     if (!user) {
@@ -243,7 +246,7 @@ async function setMatchResult(matchId, result) {
         return;
     }
     
-    // 관리자 권한 체크 - ✅ window.firebase.doc 사용
+    // 관리자 권한 체크
     const adminDocRef = window.firebase.doc(db, "admins", user.email);
     const adminDoc = await window.firebase.getDoc(adminDocRef);
     if (!adminDoc.exists()) {
@@ -252,14 +255,14 @@ async function setMatchResult(matchId, result) {
     }
 
     try {
-        // 경기 결과 저장 - ✅ window.firebase.doc 사용
+        // 경기 결과 저장
         const matchRef = window.firebase.doc(db, "matches", matchId);
         await window.firebase.setDoc(matchRef, {
             status: "finished",
             adminResult: result
         }, { merge: true });
 
-        // votes 조회 - ✅ window.firebase.query 사용
+        // votes 조회
         const votesQuery = window.firebase.query(
           window.firebase.collection(db, "votes"),
           window.firebase.where("matchId", "==", matchId)
@@ -290,31 +293,17 @@ async function setMatchResult(matchId, result) {
     }
 }
 
-// 전역 함수로 노출 (HTML onclick에서 사용하기 위해)
+// 전역 함수로 노출
 window.setMatchResult = setMatchResult;
 
-const themeMenuHtml = `
-  <div id="profileSettingsMenu" class="settings-menu">
-    <div class="settings-menu-inner">
-      <div class="settings-menu-title">테마</div>
-      <div class="theme-options">
-        <label class="theme-label">
-          <input type="radio" name="theme" value="system" id="themeSystem"> 시스템
-        </label>
-        <label class="theme-label">
-          <input type="radio" name="theme" value="light" id="themeLight"> 라이트
-        </label>
-        <label class="theme-label">
-          <input type="radio" name="theme" value="dark" id="themeDark"> 다크
-        </label>
-      </div>
-      <hr class="settings-divider">
-    </div>
-  </div>
-`;
-
-// ✅ showUserProfile 함수 수정 - 중복 호출 방지 및 포인트 조회 개선
+// ✅ showUserProfile 함수 - AuthManager의 showUserProfile 활용
 async function showUserProfile() {
+    // AuthManager 인스턴스가 있으면 그것을 활용
+    if (window.authManager && window.authManager.showUserProfile) {
+        return await window.authManager.showUserProfile();
+    }
+    
+    // Fallback: 직접 처리
     const user = auth.currentUser;
     console.log("showUserProfile 실행 - 사용자:", user?.email);
     
@@ -333,16 +322,16 @@ async function showUserProfile() {
                 profileData = { ...profileData, ...profileDoc.data() };
             }
             
-            // ✅ 포인트 조회를 더 확실하게 처리
+            // 포인트 조회
             console.log("showUserProfile - 포인트 조회 시작");
             const userPoints = await getUserPoints(user.uid);
             console.log("showUserProfile - 조회된 포인트:", userPoints);
             profileData.points = userPoints;
             
-            // ✅ 전역 변수에 프로필 데이터 저장 (다른 곳에서 참조할 수 있도록)
+            // 전역 변수에 프로필 데이터 저장
             window.currentUserProfile = profileData;
             
-            // UI 업데이트 (중복 호출 방지를 위해 한 번만 호출)
+            // UI 업데이트
             updateUIForAuthState(true, profileData);
             
         } catch (error) {
@@ -362,7 +351,7 @@ async function showUserProfile() {
     }
 }
 
-// 3. updateUIForAuthState 함수에서 포인트 표시 부분 확인
+// updateUIForAuthState 함수에서 포인트 표시 부분 확인
 function updateUIForAuthState(isLoggedIn, profileData = null) {
     const profileBox = document.getElementById('profile-box');
     
@@ -408,7 +397,7 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
             </div>
         `;
         
-        // 이벤트 리스너들 설정...
+        // 이벤트 리스너들 설정
         document.getElementById('logoutBtn').onclick = logout;
         const settingsBtn = document.getElementById('profileSettingsBtn');
         const settingsMenu = document.getElementById('profileSettingsMenu');
@@ -436,14 +425,14 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
             settingsMenu.style.display = 'none';
         };
         
-        // ✅ UI 렌더링 완료 후 포인트 요소 확인
+        // UI 렌더링 완료 후 포인트 요소 확인
         setTimeout(() => {
             const pointsElement = document.querySelector('.profile-points');
             console.log("updateUIForAuthState - 렌더링된 포인트 요소:", pointsElement ? pointsElement.textContent : '없음');
         }, 50);
         
     } else {
-        // 로그아웃 상태 UI...
+        // 로그아웃 상태 UI
         profileBox.innerHTML = `
             <div class="profile-container">
                 <button id="loginBtn" type="button">로그인</button>
@@ -504,7 +493,7 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     }
 }
 
-// 시스템/라이트/다크 테마 적용 함수 (showUserProfile 호출 제거)
+// 시스템/라이트/다크 테마 적용 함수
 function setTheme(mode) {
     if (mode === 'system') {
         localStorage.removeItem('theme');
@@ -519,13 +508,11 @@ function setTheme(mode) {
         document.body.classList.add('dark-mode');
         document.body.classList.remove('light-mode');
     }
-    // ✅ showUserProfile 호출 제거 (불필요한 UI 재렌더링 방지)
 }
 
 function toggleTheme() {
     document.body.classList.toggle("light-mode");
     localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
-    // ✅ showUserProfile 호출 제거
 }
 
 function isUserLoggedIn() {
@@ -544,7 +531,7 @@ function openProfileEditModal(profileData) {
     modal.style.display = "flex";
 }
 
-// [추가!] 프로필 편집 모달 이벤트 설정
+// 프로필 편집 모달 이벤트 설정
 function setupProfileEditModalEvents() {
     const closeProfileEditModal = document.getElementById('closeProfileEditModal');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -585,7 +572,7 @@ window.addEventListener('DOMContentLoaded', function() {
         document.getElementById('profileEditModal').style.display = "none"; 
     };
     
-    // ✅ 닉네임 저장 버튼 이벤트 리스너도 여기서 설정
+    // 닉네임 저장 버튼 이벤트 리스너
     if (saveEdit) {
         saveEdit.onclick = async function () {
             const newNickname = document.getElementById('newNickname').value.trim();
@@ -601,7 +588,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 await window.firebase.updateProfile(user, { displayName: newNickname });
                 document.getElementById('editSuccessMessage').style.display = "block";
                 
-                // ✅ 프로필 갱신은 한 번만 호출
+                // 프로필 갱신은 한 번만 호출
                 await showUserProfile();
                 
                 setTimeout(() => {
@@ -615,12 +602,12 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 6. saveVoteToFirestore도 firebase 네임스페이스 통일
+// saveVoteToFirestore - firebase 네임스페이스 통일
 async function saveVoteToFirestore(matchId, voteType) {
     const user = auth.currentUser;
     if (!user) return;
 
-    // votes 저장 (중복방지) - ✅ window.firebase.doc 사용
+    // votes 저장 (중복방지)
     const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
     const voteSnap = await window.firebase.getDoc(voteRef);
 
@@ -633,7 +620,7 @@ async function saveVoteToFirestore(matchId, voteType) {
         votedAt: new Date()
     });
 
-    // user_points 자동 생성 (없을 경우) - ✅ window.firebase.doc 사용
+    // user_points 자동 생성 (없을 경우)
     const pointRef = window.firebase.doc(db, 'user_points', user.uid);
     const pointSnap = await window.firebase.getDoc(pointRef);
     if (!pointSnap.exists()) {
@@ -654,7 +641,7 @@ function updatePointsDisplay(newPoints) {
     if (pointsElement) {
         pointsElement.textContent = `${newPoints}P`;
         
-        // 포인트 변경 애니메이션 효과 (선택사항)
+        // 포인트 변경 애니메이션 효과
         pointsElement.classList.add('points-updated');
         setTimeout(() => {
             pointsElement.classList.remove('points-updated');
@@ -742,7 +729,7 @@ function closePanel() {
     document.body.style.overflow = "";
 }
 
-// ✅ Firestore에서 단일 경기 정보 가져오기 (비동기)
+// Firestore에서 단일 경기 정보 가져오기 (비동기)
 async function getMatchDetailsById(matchId) {
     try {
         const docRef = window.firebase.doc(db, "matches", matchId);
@@ -859,7 +846,7 @@ function setupMatchClickListeners() {
     });
 }
 
-// ✅ Firestore에서 모든 경기 정보 가져오기 (비동기)
+// Firestore에서 모든 경기 정보 가져오기 (비동기)
 async function getAllMatchData() {
     const matchMap = {};
     try {
@@ -873,7 +860,7 @@ async function getAllMatchData() {
     return matchMap;
 }
 
-// ✅ 비동기로 변경된 renderMatches 함수
+// 비동기로 변경된 renderMatches 함수
 async function renderMatches() {
     const matchContainer = document.querySelector("section.main");
     const allMatches = Object.values(await getAllMatchData());
@@ -935,8 +922,6 @@ document.querySelector('.search-bar')?.addEventListener('input', function (e) {
 // 패널 닫기 버튼 및 오버레이 클릭 시 닫힘 처리
 closePanelBtn?.addEventListener("click", closePanel);
 overlay?.addEventListener("click", closePanel);
-
-// 경기 상세정보 패널에 탭 UI, 라인업, 채팅 기능 추가
 
 // HTML 이스케이프
 function escapeHtml(text) {
@@ -1114,8 +1099,6 @@ function setupChat(matchId) {
     };
 }
 
-// =================== [공지 일주일 닫기 기능 추가] ===================
-
 // 공지 닫기 (일주일간)
 function closeNoticeForWeek() {
     const noticeElement = document.getElementById('topNotice');
@@ -1191,7 +1174,22 @@ async function testPointsDisplay() {
     console.log("=== 포인트 표시 테스트 완료 ===");
 }
 
+// ✅ logout 함수 - AuthManager의 handleLogout 활용
+async function logout() {
+    if (window.authManager && window.authManager.handleLogout) {
+        return await window.authManager.handleLogout();
+    }
+    
+    // Fallback: 직접 처리
+    try {
+        await window.firebase.signOut(auth);
+    } catch (error) {
+        console.error("로그아웃 실패:", error);
+    }
+}
+
 // 전역 함수로 노출
 window.forceUpdatePointsUI = forceUpdatePointsUI;
 window.testPointsDisplay = testPointsDisplay;
 window.setMatchResult = setMatchResult;
+window.logout = logout;
