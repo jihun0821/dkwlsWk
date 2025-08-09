@@ -35,6 +35,9 @@ window.onload = function () {
     if (window.firebase && window.firebase.getFirestore && window.firebase.getAuth) {
         db = window.firebase.getFirestore();
         auth = window.firebase.getAuth();
+        
+        // ✅ 관리자 권한 확인 추가 (이 줄이 빠져있었음!)
+        checkAdminStatus();
     } else {
         console.error("Firebase SDK가 아직 로드되지 않았습니다.");
         return;
