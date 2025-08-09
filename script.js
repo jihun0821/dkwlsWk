@@ -79,15 +79,42 @@ async function checkAdminStatus() {
     if (!auth) auth = window.firebase.getAuth();
     if (!db) db = window.firebase.getFirestore();
     
-window.firebase.onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        try {
-            // ✅ 관리자 권한 확인
-            const adminDocRef = window.firebase.doc(db, "admins", user.email);
-            const adminDoc = await window.firebase.getDoc(adminDocRef);
-            isAdmin = adminDoc.exists();
-            
-            // 관리자 UI 표시/숨김
+    window.firebase.onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                // ✅ 관리자 권한 확인
+                const adminDocRef = window.firebase.doc(db, "admins", user.email);
+                const adminDoc = await window.firebase.getDoc(adminDocRef);
+                isAdmin = adminDoc.exists();
+                
+                // 관리자 UI 표시/숨김
+                const adminElements = [
+                    'adminResultBtnGroup',
+                    'adminAddMatchBtn',
+                    'adminWriteBtn'
+                ];
+                adminElements.forEach(elementId => {
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        element.style.display = isAdmin ? 'block' : 'none';
+                    }
+                });
+                console.log(`관리자 권한: ${isAdmin ? '있음' : '없음'}`);
+
+            } catch (error) {
+                console.error("관리자 권한 확인 실패:", error);
+                isAdmin = false;
+            }
+
+            // ✅ 로그인 상태 → 프로필 표시 & 포인트 리스너 연결
+            showUserProfile();
+            setupPointsListener(user.uid);
+
+        } else {
+            // ❌ 로그아웃 상태
+            isAdmin = false;
+
+            // 관리자 UI 숨김
             const adminElements = [
                 'adminResultBtnGroup',
                 'adminAddMatchBtn',
@@ -96,47 +123,21 @@ window.firebase.onAuthStateChanged(auth, async (user) => {
             adminElements.forEach(elementId => {
                 const element = document.getElementById(elementId);
                 if (element) {
-                    element.style.display = isAdmin ? 'block' : 'none';
+                    element.style.display = 'none';
                 }
             });
-            console.log(`관리자 권한: ${isAdmin ? '있음' : '없음'}`);
 
-        } catch (error) {
-            console.error("관리자 권한 확인 실패:", error);
-            isAdmin = false;
-        }
+            // 일반 UI 초기화
+            updateUIForAuthState(false);
 
-        // ✅ 로그인 상태 → 프로필 표시 & 포인트 리스너 연결
-        showUserProfile();
-        setupPointsListener(user.uid);
-
-    } else {
-        // ❌ 로그아웃 상태
-        isAdmin = false;
-
-        // 관리자 UI 숨김
-        const adminElements = [
-            'adminResultBtnGroup',
-            'adminAddMatchBtn',
-            'adminWriteBtn'
-        ];
-        adminElements.forEach(elementId => {
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.style.display = 'none';
+            // 포인트 리스너 해제
+            if (window.pointsUnsubscribe) {
+                window.pointsUnsubscribe();
+                window.pointsUnsubscribe = null;
             }
-        });
-
-        // 일반 UI 초기화
-        updateUIForAuthState(false);
-
-        // 포인트 리스너 해제
-        if (window.pointsUnsubscribe) {
-            window.pointsUnsubscribe();
-            window.pointsUnsubscribe = null;
         }
-    }
-});
+    });
+} // ✅ checkAdminStatus 함수 중괄호 닫기 추가
 
 // 1. getUserPoints 함수 - 확실히 firebase 네임스페이스로 수정
 async function getUserPoints(uid) {
@@ -236,7 +237,6 @@ function setupPointsListener(uid) {
         console.error("포인트 실시간 감지 오류:", error);
     });
 }
-
 
 // 5. setMatchResult 함수도 firebase 네임스페이스 통일
 async function setMatchResult(matchId, result) {
@@ -365,7 +365,6 @@ async function showUserProfile() {
         }
     }
 }
-
 
 // 3. updateUIForAuthState 함수에서 포인트 표시 부분 확인
 function updateUIForAuthState(isLoggedIn, profileData = null) {
@@ -1170,7 +1169,6 @@ function forceRefreshProfile() {
 
 // 전역 함수로 노출 (디버깅용)
 window.forceRefreshProfile = forceRefreshProfile;
-window.setMatchResult = setMatchResult;
 
 // 7. 초기 로드 시 포인트 확인
 window.addEventListener('DOMContentLoaded', function() {
