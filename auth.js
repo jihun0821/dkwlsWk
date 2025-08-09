@@ -253,6 +253,33 @@ class AuthManager {
   }
 
   /**
+   * ✅ AuthManager 클래스에 getUserPoints 메서드 추가
+   * @param {string} uid - 사용자 UID
+   * @returns {number} 사용자 포인트
+   */
+  async getUserPoints(uid) {
+    try {
+      console.log("AuthManager.getUserPoints - 포인트 조회 시작 - UID:", uid);
+      
+      const pointsDocRef = this.firebase.doc(this.db, "user_points", uid);
+      const pointsDoc = await this.firebase.getDoc(pointsDocRef);
+      
+      if (pointsDoc.exists()) {
+        const points = pointsDoc.data().points || 0;
+        console.log("AuthManager.getUserPoints - Firestore에서 조회된 포인트:", points);
+        return points;
+      } else {
+        console.log("AuthManager.getUserPoints - 포인트 문서가 존재하지 않음, 0으로 초기화");
+        await this.firebase.setDoc(pointsDocRef, { points: 0, uid: uid });
+        return 0;
+      }
+    } catch (error) {
+      console.error("AuthManager.getUserPoints - 포인트 조회 실패:", error);
+      return 0;
+    }
+  }
+
+  /**
    * 인증 상태 변화 리스너 설정
    */
   setupAuthStateListener() {
@@ -749,7 +776,7 @@ class AuthManager {
   }
 
   /**
-   * ✅ 사용자 프로필 표시 (포인트 포함)
+   * ✅ 사용자 프로필 표시 (포인트 포함) - getUserPoints를 this.getUserPoints로 수정
    */
   async showUserProfile() {
     try {
@@ -785,7 +812,7 @@ class AuthManager {
         };
       }
 
-      // ✅ 포인트 조회 추가
+      // ✅ 포인트 조회 - this.getUserPoints 사용
       console.log("auth.js - showUserProfile - 포인트 조회 시작");
       const userPoints = await this.getUserPoints(user.uid);
       console.log("auth.js - showUserProfile - 조회된 포인트:", userPoints);
@@ -802,6 +829,7 @@ class AuthManager {
       this.updateUIForAuthState(false);
     }
   }
+
   /**
    * 이메일 인증 대기 상태 UI 업데이트
    */
@@ -858,6 +886,9 @@ class AuthManager {
 
 // 전역 인스턴스 생성
 const authManager = new AuthManager();
+
+// ✅ authManager를 전역으로 노출
+window.authManager = authManager;
 
 // 전역 함수 내보내기 (하위 호환성)
 window.logout = () => authManager.handleLogout();
