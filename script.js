@@ -43,9 +43,6 @@ window.onload = function () {
         return;
     }
 
-    // ✅ Firebase 초기화 이후 실행
-    showUserProfile();
-
     const pagination = document.querySelector('.pagination-container');
     if (pagination) {
         renderMatches();
@@ -107,7 +104,7 @@ async function checkAdminStatus() {
             }
 
             // ✅ 로그인 상태 → 프로필 표시 & 포인트 리스너 연결
-            showUserProfile();
+            await showUserProfile();
             setupPointsListener(user.uid);
 
         } else {
@@ -137,16 +134,16 @@ async function checkAdminStatus() {
             }
         }
     });
-} // ✅ checkAdminStatus 함수 중괄호 닫기 추가
+}
 
 // 1. getUserPoints 함수 - 확실히 firebase 네임스페이스로 수정
 async function getUserPoints(uid) {
     try {
         console.log("getUserPoints - 포인트 조회 시작 - UID:", uid);
         
-        // ✅ 확실히 firebase. 네임스페이스 사용
-        const pointsDocRef = firebase.doc(db, "user_points", uid);
-        const pointsDoc = await firebase.getDoc(pointsDocRef);
+        // ✅ 확실히 window.firebase. 네임스페이스 사용으로 통일
+        const pointsDocRef = window.firebase.doc(db, "user_points", uid);
+        const pointsDoc = await window.firebase.getDoc(pointsDocRef);
         
         if (pointsDoc.exists()) {
             const points = pointsDoc.data().points || 0;
@@ -154,7 +151,7 @@ async function getUserPoints(uid) {
             return points;
         } else {
             console.log("getUserPoints - 포인트 문서가 존재하지 않음, 0으로 초기화");
-            await firebase.setDoc(pointsDocRef, { points: 0, uid: uid });
+            await window.firebase.setDoc(pointsDocRef, { points: 0, uid: uid });
             return 0;
         }
     } catch (error) {
@@ -168,11 +165,11 @@ async function updateUserPoints(uid, pointsToAdd) {
     try {
         console.log(`포인트 업데이트 시작 - UID: ${uid}, 추가 포인트: ${pointsToAdd}`);
         
-        // ✅ firebase.doc 사용으로 통일
-        const pointRef = firebase.doc(db, "user_points", uid);
+        // ✅ window.firebase.doc 사용으로 통일
+        const pointRef = window.firebase.doc(db, "user_points", uid);
         
         // 트랜잭션을 사용해서 더 안정적으로 포인트 업데이트
-        const updatedPoints = await firebase.runTransaction(db, async (transaction) => {
+        const updatedPoints = await window.firebase.runTransaction(db, async (transaction) => {
             const pointDoc = await transaction.get(pointRef);
             let currentPoints = 0;
             
@@ -209,9 +206,9 @@ function setupPointsListener(uid) {
         window.pointsUnsubscribe();
     }
     
-    // ✅ firebase.doc 사용으로 통일
-    const pointsDocRef = firebase.doc(db, "user_points", uid);
-    window.pointsUnsubscribe = firebase.onSnapshot(pointsDocRef, (doc) => {
+    // ✅ window.firebase.doc 사용으로 통일
+    const pointsDocRef = window.firebase.doc(db, "user_points", uid);
+    window.pointsUnsubscribe = window.firebase.onSnapshot(pointsDocRef, (doc) => {
         if (doc.exists()) {
             const newPoints = doc.data().points || 0;
             console.log("실시간 포인트 업데이트:", newPoints);
@@ -246,28 +243,28 @@ async function setMatchResult(matchId, result) {
         return;
     }
     
-    // 관리자 권한 체크 - ✅ firebase.doc 사용
-    const adminDocRef = firebase.doc(db, "admins", user.email);
-    const adminDoc = await firebase.getDoc(adminDocRef);
+    // 관리자 권한 체크 - ✅ window.firebase.doc 사용
+    const adminDocRef = window.firebase.doc(db, "admins", user.email);
+    const adminDoc = await window.firebase.getDoc(adminDocRef);
     if (!adminDoc.exists()) {
         alert("관리자만 결과 설정 가능");
         return;
     }
 
     try {
-        // 경기 결과 저장 - ✅ firebase.doc 사용
-        const matchRef = firebase.doc(db, "matches", matchId);
-        await firebase.setDoc(matchRef, {
+        // 경기 결과 저장 - ✅ window.firebase.doc 사용
+        const matchRef = window.firebase.doc(db, "matches", matchId);
+        await window.firebase.setDoc(matchRef, {
             status: "finished",
             adminResult: result
         }, { merge: true });
 
-        // votes 조회 - ✅ firebase.query 사용
-        const votesQuery = firebase.query(
-          firebase.collection(db, "votes"),
-          firebase.where("matchId", "==", matchId)
+        // votes 조회 - ✅ window.firebase.query 사용
+        const votesQuery = window.firebase.query(
+          window.firebase.collection(db, "votes"),
+          window.firebase.where("matchId", "==", matchId)
         );
-        const votesSnapshot = await firebase.getDocs(votesQuery);
+        const votesSnapshot = await window.firebase.getDocs(votesQuery);
         const winners = [];
         votesSnapshot.forEach(doc => {
             if (doc.data().voteType === result) {
@@ -316,15 +313,15 @@ const themeMenuHtml = `
   </div>
 `;
 
-// 2. showUserProfile 함수 수정 - 포인트 조회를 더 확실하게
+// ✅ showUserProfile 함수 수정 - 중복 호출 방지 및 포인트 조회 개선
 async function showUserProfile() {
     const user = auth.currentUser;
     console.log("showUserProfile 실행 - 사용자:", user?.email);
     
     if (user) {
         try {
-            const profileDocRef = firebase.doc(db, "profiles", user.uid);
-            const profileDoc = await firebase.getDoc(profileDocRef);
+            const profileDocRef = window.firebase.doc(db, "profiles", user.uid);
+            const profileDoc = await window.firebase.getDoc(profileDocRef);
             
             let profileData = {
                 email: user.email,
@@ -342,13 +339,8 @@ async function showUserProfile() {
             console.log("showUserProfile - 조회된 포인트:", userPoints);
             profileData.points = userPoints;
             
-            // UI 업데이트
+            // UI 업데이트 (중복 호출 방지를 위해 한 번만 호출)
             updateUIForAuthState(true, profileData);
-            
-            // ✅ UI 업데이트 후 약간의 딜레이를 두고 포인트 리스너 설정
-            setTimeout(() => {
-                setupPointsListener(user.uid);
-            }, 100);
             
         } catch (error) {
             console.error("프로필 로드 실패:", error);
@@ -375,7 +367,7 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
         const avatarUrl = profileData.avatar_url || defaultAvatar;
         const points = profileData.points || 0;
         
-        console.log("updateUIForAuthState - 표시할 포인트:", points); // 디버깅 로그 추가
+        console.log("updateUIForAuthState - 표시할 포인트:", points);
         
         profileBox.innerHTML = `
             <div class="profile-bar">
@@ -508,7 +500,7 @@ function updateUIForAuthState(isLoggedIn, profileData = null) {
     }
 }
 
-// 시스템/라이트/다크 테마 적용 함수
+// 시스템/라이트/다크 테마 적용 함수 (showUserProfile 호출 제거)
 function setTheme(mode) {
     if (mode === 'system') {
         localStorage.removeItem('theme');
@@ -523,13 +515,13 @@ function setTheme(mode) {
         document.body.classList.add('dark-mode');
         document.body.classList.remove('light-mode');
     }
-    showUserProfile();
+    // ✅ showUserProfile 호출 제거 (불필요한 UI 재렌더링 방지)
 }
 
 function toggleTheme() {
     document.body.classList.toggle("light-mode");
     localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
-    showUserProfile();
+    // ✅ showUserProfile 호출 제거
 }
 
 function isUserLoggedIn() {
@@ -588,73 +580,70 @@ window.addEventListener('DOMContentLoaded', function() {
     if (cancelEdit) cancelEdit.onclick = () => { 
         document.getElementById('profileEditModal').style.display = "none"; 
     };
+    
+    // ✅ 닉네임 저장 버튼 이벤트 리스너도 여기서 설정
+    if (saveEdit) {
+        saveEdit.onclick = async function () {
+            const newNickname = document.getElementById('newNickname').value.trim();
+            if (newNickname.length < 2 || newNickname.length > 20) {
+                alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+                return;
+            }
+            const user = auth.currentUser;
+            if (!user) return;
+            try {
+                const docRef = window.firebase.doc(db, 'profiles', user.uid);
+                await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
+                await window.firebase.updateProfile(user, { displayName: newNickname });
+                document.getElementById('editSuccessMessage').style.display = "block";
+                
+                // ✅ 프로필 갱신은 한 번만 호출
+                await showUserProfile();
+                
+                setTimeout(() => {
+                    document.getElementById('profileEditModal').style.display = "none";
+                }, 1000);
+            } catch (error) {
+                console.error('닉네임 수정 중 오류 발생:', error);
+                alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
+            }
+        };
+    }
 });
-
-const saveNicknameBtn = document.getElementById('saveNicknameBtn');
-if (saveNicknameBtn) {
-    saveNicknameBtn.onclick = async function () {
-        const newNickname = document.getElementById('newNickname').value.trim();
-        if (newNickname.length < 2 || newNickname.length > 20) {
-            alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
-            return;
-        }
-        const user = auth.currentUser;
-        if (!user) return;
-        try {
-            const docRef = window.firebase.doc(db, 'profiles', user.uid);
-            await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
-            await window.firebase.updateProfile(user, { displayName: newNickname });
-            document.getElementById('editSuccessMessage').style.display = "block";
-            showUserProfile();
-            setTimeout(() => {
-                document.getElementById('profileEditModal').style.display = "none";
-            }, 1000);
-        } catch (error) {
-            console.error('닉네임 수정 중 오류 발생:', error);
-            alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
-        }
-    };
-}
 
 // 6. saveVoteToFirestore도 firebase 네임스페이스 통일
 async function saveVoteToFirestore(matchId, voteType) {
     const user = auth.currentUser;
     if (!user) return;
 
-    // votes 저장 (중복방지) - ✅ firebase.doc 사용
-    const voteRef = firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
-    const voteSnap = await firebase.getDoc(voteRef);
+    // votes 저장 (중복방지) - ✅ window.firebase.doc 사용
+    const voteRef = window.firebase.doc(db, 'votes', `${matchId}_${user.uid}`);
+    const voteSnap = await window.firebase.getDoc(voteRef);
 
     if (voteSnap.exists()) return null;
 
-    await firebase.setDoc(voteRef, {
+    await window.firebase.setDoc(voteRef, {
         matchId,
         uid: user.uid,
         voteType,
         votedAt: new Date()
     });
 
-    // user_points 자동 생성 (없을 경우) - ✅ firebase.doc 사용
-    const pointRef = firebase.doc(db, 'user_points', user.uid);
-    const pointSnap = await firebase.getDoc(pointRef);
+    // user_points 자동 생성 (없을 경우) - ✅ window.firebase.doc 사용
+    const pointRef = window.firebase.doc(db, 'user_points', user.uid);
+    const pointSnap = await window.firebase.getDoc(pointRef);
     if (!pointSnap.exists()) {
-        await firebase.setDoc(pointRef, {
+        await window.firebase.setDoc(pointRef, {
             points: 0,
             uid: user.uid
         });
         
         // 새로 생성된 경우 포인트 리스너 다시 설정
         setupPointsListener(user.uid);
-        
-        // 새 포인트 문서 생성 시에도 프로필 갱신
-        showUserProfile();
     }
 
     return true;
 }
-
-// 전역 함수로 노출
-window.setMatchResult = setMatchResult;
 
 function updatePointsDisplay(newPoints) {
     const pointsElement = document.querySelector('.profile-points');
@@ -1161,27 +1150,7 @@ function checkNoticeVisibility() {
     }
 }
 
-// 6. 페이지 새로고침 버튼 추가 (디버깅용)
-function forceRefreshProfile() {
-    console.log("프로필 강제 새로고침");
-    showUserProfile();
-}
-
-// 전역 함수로 노출 (디버깅용)
-window.forceRefreshProfile = forceRefreshProfile;
-
-// 7. 초기 로드 시 포인트 확인
-window.addEventListener('DOMContentLoaded', function() {
-    // Firebase가 로드된 후 포인트 확인
-    setTimeout(() => {
-        if (auth && auth.currentUser) {
-            console.log("DOMContentLoaded - 포인트 확인");
-            showUserProfile();
-        }
-    }, 2000);
-});
-
-// 4. 디버깅을 위한 직접적인 포인트 표시 함수
+// 디버깅을 위한 직접적인 포인트 표시 함수
 function forceUpdatePointsUI(points) {
     const pointsElement = document.querySelector('.profile-points');
     if (pointsElement) {
@@ -1198,10 +1167,7 @@ function forceUpdatePointsUI(points) {
     }
 }
 
-// 전역 함수로 노출
-window.forceUpdatePointsUI = forceUpdatePointsUI;
-
-// 5. 즉시 테스트할 수 있는 함수
+// 즉시 테스트할 수 있는 함수
 async function testPointsDisplay() {
     const user = auth.currentUser;
     if (!user) {
@@ -1221,4 +1187,7 @@ async function testPointsDisplay() {
     console.log("=== 포인트 표시 테스트 완료 ===");
 }
 
+// 전역 함수로 노출
+window.forceUpdatePointsUI = forceUpdatePointsUI;
 window.testPointsDisplay = testPointsDisplay;
+window.setMatchResult = setMatchResult;
