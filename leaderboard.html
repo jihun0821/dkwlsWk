@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="predictions.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
     
-    <!-- Firebase SDK CDN -->
+<!-- Firebase SDK CDN -->
 <script type="module">
   import {
     initializeApp
@@ -20,13 +20,14 @@
   
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signOut, onAuthStateChanged, updateProfile, sendEmailVerification
+    signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
+    sendPasswordResetEmail 
   } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
   import {
     getFirestore,
-    doc, setDoc, getDoc, onSnapshot,
-    collection, query, where, getDocs, updateDoc, arrayUnion
+    doc, setDoc, getDoc, onSnapshot, addDoc, deleteDoc,
+    collection, query, where, getDocs, orderBy, serverTimestamp
   } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
   window.firebase = {
@@ -37,6 +38,7 @@
     signOut,
     onAuthStateChanged,
     sendEmailVerification,
+    sendPasswordResetEmail, 
     updateProfile,
     getFirestore,
     doc,
@@ -47,10 +49,13 @@
     where,
     getDocs,
     onSnapshot,
-    updateDoc,
-    arrayUnion
+    orderBy,       // 추가
+    addDoc,        // 추가
+    deleteDoc,     // 추가
+    serverTimestamp // 추가
   };
 </script>
+
 
 
 </head>
