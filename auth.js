@@ -280,7 +280,7 @@ class AuthManager {
   }
 
   /**
-   * 인증 상태 변화 리스너 설정
+   * 인증 상태 변화 리스너 설정 (수정된 버전)
    */
   setupAuthStateListener() {
     this.firebase.onAuthStateChanged(this.auth, async (user) => {
@@ -290,12 +290,26 @@ class AuthManager {
         await user.reload();
         const refreshedUser = this.auth.currentUser;
 
+        // 이메일 인증이 완료되지 않은 경우
         if (!refreshedUser.emailVerified) {
           console.log('이메일 미인증 상태');
           this.updateUIForAuthState(false);
           return;
         }
 
+        // Firestore에 프로필이 존재하는지 확인
+        const profileDocRef = this.firebase.doc(this.db, 'profiles', refreshedUser.uid);
+        const profileDoc = await this.firebase.getDoc(profileDocRef);
+
+        if (!profileDoc.exists()) {
+          console.log('프로필 데이터가 없음 - 회원가입 미완료 상태');
+          // 프로필이 없으면 로그아웃 처리
+          await this.firebase.signOut(this.auth);
+          this.updateUIForAuthState(false);
+          return;
+        }
+
+        // 이메일 인증 완료 + 프로필 존재 = 정상 로그인 상태
         await this.showUserProfile();
       } else {
         this.updateUIForAuthState(false);
@@ -579,7 +593,7 @@ class AuthManager {
   }
 
   /**
-   * 프로필 저장 및 회원가입 처리
+   * 프로필 저장 및 회원가입 처리 (수정된 버전)
    */
   async handleSaveProfile() {
     const nickname = document.getElementById('nickname')?.value.trim();
@@ -603,6 +617,7 @@ class AuthManager {
     try {
       LoadingManager.showLoading(saveBtn, LOADING_MESSAGES.CREATING_ACCOUNT);
 
+      // 1. Firebase 계정 생성
       const userCredential = await this.firebase.createUserWithEmailAndPassword(
         this.auth, 
         this.signupEmail, 
@@ -612,16 +627,19 @@ class AuthManager {
 
       console.log('계정 생성 성공:', user);
 
+      // 2. 임시 데이터만 저장 (Firestore에는 저장하지 않음)
       this.tempUserData = {
         email: this.signupEmail,
         nickname: nickname,
         avatarUrl: Utils.generateAvatarUrl(nickname)
       };
 
+      // 3. 이메일 인증 발송
       await this.firebase.sendEmailVerification(user);
       
       alert('인증 이메일이 발송되었습니다.\n이메일을 확인하고 인증을 완료한 후 "이메일 인증 확인" 버튼을 클릭해주세요.');
 
+      // 4. UI를 이메일 인증 대기 상태로 변경
       this.updateUIForEmailVerification();
 
     } catch (error) {
@@ -632,7 +650,7 @@ class AuthManager {
   }
 
   /**
-   * 회원가입 완료 처리
+   * 회원가입 완료 처리 (수정된 버전)
    */
   async handleCompleteSignup() {
     const user = this.auth.currentUser;
@@ -642,7 +660,12 @@ class AuthManager {
       return;
     }
 
+    const checkBtn = document.getElementById('checkVerificationBtn');
+
     try {
+      LoadingManager.showLoading(checkBtn, '인증 확인 중...');
+
+      // 사용자 정보 새로고침
       await user.reload();
       const refreshedUser = this.auth.currentUser;
 
@@ -656,16 +679,25 @@ class AuthManager {
         return;
       }
 
+      // 이메일 인증이 완료된 후에만 프로필 데이터 저장
       await Promise.all([
+        // Firebase Auth 프로필 업데이트
         this.firebase.updateProfile(refreshedUser, {
           displayName: this.tempUserData.nickname,
           photoURL: this.tempUserData.avatarUrl
         }),
+        // Firestore에 프로필 저장
         this.firebase.setDoc(this.firebase.doc(this.db, 'profiles', refreshedUser.uid), {
           uid: refreshedUser.uid,
           email: this.tempUserData.email,
           nickname: this.tempUserData.nickname,
           avatar_url: this.tempUserData.avatarUrl,
+          created_at: new Date()
+        }),
+        // 포인트 문서 초기화
+        this.firebase.setDoc(this.firebase.doc(this.db, 'user_points', refreshedUser.uid), {
+          points: 0,
+          uid: refreshedUser.uid,
           created_at: new Date()
         })
       ]);
@@ -677,6 +709,8 @@ class AuthManager {
 
     } catch (error) {
       ErrorHandler.logAndNotify(error, '회원가입 완료');
+    } finally {
+      LoadingManager.hideLoading(checkBtn);
     }
   }
 
