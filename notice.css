@@ -366,6 +366,146 @@
     transform: translateY(-1px);
 }
 
+/* 공지사항 작성 모달 스타일 */
+#writeNoticeModal .modal-content {
+    background-color: #2a2a2a;
+    margin: 2% auto;  /* 상단 여백을 2%로 줄임 */
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 700px;  /* 최대 너비 증가 */
+    max-height: 95vh;  /* 최대 높이를 뷰포트 높이의 95%로 설정 */
+    overflow-y: auto;  /* 내용이 넘칠 경우 스크롤 가능 */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.3s ease-out;
+    position: relative;
+}
+
+/* 작성 모달 내부 요소들 스타일링 */
+#writeNoticeModal h2 {
+    margin-bottom: 25px;
+    color: #3da5ff;
+    font-size: 24px;
+    text-align: center;
+}
+
+#writeNoticeModal input[type="text"],
+#writeNoticeModal textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #333;
+    color: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+#writeNoticeModal input[type="text"]:focus,
+#writeNoticeModal textarea:focus {
+    outline: none;
+    border-color: #3da5ff;
+    box-shadow: 0 0 0 2px rgba(61, 165, 255, 0.2);
+}
+
+#writeNoticeModal textarea {
+    resize: vertical;
+    line-height: 1.6;
+    font-family: inherit;
+    min-height: 200px;  /* 최소 높이 설정 */
+}
+
+/* 체크박스 영역 스타일링 */
+#writeNoticeModal .checkbox-container {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #333;
+    border-radius: 8px;
+}
+
+#writeNoticeModal label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ccc;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+#writeNoticeModal input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* 버튼 컨테이너 */
+#writeNoticeModal .button-container {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #444;
+}
+
+#writeNoticeModal button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+#writeNoticeModal #cancelWrite {
+    background: #555;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+#writeNoticeModal #cancelWrite:hover {
+    background: #666;
+    transform: translateY(-1px);
+}
+
+#writeNoticeModal #submitNotice {
+    background: linear-gradient(135deg, #3da5ff, #2051ff);
+    color: white;
+}
+
+#writeNoticeModal #submitNotice:hover {
+    background: linear-gradient(135deg, #2051ff, #1a4bff);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(32, 81, 255, 0.3);
+}
+
+/* 닫기 버튼 스타일 */
+#writeNoticeModal .close {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+#writeNoticeModal .close:hover {
+    color: #3da5ff;
+    background-color: rgba(61, 165, 255, 0.1);
+    transform: rotate(90deg);
+}
+
 /* 라이트 모드 대응 */
 body.light-mode .notice-item {
     background-color: #f8f9fa;
@@ -433,6 +573,64 @@ body.light-mode .notice-close-btn:hover {
     background: #5a6268;
 }
 
+/* 라이트 모드 작성 모달 */
+body.light-mode #writeNoticeModal .modal-content {
+    background-color: #ffffff;
+    color: #333;
+}
+
+body.light-mode #writeNoticeModal input[type="text"],
+body.light-mode #writeNoticeModal textarea {
+    background-color: #f8f9fa;
+    color: #333;
+    border-color: #ddd;
+}
+
+body.light-mode #writeNoticeModal input[type="text"]:focus,
+body.light-mode #writeNoticeModal textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+body.light-mode #writeNoticeModal .checkbox-container {
+    background-color: #f8f9fa;
+}
+
+body.light-mode #writeNoticeModal label {
+    color: #666;
+}
+
+body.light-mode #writeNoticeModal .button-container {
+    border-top-color: #e9ecef;
+}
+
+body.light-mode #writeNoticeModal #cancelWrite {
+    background: #6c757d;
+    color: white;
+    border-color: #6c757d;
+}
+
+body.light-mode #writeNoticeModal #cancelWrite:hover {
+    background: #5a6268;
+}
+
+body.light-mode #writeNoticeModal #submitNotice {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+body.light-mode #writeNoticeModal #submitNotice:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+}
+
+body.light-mode #writeNoticeModal .close {
+    color: #666;
+}
+
+body.light-mode #writeNoticeModal .close:hover {
+    color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .notice-detail-content {
@@ -462,5 +660,38 @@ body.light-mode .notice-close-btn:hover {
     .notice-action-btn {
         padding: 8px 16px;
         font-size: 13px;
+    }
+
+    /* 작성 모달 반응형 */
+    #writeNoticeModal .modal-content {
+        margin: 1% auto;
+        width: 95%;
+        max-height: 98vh;
+        padding: 20px;
+    }
+    
+    #writeNoticeModal h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+    
+    #writeNoticeModal input[type="text"],
+    #writeNoticeModal textarea {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    #writeNoticeModal textarea {
+        min-height: 150px;
+    }
+    
+    #writeNoticeModal .button-container {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    
+    #writeNoticeModal button {
+        width: 100%;
+        padding: 14px;
     }
 }
