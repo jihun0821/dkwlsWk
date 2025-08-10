@@ -218,7 +218,6 @@ class AuthManager {
     this.signupEmail = '';
     this.signupPassword = '';
     this.eventManager = new EventManager();
-    this.verificationCheckInterval = null;
     
     this.initializeFirebase();
     this.setupEventListeners();
@@ -416,7 +415,7 @@ class AuthManager {
   }
 
   /**
-   * 폼 관련 이벤트 리스너 설정 (수정됨)
+   * 폼 관련 이벤트 리스너 설정
    */
   setupFormEventListeners() {
     // 로그인 폼
@@ -426,18 +425,17 @@ class AuthManager {
       () => this.handleLogin()
     );
 
-    // 회원가입 - "이메일 인증 확인" 버튼
-    this.eventManager.addListener(
-      document.getElementById('checkVerificationBtn'),
-      'click',
-      () => this.handleEmailVerification()
-    );
-
-    // 기존 "저장하고 가입" 버튼 이벤트는 제거하지 않지만 실제로는 숨김 처리됨
+    // 회원가입 폼
     this.eventManager.addListener(
       document.getElementById('saveProfileBtn'),
       'click',
-      () => this.handleSaveProfile() // 기존 코드 호환성을 위해 유지
+      () => this.handleSaveProfile()
+    );
+
+    this.eventManager.addListener(
+      document.getElementById('checkVerificationBtn'),
+      'click',
+      () => this.handleCompleteSignup()
     );
 
     // 비밀번호 재설정
@@ -510,7 +508,7 @@ class AuthManager {
   }
 
   /**
-   * 프로필 모달 열기 처리 (수정됨)
+   * 프로필 모달 열기 처리
    */
   handleOpenProfileModal() {
     this.signupEmail = document.getElementById('signupEmail')?.value.trim() || '';
@@ -521,28 +519,14 @@ class AuthManager {
       return;
     }
 
-    if (!Validator.isHanilEmail(this.signupEmail)) {
-      alert(ERROR_MESSAGES.INVALID_EMAIL);
-      return;
-    }
-
     Utils.closeModal('signupModal');
     this.showProfileModal();
-    
-    // 바로 이메일 인증 확인 버튼 표시 (닉네임 입력 후)
-    this.updateUIForEmailVerification();
   }
 
   /**
-   * 프로필 모달 닫기 처리 (수정됨 - 상태 복원)
+   * 프로필 모달 닫기 처리
    */
   handleCloseProfileModal() {
-    // 닉네임 입력 필드 다시 활성화
-    const nicknameInput = document.getElementById('nickname');
-    if (nicknameInput) {
-      nicknameInput.disabled = false;
-    }
-    
     Utils.closeModal('profileModal');
     this.cleanup();
   }
@@ -595,144 +579,7 @@ class AuthManager {
   }
 
   /**
-   * 이메일 인증 확인 처리 (완전히 새로 작성)
-   */
-  async handleEmailVerification() {
-    const nickname = document.getElementById('nickname')?.value.trim();
-    const verifyBtn = document.getElementById('checkVerificationBtn');
-    const isEmailSent = this.tempUserData?.emailSent || false;
-    
-    // 닉네임 검증
-    if (!nickname) {
-      alert(ERROR_MESSAGES.NICKNAME_REQUIRED);
-      return;
-    }
-    
-    if (!Validator.validateNickname(nickname)) {
-      alert(ERROR_MESSAGES.NICKNAME_LENGTH);
-      return;
-    }
-    
-    if (!isEmailSent) {
-      // 첫 번째 클릭: 계정 생성 + 이메일 발송
-      await this.sendVerificationEmail(nickname);
-    } else {
-      // 두 번째 클릭: 인증 확인 및 프로필 저장
-      await this.completeSignupAfterVerification(nickname);
-    }
-  }
-
-  /**
-   * 인증 이메일 발송 (닉네임 포함)
-   */
-  async sendVerificationEmail(nickname) {
-    const verifyBtn = document.getElementById('checkVerificationBtn');
-    
-    try {
-      LoadingManager.showLoading(verifyBtn, '계정 생성 중...');
-      
-      // Firebase 계정 생성
-      const userCredential = await this.firebase.createUserWithEmailAndPassword(
-        this.auth, 
-        this.signupEmail, 
-        this.signupPassword
-      );
-      const user = userCredential.user;
-      
-      console.log('계정 생성 성공:', user);
-      
-      // 임시 데이터 저장 (닉네임 포함)
-      this.tempUserData = {
-        email: this.signupEmail,
-        nickname: nickname,
-        avatarUrl: Utils.generateAvatarUrl(nickname),
-        emailSent: true,
-        userId: user.uid
-      };
-      
-      // 인증 이메일 발송
-      await this.firebase.sendEmailVerification(user);
-      
-      alert('인증 이메일이 발송되었습니다.\n이메일을 확인하고 인증 링크를 클릭한 후, 다시 이 버튼을 눌러주세요.');
-      
-      // 닉네임 입력 필드 비활성화 (변경 방지)
-      const nicknameInput = document.getElementById('nickname');
-      if (nicknameInput) {
-        nicknameInput.disabled = true;
-      }
-      
-      // 버튼 상태 변경: 인증 대기 중
-      this.updateUIForWaitingVerification();
-      
-    } catch (error) {
-      ErrorHandler.logAndNotify(error, '계정 생성');
-    } finally {
-      LoadingManager.hideLoading(verifyBtn);
-    }
-  }
-
-  /**
-   * 이메일 인증 완료 후 최종 가입 처리
-   */
-  async completeSignupAfterVerification(nickname) {
-    const user = this.auth.currentUser;
-    const verifyBtn = document.getElementById('checkVerificationBtn');
-    
-    if (!user) {
-      alert(ERROR_MESSAGES.LOGIN_REQUIRED);
-      return;
-    }
-    
-    try {
-      LoadingManager.showLoading(verifyBtn, '회원가입 완료 중...');
-      
-      // 사용자 정보 새로고침
-      await user.reload();
-      const refreshedUser = this.auth.currentUser;
-      
-      if (!refreshedUser.emailVerified) {
-        alert('아직 이메일 인증이 완료되지 않았습니다.\n메일함에서 인증 링크를 클릭해주세요.');
-        return;
-      }
-      
-      if (!this.tempUserData) {
-        alert(ERROR_MESSAGES.TEMP_DATA_MISSING);
-        return;
-      }
-      
-      // 최신 닉네임으로 업데이트 (사용자가 수정했을 수도 있음)
-      this.tempUserData.nickname = nickname;
-      this.tempUserData.avatarUrl = Utils.generateAvatarUrl(nickname);
-      
-      // 프로필 정보 저장
-      await Promise.all([
-        this.firebase.updateProfile(refreshedUser, {
-          displayName: this.tempUserData.nickname,
-          photoURL: this.tempUserData.avatarUrl
-        }),
-        this.firebase.setDoc(this.firebase.doc(this.db, 'profiles', refreshedUser.uid), {
-          uid: refreshedUser.uid,
-          email: this.tempUserData.email,
-          nickname: this.tempUserData.nickname,
-          avatar_url: this.tempUserData.avatarUrl,
-          created_at: new Date()
-        })
-      ]);
-      
-      alert('회원가입이 완료되었습니다!');
-      
-      this.cleanup();
-      Utils.closeModal('profileModal');
-      
-    } catch (error) {
-      ErrorHandler.logAndNotify(error, '회원가입 완료');
-    } finally {
-      LoadingManager.hideLoading(verifyBtn);
-    }
-  }
-
-  /**
-   * 프로필 저장 및 회원가입 처리 (기존 호환성용 - 실제로는 숨김)
+   * 프로필 저장 및 회원가입 처리
    */
   async handleSaveProfile() {
     const nickname = document.getElementById('nickname')?.value.trim();
@@ -781,6 +628,55 @@ class AuthManager {
       ErrorHandler.logAndNotify(error, '계정 생성');
     } finally {
       LoadingManager.hideLoading(saveBtn);
+    }
+  }
+
+  /**
+   * 회원가입 완료 처리
+   */
+  async handleCompleteSignup() {
+    const user = this.auth.currentUser;
+    
+    if (!user) {
+      alert(ERROR_MESSAGES.LOGIN_REQUIRED);
+      return;
+    }
+
+    try {
+      await user.reload();
+      const refreshedUser = this.auth.currentUser;
+
+      if (!refreshedUser.emailVerified) {
+        alert('아직 이메일 인증이 완료되지 않았습니다.\n메일함에서 인증 링크를 클릭해주세요.');
+        return;
+      }
+
+      if (!this.tempUserData) {
+        alert(ERROR_MESSAGES.TEMP_DATA_MISSING);
+        return;
+      }
+
+      await Promise.all([
+        this.firebase.updateProfile(refreshedUser, {
+          displayName: this.tempUserData.nickname,
+          photoURL: this.tempUserData.avatarUrl
+        }),
+        this.firebase.setDoc(this.firebase.doc(this.db, 'profiles', refreshedUser.uid), {
+          uid: refreshedUser.uid,
+          email: this.tempUserData.email,
+          nickname: this.tempUserData.nickname,
+          avatar_url: this.tempUserData.avatarUrl,
+          created_at: new Date()
+        })
+      ]);
+
+      alert('회원가입이 완료되었습니다!');
+      
+      this.cleanup();
+      Utils.closeModal('profileModal');
+
+    } catch (error) {
+      ErrorHandler.logAndNotify(error, '회원가입 완료');
     }
   }
 
@@ -935,77 +831,28 @@ class AuthManager {
   }
 
   /**
-   * 이메일 인증 대기 상태 UI 업데이트 (수정됨)
+   * 이메일 인증 대기 상태 UI 업데이트
    */
   updateUIForEmailVerification() {
     const saveBtn = document.getElementById('saveProfileBtn');
     const checkVerificationBtn = document.getElementById('checkVerificationBtn');
     const buttonContainer = saveBtn?.parentElement;
     
-    // "저장하고 가입" 버튼 숨김
     if (saveBtn) {
       saveBtn.style.display = 'none';
     }
     
-    // "이메일 인증 확인" 버튼 표시
     if (checkVerificationBtn) {
       checkVerificationBtn.style.display = 'inline-block';
       checkVerificationBtn.disabled = false;
-      checkVerificationBtn.textContent = '이메일 인증 확인';
-      checkVerificationBtn.style.backgroundColor = '#667eea'; // 기본 색상
       
       if (buttonContainer) {
         buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'center';
+        buttonContainer.style.justifyContent = 'space-between';
         buttonContainer.style.alignItems = 'center';
+        buttonContainer.style.gap = '10px';
       }
     }
-  }
-
-  /**
-   * 인증 메일 발송 후 대기 상태 UI 업데이트
-   */
-  updateUIForWaitingVerification() {
-    const checkVerificationBtn = document.getElementById('checkVerificationBtn');
-    
-    if (checkVerificationBtn) {
-      checkVerificationBtn.textContent = '이메일 인증을 완료한 후 클릭하세요';
-      checkVerificationBtn.disabled = false;
-      checkVerificationBtn.style.backgroundColor = '#f39c12'; // 대기 상태 색상
-      
-      // 주기적으로 인증 상태 확인
-      this.startVerificationCheck();
-    }
-  }
-
-  /**
-   * 인증 상태 주기적 확인
-   */
-  startVerificationCheck() {
-    if (this.verificationCheckInterval) {
-      clearInterval(this.verificationCheckInterval);
-    }
-    
-    this.verificationCheckInterval = setInterval(async () => {
-      const user = this.auth.currentUser;
-      if (user) {
-        await user.reload();
-        const refreshedUser = this.auth.currentUser;
-        
-        if (refreshedUser.emailVerified) {
-          // 인증 완료되면 버튼 상태 변경
-          const checkVerificationBtn = document.getElementById('checkVerificationBtn');
-          if (checkVerificationBtn) {
-            checkVerificationBtn.textContent = '인증 완료! 회원가입 완료하기';
-            checkVerificationBtn.style.backgroundColor = '#4CAF50'; // 완료 상태 색상
-          }
-          
-          // 인터벌 정리
-          clearInterval(this.verificationCheckInterval);
-          this.verificationCheckInterval = null;
-        }
-      }
-    }, 2000); // 2초마다 확인
   }
 
   /**
@@ -1020,25 +867,12 @@ class AuthManager {
   }
 
   /**
-   * 임시 데이터 및 상태 초기화 (수정됨)
+   * 임시 데이터 및 상태 초기화
    */
   cleanup() {
     this.tempUserData = null;
     this.signupEmail = '';
     this.signupPassword = '';
-    
-    // 인증 확인 인터벌 정리
-    if (this.verificationCheckInterval) {
-      clearInterval(this.verificationCheckInterval);
-      this.verificationCheckInterval = null;
-    }
-    
-    // 닉네임 입력 필드 복원
-    const nicknameInput = document.getElementById('nickname');
-    if (nicknameInput) {
-      nicknameInput.disabled = false;
-      nicknameInput.value = '';
-    }
   }
 
   /**
