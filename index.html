@@ -51,6 +51,12 @@
 </script>
 
 <style>
+/* 모달 스크롤 개선 */
+.auth-modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
 /* 버튼 스타일 추가 */
 .primary-btn {
     background-color: #667eea;
@@ -327,7 +333,7 @@
                 <div class="input-group">
                     <label for="nickname">닉네임</label>
                     <input type="text" id="nickname" placeholder="닉네임을 입력하세요 (2-20자)" maxlength="20" required>
-                    <small class="input-help">회원가입 후 닉네임은 변경할 수 있습니다.</small>
+                    <small class="input-help">이메일 인증 후에는 닉네임을 변경할 수 없습니다.</small>
                 </div>
                 
                 <!-- 프로필 이미지 업로드 부분은 숨김 -->
