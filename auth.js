@@ -206,48 +206,51 @@ class AuthManager {
     }
   }
 
-  /**
-   * ✅ 수정된 인증 상태 변화 리스너 - 이메일 인증 체크 강화
-   */
-  setupAuthStateListener() {
-    this.firebase.onAuthStateChanged(this.auth, async (user) => {
-      console.log('Auth 상태 변경:', user);
+/**
+ * ✅ 수정된 인증 상태 변화 리스너 - 이메일 인증 대기 중 로그아웃 방지
+ */
+setupAuthStateListener() {
+  this.firebase.onAuthStateChanged(this.auth, async (user) => {
+    console.log('Auth 상태 변경:', user ? user.email : 'null');
 
-      if (user) {
-        // 사용자 정보 새로고침
-        await user.reload();
-        const refreshedUser = this.auth.currentUser;
+    if (user) {
+      // 사용자 정보 새로고침
+      await user.reload();
+      const refreshedUser = this.auth.currentUser;
 
-        // 이메일 인증 확인
-        if (!refreshedUser.emailVerified) {
-          console.log('이메일 미인증 상태 - UI를 로그아웃 상태로 유지');
-          
-          // ✅ 이메일 인증 대기 상태가 아니라면 로그아웃 처리
-          if (!this.isEmailVerificationPending) {
-            console.log('이메일 인증 대기 상태가 아니므로 자동 로그아웃');
-            await this.firebase.signOut(this.auth);
-            return;
-          }
-          
-          // ✅ 이메일 인증 대기 상태라면 UI는 로그아웃 상태로 유지하되 회원가입 플로우 계속
-          console.log('이메일 인증 대기 중...');
-          this.updateUIForAuthState(false);
-          return;
-        }
-
-        // ✅ 이메일 인증이 완료된 경우
-        console.log('이메일 인증 완료 - 프로필 표시');
-        this.isEmailVerificationPending = false;
-        await this.showUserProfile();
+      // 이메일 인증 확인
+      if (!refreshedUser.emailVerified) {
+        console.log('이메일 미인증 상태 감지');
         
-      } else {
-        // ✅ 로그아웃 상태
-        console.log('로그아웃 상태');
-        this.isEmailVerificationPending = false;
+        // ✅ 이메일 인증 대기 상태인 경우: UI만 로그아웃 상태로 표시하고 사용자 세션은 유지
+        if (this.isEmailVerificationPending) {
+          console.log('이메일 인증 대기 중 - 사용자 세션 유지, UI만 로그아웃 상태로 표시');
+          this.updateUIForAuthState(false);
+          return; // 로그아웃하지 않고 리턴
+        }
+        
+        // ✅ 이메일 인증 대기 상태가 아닌 경우에만 로그아웃
+        console.log('이메일 인증 대기 상태가 아니므로 자동 로그아웃');
+        await this.firebase.signOut(this.auth);
+        return;
+      }
+
+      // ✅ 이메일 인증이 완료된 경우
+      console.log('이메일 인증 완료 - 프로필 표시');
+      this.isEmailVerificationPending = false;
+      await this.showUserProfile();
+      
+    } else {
+      // ✅ 로그아웃 상태
+      console.log('로그아웃 상태');
+      
+      // 이메일 인증 대기 상태가 아닌 경우에만 상태 초기화
+      if (!this.isEmailVerificationPending) {
         this.updateUIForAuthState(false);
       }
-    });
-  }
+    }
+  });
+}
 
   setupEventListeners() {
     document.addEventListener('DOMContentLoaded', () => {
@@ -588,71 +591,104 @@ class AuthManager {
     }
   }
 
-  /**
-   * ✅ 수정된 회원가입 완료 처리 - 이메일 인증 체크 강화
-   */
-  async handleCompleteSignup() {
-    const user = this.auth.currentUser;
-    const checkBtn = document.getElementById('checkVerificationBtn');
+/**
+ * ✅ 로그인 없이 이메일 인증 확인이 가능한 회원가입 완료 처리
+ */
+async handleCompleteSignup() {
+  const checkBtn = document.getElementById('checkVerificationBtn');
+  
+  // 1단계: 임시 데이터 확인
+  if (!this.tempUserData || !this.signupEmail || !this.signupPassword) {
+    alert('회원가입 정보가 없습니다. 처음부터 다시 시도해주세요.');
+    this.cleanup();
+    Utils.closeModal('profileModal');
+    return;
+  }
+
+  try {
+    LoadingManager.showLoading(checkBtn, '이메일 인증 확인 중...');
+
+    // 2단계: 임시 로그인으로 인증 상태 확인
+    console.log('임시 로그인으로 이메일 인증 상태 확인 시작');
     
-    if (!user) {
-      alert(ERROR_MESSAGES.LOGIN_REQUIRED);
-      return;
-    }
-
-    if (!this.tempUserData) {
-      alert(ERROR_MESSAGES.TEMP_DATA_MISSING);
-      return;
-    }
-
+    let userCredential;
     try {
-      LoadingManager.showLoading(checkBtn, LOADING_MESSAGES.CHECKING_VERIFICATION);
-
-      // ✅ 사용자 정보 새로고침 (가장 최신 상태로)
-      await user.reload();
-      const refreshedUser = this.auth.currentUser;
-
-      // ✅ 이메일 인증 확인
-      if (!refreshedUser.emailVerified) {
-        alert(ERROR_MESSAGES.EMAIL_NOT_VERIFIED_YET);
-        return;
-      }
-
-      console.log('이메일 인증 완료 확인됨 - 회원가입 진행');
-
-      // ✅ 프로필 정보 저장
-      await Promise.all([
-        this.firebase.updateProfile(refreshedUser, {
-          displayName: this.tempUserData.nickname,
-          photoURL: this.tempUserData.avatarUrl
-        }),
-        this.firebase.setDoc(this.firebase.doc(this.db, 'profiles', refreshedUser.uid), {
-          uid: refreshedUser.uid,
-          email: this.tempUserData.email,
-          nickname: this.tempUserData.nickname,
-          avatar_url: this.tempUserData.avatarUrl,
-          created_at: new Date()
-        })
-      ]);
-
-      console.log('프로필 정보 저장 완료');
-
-      alert('🎉 회원가입이 완료되었습니다! 환영합니다!');
-      
-      // ✅ 상태 정리 및 모달 닫기
-      this.isEmailVerificationPending = false;
+      userCredential = await this.firebase.signInWithEmailAndPassword(
+        this.auth, 
+        this.signupEmail, 
+        this.signupPassword
+      );
+    } catch (loginError) {
+      console.error('임시 로그인 실패:', loginError);
+      alert('회원가입 정보를 확인할 수 없습니다. 처음부터 다시 시도해주세요.');
       this.cleanup();
       Utils.closeModal('profileModal');
-
-      // ✅ AuthStateListener가 자동으로 프로필 표시 처리
-
-    } catch (error) {
-      console.error('회원가입 완료 처리 중 오류:', error);
-      ErrorHandler.logAndNotify(error, '회원가입 완료');
-    } finally {
-      LoadingManager.hideLoading(checkBtn);
+      return;
     }
+
+    const user = userCredential.user;
+
+    // 3단계: 사용자 정보 새로고침 (가장 최신 상태로)
+    await user.reload();
+    const refreshedUser = this.auth.currentUser;
+
+    // 4단계: 이메일 인증 확인
+    if (!refreshedUser.emailVerified) {
+      // 인증이 아직 완료되지 않은 경우 다시 로그아웃하여 UI 상태 유지
+      await this.firebase.signOut(this.auth);
+      alert(ERROR_MESSAGES.EMAIL_NOT_VERIFIED_YET);
+      return;
+    }
+
+    console.log('이메일 인증 완료 확인됨 - 회원가입 진행');
+
+    // 5단계: 프로필 정보 저장
+    await Promise.all([
+      this.firebase.updateProfile(refreshedUser, {
+        displayName: this.tempUserData.nickname,
+        photoURL: this.tempUserData.avatarUrl
+      }),
+      this.firebase.setDoc(this.firebase.doc(this.db, 'profiles', refreshedUser.uid), {
+        uid: refreshedUser.uid,
+        email: this.tempUserData.email,
+        nickname: this.tempUserData.nickname,
+        avatar_url: this.tempUserData.avatarUrl,
+        created_at: new Date()
+      }),
+      // 포인트 초기화도 함께 진행
+      this.firebase.setDoc(this.firebase.doc(this.db, 'user_points', refreshedUser.uid), {
+        points: 0,
+        uid: refreshedUser.uid,
+        created_at: new Date()
+      })
+    ]);
+
+    console.log('프로필 정보 저장 완료');
+
+    alert('🎉 회원가입이 완료되었습니다! 환영합니다!');
+    
+    // 6단계: 상태 정리 및 모달 닫기
+    this.isEmailVerificationPending = false;
+    this.cleanup();
+    Utils.closeModal('profileModal');
+
+    // 7단계: 사용자는 이미 로그인된 상태이므로 AuthStateListener가 자동으로 프로필 표시
+
+  } catch (error) {
+    console.error('회원가입 완료 처리 중 오류:', error);
+    
+    // 오류 발생시 로그아웃하여 깔끔한 상태 유지
+    try {
+      await this.firebase.signOut(this.auth);
+    } catch (signOutError) {
+      console.error('로그아웃 실패:', signOutError);
+    }
+    
+    ErrorHandler.logAndNotify(error, '회원가입 완료');
+  } finally {
+    LoadingManager.hideLoading(checkBtn);
   }
+}
 
   async handleSaveNickname() {
     const newNickname = document.getElementById('newNickname')?.value.trim();
@@ -827,62 +863,68 @@ class AuthManager {
     }
   }
 
-  /**
-   * ✅ 이메일 인증 대기 상태 UI 업데이트
-   */
-  updateUIForEmailVerification() {
-    const saveBtn = document.getElementById('saveProfileBtn');
-    const checkVerificationBtn = document.getElementById('checkVerificationBtn');
-    const buttonContainer = saveBtn?.parentElement;
+/**
+ * ✅ 개선된 이메일 인증 대기 상태 UI 업데이트
+ */
+updateUIForEmailVerification() {
+  const saveBtn = document.getElementById('saveProfileBtn');
+  const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+  const buttonContainer = saveBtn?.parentElement;
+  
+  if (saveBtn) {
+    saveBtn.style.display = 'none';
+  }
+  
+  if (checkVerificationBtn) {
+    checkVerificationBtn.style.display = 'inline-block';
+    checkVerificationBtn.disabled = false;
+    checkVerificationBtn.textContent = '이메일 인증 확인하기';
     
-    if (saveBtn) {
-      saveBtn.style.display = 'none';
+    if (buttonContainer) {
+      buttonContainer.style.display = 'flex';
+      buttonContainer.style.justifyContent = 'center';
+      buttonContainer.style.alignItems = 'center';
+      buttonContainer.style.gap = '10px';
     }
-    
-    if (checkVerificationBtn) {
-      checkVerificationBtn.style.display = 'inline-block';
-      checkVerificationBtn.disabled = false;
-      
-      if (buttonContainer) {
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'space-between';
-        buttonContainer.style.alignItems = 'center';
-        buttonContainer.style.gap = '10px';
-      }
-    }
+  }
 
-    // ✅ 추가 안내 메시지 표시
-    const modalContent = document.querySelector('#profileModal .auth-modal-content');
-    if (modalContent) {
-      let guideMessage = modalContent.querySelector('.email-verification-guide');
-      if (!guideMessage) {
-        guideMessage = document.createElement('div');
-        guideMessage.className = 'email-verification-guide';
-        guideMessage.style.cssText = `
-          background: #e3f2fd;
-          border: 1px solid #2196f3;
-          border-radius: 8px;
-          padding: 12px;
-          margin: 16px 0;
-          font-size: 14px;
-          color: #1976d2;
-        `;
-        guideMessage.innerHTML = `
-          <strong>📧 이메일 인증이 필요합니다</strong><br>
-          <span style="font-size: 13px;">
-            • ${this.signupEmail}로 인증 메일을 발송했습니다<br>
-            • 메일함에서 인증 링크를 클릭해주세요<br>
-            • 인증 완료 후 "이메일 인증 확인" 버튼을 눌러주세요
-          </span>
-        `;
-        
-        const form = modalContent.querySelector('.auth-form');
-        if (form) {
-          form.insertBefore(guideMessage, form.firstChild);
-        }
+  // ✅ 더 상세한 안내 메시지 표시
+  const modalContent = document.querySelector('#profileModal .auth-modal-content');
+  if (modalContent) {
+    let guideMessage = modalContent.querySelector('.email-verification-guide');
+    if (!guideMessage) {
+      guideMessage = document.createElement('div');
+      guideMessage.className = 'email-verification-guide';
+      guideMessage.style.cssText = `
+        background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+        border: 1px solid #2196f3;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 14px;
+        color: #1976d2;
+        line-height: 1.5;
+      `;
+      guideMessage.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 18px; margin-right: 8px;">📧</span>
+          <strong style="font-size: 16px;">이메일 인증이 필요합니다</strong>
+        </div>
+        <div style="font-size: 13px; color: #424242;">
+          • <strong>${this.signupEmail}</strong>로 인증 메일을 발송했습니다<br>
+          • 메일함(스팸함 포함)에서 인증 링크를 클릭해주세요<br>
+          • 인증 완료 후 아래 버튼을 클릭하시면 회원가입이 완료됩니다<br>
+          • <span style="color: #ff6b35;">로그인 없이 바로 확인 가능합니다!</span>
+        </div>
+      `;
+      
+      const form = modalContent.querySelector('.auth-form');
+      if (form) {
+        form.insertBefore(guideMessage, form.firstChild);
       }
     }
   }
+}
 
   /**
    * ✅ 프로필 모달 UI 초기 상태로 리셋
