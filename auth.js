@@ -864,30 +864,30 @@ class AuthManager {
     }
   }
 
-  /**
-   * 이메일 인증 대기 상태 UI 업데이트
-   */
-  updateUIForEmailVerification() {
-    const saveBtn = document.getElementById('saveProfileBtn');
-    const checkVerificationBtn = document.getElementById('checkVerificationBtn');
-    const buttonContainer = saveBtn?.parentElement;
-    
-    if (saveBtn) {
-      saveBtn.style.display = 'none';
-    }
-    
-    if (checkVerificationBtn) {
-      checkVerificationBtn.style.display = 'inline-block';
-      checkVerificationBtn.disabled = false;
-      
-      if (buttonContainer) {
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'space-between';
-        buttonContainer.style.alignItems = 'center';
-        buttonContainer.style.gap = '10px';
-      }
-    }
+/**
+ * 이메일 인증 대기 상태 UI 업데이트
+ */
+updateUIForEmailVerification() {
+  const saveBtn = document.getElementById('saveProfileBtn');
+  const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+  const emailVerificationInfo = document.getElementById('emailVerificationInfo');
+  
+  if (saveBtn) {
+    saveBtn.style.display = 'none';
   }
+  
+  if (checkVerificationBtn) {
+    checkVerificationBtn.style.display = 'block';
+    checkVerificationBtn.disabled = false;
+  }
+  
+  if (emailVerificationInfo) {
+    emailVerificationInfo.style.display = 'block';
+  }
+  
+  // 모달이 열린 상태를 유지
+  console.log('이메일 인증 대기 상태로 UI 업데이트 완료');
+}
 
   /**
    * 인증 상태에 따른 UI 업데이트
