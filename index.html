@@ -289,7 +289,7 @@
     </div>
     <div class="overlay" id="overlay"></div>
 
-    <!-- 로그인 모달 -->
+ <!-- 로그인 모달 -->
     <div id="loginModal" class="auth-modal" style="display: none;">
        <div class="auth-modal-content">
          <span class="auth-modal-close" id="closeLoginModal">&times;</span>
@@ -322,42 +322,21 @@
        </div>
     </div>
 
-    <!-- 프로필 모달 (회원가입 완료용) - 개선된 버전 -->
+    <!-- 프로필 모달 (회원가입 완료용) -->
     <div id="profileModal" class="auth-modal" style="display: none;">
         <div class="auth-modal-content">
             <span class="auth-modal-close" id="closeProfileModal">&times;</span>
             <h2 style="margin-bottom: 24px;">프로필 설정</h2>
-            
-            <div class="profile-form">
-                <!-- 닉네임 입력 필드 -->
-                <div class="input-group">
-                    <label for="nickname">닉네임</label>
-                    <input type="text" id="nickname" placeholder="닉네임을 입력하세요 (2-20자)" maxlength="20" required>
-                    <small class="input-help">이메일 인증 후에는 닉네임을 변경할 수 없습니다.</small>
-                </div>
+            <div class="auth-form">
+                <p style="color: #666; margin-bottom: 16px; font-size: 14px;">
+                    닉네임을 설정해주세요. (2-20자)
+                </p>
+                <input id="nickname" type="text" placeholder="닉네임 입력" maxlength="20" />
                 
-                <!-- 프로필 이미지 업로드 부분은 숨김 -->
-                <div class="file-upload-wrapper" style="display: none;">
-                    <!-- 프로필 이미지 관련 코드... -->
-                </div>
-                
-                <!-- 버튼 컨테이너 -->
-                <div class="button-container">
-                    <!-- "저장하고 가입" 버튼은 숨김 처리 -->
-                    <button type="button" id="saveProfileBtn" style="display: none;">저장하고 가입</button>
-                    
-                    <!-- "이메일 인증 확인" 버튼 표시 -->
-                    <button type="button" id="checkVerificationBtn" class="primary-btn">이메일 인증 확인</button>
-                </div>
-                
-                <!-- 안내 메시지 -->
-                <div class="verification-info">
-                    <p><strong>가입 절차:</strong></p>
-                    <ol>
-                        <li>닉네임을 입력하고 "이메일 인증 확인" 버튼을 클릭</li>
-                        <li>발송된 이메일에서 스팸함까지 확인 후 인증 링크 클릭</li>
-                        <li>다시 "이메일 인증 확인" 버튼을 클릭하여 가입 완료</li>
-                    </ol>
+                <!-- 버튼들 -->
+                <div class="modal-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="saveProfileBtn" class="auth-btn" style="flex: 1;">저장하고 가입</button>
+                    <button id="checkVerificationBtn" class="auth-btn" style="flex: 1; display: none;">이메일 인증 확인</button>
                 </div>
             </div>
         </div>
@@ -417,6 +396,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- 경기 추가 모달 (add-match-modal.html 내용) -->
     <div id="addMatchModal" class="add-match-modal" style="display:none;">
