@@ -70,9 +70,35 @@ class Utils {
     if (modal) modal.style.display = 'flex';
   }
 
+// 수정된 Utils 클래스의 clearForm 메서드
+class Utils {
+  static closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'none';
+  }
+
+  static showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'flex';
+  }
+
   static clearForm(formId) {
     const form = document.getElementById(formId);
-    if (form) form.reset();
+    if (form && typeof form.reset === 'function') {
+      // form 요소인 경우
+      form.reset();
+    } else if (form) {
+      // form 요소가 아니지만 요소가 존재하는 경우, 내부의 input들을 수동으로 초기화
+      const inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          input.checked = false;
+        } else {
+          input.value = '';
+        }
+      });
+    }
+    // form이 null이거나 존재하지 않는 경우는 조용히 무시
   }
 
   static closeAllModals() {
