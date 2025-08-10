@@ -1006,7 +1006,6 @@ class AuthManager {
             • <strong>${this.signupEmail}</strong>로 인증 메일을 발송했습니다<br>
             • 메일함(스팸함 포함)에서 인증 링크를 클릭해주세요<br>
             • 인증 완료 후 아래 버튼을 클릭하시면 회원가입이 완료됩니다<br>
-            • <span style="color: #ff6b35;">로그인 없이 바로 확인 가능합니다!</span>
           </div>
         `;
         
