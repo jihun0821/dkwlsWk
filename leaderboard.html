@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -13,7 +11,7 @@
     <link rel="stylesheet" href="predictions.css">
     <link rel="icon" href="https://i.imgur.com/Lu3D6Qb.png"/>
     
-<!-- Firebase SDK CDN -->
+    <!-- Firebase SDK CDN -->
 <script type="module">
   import {
     initializeApp
@@ -21,14 +19,13 @@
   
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signOut, onAuthStateChanged, updateProfile, sendEmailVerification,
-    sendPasswordResetEmail 
+    signOut, onAuthStateChanged, updateProfile, sendEmailVerification
   } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
   import {
     getFirestore,
-    doc, setDoc, getDoc, onSnapshot, addDoc, deleteDoc,
-    collection, query, where, getDocs, orderBy, serverTimestamp
+    doc, setDoc, getDoc, onSnapshot,
+    collection, query, where, getDocs, updateDoc, arrayUnion
   } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
   window.firebase = {
@@ -39,7 +36,6 @@
     signOut,
     onAuthStateChanged,
     sendEmailVerification,
-    sendPasswordResetEmail, 
     updateProfile,
     getFirestore,
     doc,
@@ -50,13 +46,10 @@
     where,
     getDocs,
     onSnapshot,
-    orderBy,       // 추가
-    addDoc,        // 추가
-    deleteDoc,     // 추가
-    serverTimestamp // 추가
+    updateDoc,
+    arrayUnion
   };
 </script>
-
 
 
 </head>
@@ -114,7 +107,7 @@
 </div>
 
 <div class="sidebar_7">
-    <a href="https://docs.google.com/spreadsheets/d/1R76vC2ENUroEGxSKp9Sx7zwIBLK0iId21OMkAElJoX0/edit?gid=0#gid=0"><h3>운동장 예약</h3></a>
+    <a href="https://docs.google.com/spreadsheets/d/1peyUAAQmKqi1Hf9MTjRqLGeQnujYLLoyslRpPP3l94Y/edit?gid=0#gid=0"><h3>운동장 예약</h3></a>
 </div>
 
 <div class="sidebar_8">
@@ -122,29 +115,56 @@
 </div>
 
 <main>
-  <section class="main">
-    <h2>리더보드</h2>
-    <table class="leaderboard-table">
-      <thead>
-        <tr>
-          <th>순위</th>
-          <th>닉네임</th>
-          <th>참여 경기수</th>
-          <th>예측 성공률</th>
-          <th>포인트</th>
-        </tr>
-      </thead>
-      <tbody id="leaderboardBody">
-      </tbody>
-    </table>
-    <div class="pagination">
-      <button onclick="prevPage()">이전</button>
-      <span id="currentPageNum">1</span>
-      <button onclick="nextPage()">다음</button>
-    </div>
-  </section>
+    <section class="main">
+        <div class="prediction-section">
+            <div class="prediction-header">
+                <h2>⚽ 승부예측</h2>
+                <p>득점왕, 우승팀, 도움왕을 예측해보세요!</p>
+            </div>
+            
+            <div class="prediction-categories">
+                <div class="category-card">
+                    <h3>🥅 득점왕</h3>
+                    <p style="margin-bottom: 15px;">누가 가장 많은 골을 넣을까요?</p>
+                    <button class="prediction-btn" onclick="openPredictionModal('scorer')">예측하기</button>
+                    <div id="scorer-prediction" class="user-prediction" style="display: none;"></div>
+                </div>
+                
+                <div class="category-card">
+                    <h3>🏆 우승팀</h3>
+                    <p style="margin-bottom: 15px;">어느 팀이 우승할까요?</p>
+                    <button class="prediction-btn" onclick="openPredictionModal('champion')">예측하기</button>
+                    <div id="champion-prediction" class="user-prediction" style="display: none;"></div>
+                </div>
+                
+                <div class="category-card">
+                    <h3>🅰️ 도움왕</h3>
+                    <p style="margin-bottom: 15px;">누가 가장 많은 도움을 기록할까요?</p>
+                    <button class="prediction-btn" onclick="openPredictionModal('assist')">예측하기</button>
+                    <div id="assist-prediction" class="user-prediction" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <!-- 차트 섹션 -->
+            <div id="charts-container">
+                <div class="chart-container">
+                    <div class="chart-title">🥅 득점왕 예측 현황</div>
+                    <div id="scorer-chart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">🏆 우승팀 예측 현황</div>
+                    <div id="champion-chart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">🅰️ 도움왕 예측 현황</div>
+                    <div id="assist-chart"></div>
+                </div>
+            </div>
+        </div>
+    </section>
 </main>
-<script src="leaderboard.js"></script>
 
 <footer class="custom-footer">
     <a class="footer-link" href="footer.html">개인정보 처리방침</a>
@@ -183,6 +203,18 @@
             <button class="cancel-btn" onclick="document.getElementById('profileModal').style.display='none'">취소</button>
             <button id="checkVerificationBtn">이메일 인증 확인</button>
         </div>
+    </div>
+</div>
+
+<!-- 예측 모달 -->
+<div id="predictionModal" class="prediction-modal">
+    <div class="prediction-modal-content">
+        <span class="prediction-modal-close" onclick="closePredictionModal()">&times;</span>
+        <h2 id="modal-title" class="modal-title"></h2>
+        <div id="prediction-input-container" style="margin-bottom: 20px; display:none;">
+            <input type="text" id="prediction-input" class="prediction-input" placeholder="예측을 입력하세요" />        
+        </div>
+        <button id="submit-prediction" class="submit-prediction" onclick="submitPrediction()" disabled>예측 제출</button>
     </div>
 </div>
 
