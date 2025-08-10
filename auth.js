@@ -775,60 +775,83 @@ class AuthManager {
     }
   }
 
-  /**
-   * ✅ 사용자 프로필 표시 (포인트 포함) - getUserPoints를 this.getUserPoints로 수정
-   */
-  async showUserProfile() {
-    try {
-      const user = this.auth.currentUser;
-      
-      if (!user) {
-        console.log('사용자 정보 없음');
-        this.updateUIForAuthState(false);
-        return;
-      }
+/**
+ * ✅ 사용자 프로필 표시 (포인트 포함) - 수정된 버전
+ */
+async showUserProfile() {
+  try {
+    const user = this.auth.currentUser;
+    
+    if (!user) {
+      console.log('사용자 정보 없음');
+      this.updateUIForAuthState(false);
+      return;
+    }
 
-      console.log('현재 사용자:', user);
+    console.log('현재 사용자:', user);
 
-      const docRef = this.firebase.doc(this.db, 'profiles', user.uid);
-      const docSnap = await this.firebase.getDoc(docRef);
+    const docRef = this.firebase.doc(this.db, 'profiles', user.uid);
+    const docSnap = await this.firebase.getDoc(docRef);
 
-      let profileData = {
-        email: user.email,
-        nickname: user.displayName || user.email.split('@')[0],
-        avatar_url: user.photoURL
+    let profileData = {
+      email: user.email,
+      nickname: user.displayName || user.email.split('@')[0],
+      avatar_url: user.photoURL
+    };
+    
+    if (docSnap.exists()) {
+      // ✅ Firestore에 저장된 프로필 데이터가 있으면 그것을 우선 사용
+      const firestoreData = docSnap.data();
+      profileData = { 
+        ...profileData, 
+        ...firestoreData,
+        // nickname과 avatar_url은 Firestore 데이터를 우선으로 사용
+        nickname: firestoreData.nickname || user.displayName || user.email.split('@')[0],
+        avatar_url: firestoreData.avatar_url || user.photoURL || Utils.generateAvatarUrl(firestoreData.nickname || user.displayName || user.email.split('@')[0], 35)
+      };
+      console.log('프로필 데이터 (Firestore에서 로드):', profileData);
+    } else {
+      console.log('프로필 데이터 없음, Firebase Auth 정보 사용');
+      // ✅ Firestore에 데이터가 없어도 Firebase Auth의 displayName을 우선 사용
+      const nickname = user.displayName || user.email.split('@')[0];
+      profileData = {
+        ...profileData,
+        nickname: nickname,
+        avatar_url: user.photoURL || Utils.generateAvatarUrl(nickname, 35)
       };
       
-      if (docSnap.exists()) {
-        profileData = { ...profileData, ...docSnap.data() };
-        console.log('프로필 데이터:', profileData);
-      } else {
-        console.log('프로필 데이터 없음, 기본값 사용');
-        const nickname = user.displayName || user.email.split('@')[0];
-        profileData = {
-          ...profileData,
+      // ✅ 프로필 데이터를 Firestore에 저장 (다음번 로그인 시 일관성 유지)
+      try {
+        await this.firebase.setDoc(docRef, {
+          uid: user.uid,
+          email: user.email,
           nickname: nickname,
-          avatar_url: Utils.generateAvatarUrl(nickname, 35)
-        };
+          avatar_url: profileData.avatar_url,
+          created_at: new Date()
+        });
+        console.log('프로필 데이터를 Firestore에 저장했습니다.');
+      } catch (saveError) {
+        console.warn('프로필 데이터 저장 실패 (무시):', saveError);
       }
-
-      // ✅ 포인트 조회 - this.getUserPoints 사용
-      console.log("auth.js - showUserProfile - 포인트 조회 시작");
-      const userPoints = await this.getUserPoints(user.uid);
-      console.log("auth.js - showUserProfile - 조회된 포인트:", userPoints);
-      profileData.points = userPoints;
-
-      // ✅ 전역 변수에도 프로필 데이터 저장
-      window.currentUserProfile = profileData;
-
-      Utils.closeAllModals();
-      this.updateUIForAuthState(true, profileData);
-
-    } catch (error) {
-      console.error('프로필 표시 중 오류:', error);
-      this.updateUIForAuthState(false);
     }
+
+    // ✅ 포인트 조회
+    console.log("auth.js - showUserProfile - 포인트 조회 시작");
+    const userPoints = await this.getUserPoints(user.uid);
+    console.log("auth.js - showUserProfile - 조회된 포인트:", userPoints);
+    profileData.points = userPoints;
+
+    // ✅ 전역 변수에도 프로필 데이터 저장
+    window.currentUserProfile = profileData;
+
+    Utils.closeAllModals();
+    this.updateUIForAuthState(true, profileData);
+
+  } catch (error) {
+    console.error('프로필 표시 중 오류:', error);
+    this.updateUIForAuthState(false);
   }
+}
 
   /**
    * 이메일 인증 대기 상태 UI 업데이트
