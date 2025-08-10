@@ -159,43 +159,35 @@
         </div>
     </div>
 
-    <!-- 공지사항 작성 모달 -->
-    <div id="writeNoticeModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px; width: 90%;">
-            <span class="close" id="closeWriteModal">&times;</span>
-            <h2 style="margin-bottom: 20px; color: #3da5ff;">공지사항 작성</h2>
+<!-- 공지사항 작성 모달 - 수정된 버전 -->
+<div id="writeNoticeModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" id="closeWriteModal">&times;</span>
+        <h2>공지사항 작성</h2>
+        
+        <form id="noticeForm">
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="noticeTitle" placeholder="제목을 입력하세요" required>
+            </div>
             
-            <form id="noticeForm">
-                <div style="margin-bottom: 15px;">
-                    <input type="text" id="noticeTitle" placeholder="제목을 입력하세요" 
-                           style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; margin-bottom: 15px;">
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <textarea id="noticeContent" placeholder="내용을 입력하세요" rows="10"
-                              style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; resize: vertical; line-height: 1.5;"></textarea>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: flex; align-items: center; gap: 8px; color: #666; font-size: 14px;">
-                        <input type="checkbox" id="isImportant" style="margin: 0;">
-                        중요 공지사항으로 설정
-                    </label>
-                </div>
-                
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" id="cancelWrite" 
-                            style="padding: 10px 20px; border: 1px solid #ccc; background: #fff; color: #666; border-radius: 6px; cursor: pointer;">
-                        취소
-                    </button>
-                    <button type="submit" id="submitNotice"
-                            style="padding: 10px 20px; background: linear-gradient(135deg, #3da5ff, #2051ff); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                        작성 완료
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div style="margin-bottom: 20px;">
+                <textarea id="noticeContent" placeholder="내용을 입력하세요" required></textarea>
+            </div>
+            
+            <div class="checkbox-container">
+                <label>
+                    <input type="checkbox" id="isImportant">
+                    중요 공지사항으로 설정
+                </label>
+            </div>
+            
+            <div class="button-container">
+                <button type="button" id="cancelWrite">취소</button>
+                <button type="submit" id="submitNotice">작성 완료</button>
+            </div>
+        </form>
     </div>
+</div>
 
 
   <footer class="custom-footer">
