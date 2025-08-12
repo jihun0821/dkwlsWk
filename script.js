@@ -772,21 +772,25 @@ async function getMatchDetailsById(matchId) {
     }
 }
 
-// ✅ teams 컬렉션에서 팀 라인업 가져오기
+// ✅ 수정된 getTeamLineup 함수 (디버깅 로그 추가)
 async function getTeamLineup(teamName) {
     try {
+        console.log(`🔍 라인업 조회 시도 - 팀명: "${teamName}"`);
+        
         const teamDocRef = window.firebase.doc(db, "teams", teamName);
         const teamDoc = await window.firebase.getDoc(teamDocRef);
         
         if (teamDoc.exists()) {
             const teamData = teamDoc.data();
+            console.log(`✅ 라인업 조회 성공 - 팀명: "${teamName}"`, teamData.lineup);
             return teamData.lineup || {
                 first: [],
                 second: [],
                 third: []
             };
         } else {
-            console.warn(`팀 ${teamName}의 라인업 데이터가 없습니다.`);
+            console.warn(`❌ 팀 "${teamName}"의 라인업 데이터가 없습니다.`);
+            console.warn(`💡 teams 컬렉션에 "${teamName}" 문서가 존재하는지 확인하세요.`);
             return {
                 first: [],
                 second: [],
@@ -794,7 +798,7 @@ async function getTeamLineup(teamName) {
             };
         }
     } catch (error) {
-        console.error(`팀 ${teamName} 라인업 불러오기 실패:`, error);
+        console.error(`❌ 팀 "${teamName}" 라인업 불러오기 실패:`, error);
         return {
             first: [],
             second: [],
@@ -803,10 +807,22 @@ async function getTeamLineup(teamName) {
     }
 }
 
-// loadMatchDetails 함수 (관리자 버튼 포함) - 팀별 라인업 조회로 수정
+// ✅ 수정된 loadMatchDetails 함수 (디버깅 로그 추가)
 async function loadMatchDetails(matchId) {
+    console.log(`🔍 매치 상세 로드 시작 - matchId: ${matchId}`);
+    
     const matchDetails = await getMatchDetailsById(matchId);
-    if (!matchDetails) return;
+    if (!matchDetails) {
+        console.error("❌ 매치 데이터를 찾을 수 없습니다.");
+        return;
+    }
+    
+    console.log("📋 매치 정보:", {
+        homeTeam: matchDetails.homeTeam,
+        awayTeam: matchDetails.awayTeam,
+        date: matchDetails.date,
+        status: matchDetails.status
+    });
     
     panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
 
@@ -992,11 +1008,17 @@ function escapeHtml(text) {
     }[s]));
 }
 
-// ✅ renderPanelTabs 함수 수정 - 팀별 라인업 조회
+// ✅ 수정된 renderPanelTabs 함수 (디버깅 로그 추가)
 async function renderPanelTabs(matchDetails, matchId) {
+    console.log(`🔍 라인업 렌더링 시작`);
+    console.log(`홈팀: "${matchDetails.homeTeam}", 원정팀: "${matchDetails.awayTeam}"`);
+    
     // 홈팀과 원정팀 라인업을 각각 조회
     const homeLineup = await getTeamLineup(matchDetails.homeTeam);
     const awayLineup = await getTeamLineup(matchDetails.awayTeam);
+    
+    console.log("🏠 홈팀 라인업:", homeLineup);
+    console.log("✈️ 원정팀 라인업:", awayLineup);
     
     return `
         <div class="tab-container">
@@ -1249,6 +1271,30 @@ async function logout() {
     } catch (error) {
         console.error("로그아웃 실패:", error);
     }
+}
+
+// 🔍 디버깅용: 매치와 팀명 확인 함수
+async function debugMatchAndTeams(matchId) {
+    console.log("=== 매치 및 팀명 디버깅 시작 ===");
+    
+    // 1. 매치 데이터 확인
+    const matchDetails = await getMatchDetailsById(matchId);
+    console.log("매치 데이터:", matchDetails);
+    console.log("홈팀명:", matchDetails?.homeTeam);
+    console.log("원정팀명:", matchDetails?.awayTeam);
+    
+    // 2. teams 컬렉션의 모든 문서 확인
+    const teamsSnapshot = await window.firebase.getDocs(window.firebase.collection(db, "teams"));
+    console.log("teams 컬렉션에 있는 팀들:");
+    teamsSnapshot.forEach(doc => {
+        console.log(`- 문서 ID: ${doc.id}`, doc.data());
+    });
+    
+    // 3. C101 팀 데이터 직접 확인
+    const c101TeamData = await getTeamLineup("C101");
+    console.log("C101 팀 라인업 데이터:", c101TeamData);
+    
+    console.log("=== 디버깅 완료 ===");
 }
 
 // 전역 함수로 노출
