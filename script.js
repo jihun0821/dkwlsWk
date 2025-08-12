@@ -772,7 +772,38 @@ async function getMatchDetailsById(matchId) {
     }
 }
 
-// loadMatchDetails 함수 (관리자 버튼 포함)
+// ✅ teams 컬렉션에서 팀 라인업 가져오기
+async function getTeamLineup(teamName) {
+    try {
+        const teamDocRef = window.firebase.doc(db, "teams", teamName);
+        const teamDoc = await window.firebase.getDoc(teamDocRef);
+        
+        if (teamDoc.exists()) {
+            const teamData = teamDoc.data();
+            return teamData.lineup || {
+                first: [],
+                second: [],
+                third: []
+            };
+        } else {
+            console.warn(`팀 ${teamName}의 라인업 데이터가 없습니다.`);
+            return {
+                first: [],
+                second: [],
+                third: []
+            };
+        }
+    } catch (error) {
+        console.error(`팀 ${teamName} 라인업 불러오기 실패:`, error);
+        return {
+            first: [],
+            second: [],
+            third: []
+        };
+    }
+}
+
+// loadMatchDetails 함수 (관리자 버튼 포함) - 팀별 라인업 조회로 수정
 async function loadMatchDetails(matchId) {
     const matchDetails = await getMatchDetailsById(matchId);
     if (!matchDetails) return;
@@ -838,7 +869,7 @@ async function loadMatchDetails(matchId) {
             <div class="team-name">${matchDetails.awayTeam}</div>
         </div>
         <div class="prediction-container">${predictionHtml}</div>
-        ${renderPanelTabs(matchDetails, matchId)}
+        ${await renderPanelTabs(matchDetails, matchId)}
     `;
 
     const statsContainer = panelContent.querySelector('#votingStats');
@@ -961,7 +992,12 @@ function escapeHtml(text) {
     }[s]));
 }
 
-function renderPanelTabs(matchDetails, matchId) {
+// ✅ renderPanelTabs 함수 수정 - 팀별 라인업 조회
+async function renderPanelTabs(matchDetails, matchId) {
+    // 홈팀과 원정팀 라인업을 각각 조회
+    const homeLineup = await getTeamLineup(matchDetails.homeTeam);
+    const awayLineup = await getTeamLineup(matchDetails.awayTeam);
+    
     return `
         <div class="tab-container">
             <div class="tabs">
@@ -970,7 +1006,7 @@ function renderPanelTabs(matchDetails, matchId) {
             </div>
             <div class="tab-contents">
                 <div class="tab-content lineup-content active">
-                    ${renderLineup(matchDetails)}
+                    ${renderLineup(matchDetails, homeLineup, awayLineup)}
                 </div>
                 <div class="tab-content chat-content">
                     ${renderChatBox(matchId)}
@@ -980,28 +1016,30 @@ function renderPanelTabs(matchDetails, matchId) {
     `;
 }
 
-// 라인업 렌더링 (학년별)
-function renderLineup(match) {
-    const groupLabel = (idx) => ["1학년", "2학년", "3학년"][idx];
+// ✅ 라인업 렌더링 함수 수정 - 별도로 조회한 라인업 데이터 사용
+function renderLineup(matchDetails, homeLineup, awayLineup) {
     function players(list) {
         return `<div class="players-container">${list.map((n) => `<div class="player">${escapeHtml(n)}</div>`).join("")}</div>`;
     }
-    function sideBlock(side, data) {
+    
+    function sideBlock(side, teamName, lineupData) {
         return `
             <div class="lineup-team lineup-${side}">
-                <div class="lineup-group"><span class="position-label">3학년</span>${players(data.third || [])}</div>
-                <div class="lineup-group"><span class="position-label">2학년</span>${players(data.second || [])}</div>
-                <div class="lineup-group"><span class="position-label">1학년</span>${players(data.first || [])}</div>
+                <div class="team-name-header">${teamName}</div>
+                <div class="lineup-group"><span class="position-label">3학년</span>${players(lineupData.third || [])}</div>
+                <div class="lineup-group"><span class="position-label">2학년</span>${players(lineupData.second || [])}</div>
+                <div class="lineup-group"><span class="position-label">1학년</span>${players(lineupData.first || [])}</div>
             </div>
         `;
     }
+    
     return `
         <div class="lineup-field">
             <div class="lineup-bg"></div>
             <div class="lineup-sides">
-                ${sideBlock("home", match.lineups.home)}
+                ${sideBlock("home", matchDetails.homeTeam, homeLineup)}
                 <div class="vs-label">VS</div>
-                ${sideBlock("away", match.lineups.away)}
+                ${sideBlock("away", matchDetails.awayTeam, awayLineup)}
             </div>
         </div>
     `;
