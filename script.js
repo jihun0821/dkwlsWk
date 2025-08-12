@@ -772,57 +772,10 @@ async function getMatchDetailsById(matchId) {
     }
 }
 
-// ✅ 수정된 getTeamLineup 함수 (디버깅 로그 추가)
-async function getTeamLineup(teamName) {
-    try {
-        console.log(`🔍 라인업 조회 시도 - 팀명: "${teamName}"`);
-        
-        const teamDocRef = window.firebase.doc(db, "teams", teamName);
-        const teamDoc = await window.firebase.getDoc(teamDocRef);
-        
-        if (teamDoc.exists()) {
-            const teamData = teamDoc.data();
-            console.log(`✅ 라인업 조회 성공 - 팀명: "${teamName}"`, teamData.lineup);
-            return teamData.lineup || {
-                first: [],
-                second: [],
-                third: []
-            };
-        } else {
-            console.warn(`❌ 팀 "${teamName}"의 라인업 데이터가 없습니다.`);
-            console.warn(`💡 teams 컬렉션에 "${teamName}" 문서가 존재하는지 확인하세요.`);
-            return {
-                first: [],
-                second: [],
-                third: []
-            };
-        }
-    } catch (error) {
-        console.error(`❌ 팀 "${teamName}" 라인업 불러오기 실패:`, error);
-        return {
-            first: [],
-            second: [],
-            third: []
-        };
-    }
-}
-
-// ✅ 수정된 loadMatchDetails 함수 (디버깅 로그 추가)
+// loadMatchDetails 함수 (관리자 버튼 포함)
 async function loadMatchDetails(matchId) {
-    console.log(`🔍 매치 상세 로드 시작 - matchId: ${matchId}`);
-    
     const matchDetails = await getMatchDetailsById(matchId);
-    if (!matchDetails) {
-        console.error("❌ 매치 데이터를 찾을 수 없습니다.");
-        return;
-    }
-    
-    console.log("📋 매치 정보:", {
-        homeTeam: matchDetails.homeTeam,
-        awayTeam: matchDetails.awayTeam,
-        date: matchDetails.date,
-        status: matchDetails.status
-    });
+    if (!matchDetails) return;
     
     panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
 
@@ -885,7 +838,7 @@ async function loadMatchDetails(matchId) {
             <div class="team-name">${matchDetails.awayTeam}</div>
         </div>
         <div class="prediction-container">${predictionHtml}</div>
-        ${await renderPanelTabs(matchDetails, matchId)}
+        ${renderPanelTabs(matchDetails, matchId)}
     `;
 
     const statsContainer = panelContent.querySelector('#votingStats');
@@ -1008,18 +961,7 @@ function escapeHtml(text) {
     }[s]));
 }
 
-// ✅ 수정된 renderPanelTabs 함수 (디버깅 로그 추가)
-async function renderPanelTabs(matchDetails, matchId) {
-    console.log(`🔍 라인업 렌더링 시작`);
-    console.log(`홈팀: "${matchDetails.homeTeam}", 원정팀: "${matchDetails.awayTeam}"`);
-    
-    // 홈팀과 원정팀 라인업을 각각 조회
-    const homeLineup = await getTeamLineup(matchDetails.homeTeam);
-    const awayLineup = await getTeamLineup(matchDetails.awayTeam);
-    
-    console.log("🏠 홈팀 라인업:", homeLineup);
-    console.log("✈️ 원정팀 라인업:", awayLineup);
-    
+function renderPanelTabs(matchDetails, matchId) {
     return `
         <div class="tab-container">
             <div class="tabs">
@@ -1028,7 +970,7 @@ async function renderPanelTabs(matchDetails, matchId) {
             </div>
             <div class="tab-contents">
                 <div class="tab-content lineup-content active">
-                    ${renderLineup(matchDetails, homeLineup, awayLineup)}
+                    ${renderLineup(matchDetails)}
                 </div>
                 <div class="tab-content chat-content">
                     ${renderChatBox(matchId)}
@@ -1038,30 +980,28 @@ async function renderPanelTabs(matchDetails, matchId) {
     `;
 }
 
-// ✅ 라인업 렌더링 함수 수정 - 별도로 조회한 라인업 데이터 사용
-function renderLineup(matchDetails, homeLineup, awayLineup) {
+// 라인업 렌더링 (학년별)
+function renderLineup(match) {
+    const groupLabel = (idx) => ["1학년", "2학년", "3학년"][idx];
     function players(list) {
         return `<div class="players-container">${list.map((n) => `<div class="player">${escapeHtml(n)}</div>`).join("")}</div>`;
     }
-    
-    function sideBlock(side, teamName, lineupData) {
+    function sideBlock(side, data) {
         return `
             <div class="lineup-team lineup-${side}">
-                <div class="team-name-header">${teamName}</div>
-                <div class="lineup-group"><span class="position-label">3학년</span>${players(lineupData.third || [])}</div>
-                <div class="lineup-group"><span class="position-label">2학년</span>${players(lineupData.second || [])}</div>
-                <div class="lineup-group"><span class="position-label">1학년</span>${players(lineupData.first || [])}</div>
+                <div class="lineup-group"><span class="position-label">3학년</span>${players(data.third || [])}</div>
+                <div class="lineup-group"><span class="position-label">2학년</span>${players(data.second || [])}</div>
+                <div class="lineup-group"><span class="position-label">1학년</span>${players(data.first || [])}</div>
             </div>
         `;
     }
-    
     return `
         <div class="lineup-field">
             <div class="lineup-bg"></div>
             <div class="lineup-sides">
-                ${sideBlock("home", matchDetails.homeTeam, homeLineup)}
+                ${sideBlock("home", match.lineups.home)}
                 <div class="vs-label">VS</div>
-                ${sideBlock("away", matchDetails.awayTeam, awayLineup)}
+                ${sideBlock("away", match.lineups.away)}
             </div>
         </div>
     `;
@@ -1271,30 +1211,6 @@ async function logout() {
     } catch (error) {
         console.error("로그아웃 실패:", error);
     }
-}
-
-// 🔍 디버깅용: 매치와 팀명 확인 함수
-async function debugMatchAndTeams(matchId) {
-    console.log("=== 매치 및 팀명 디버깅 시작 ===");
-    
-    // 1. 매치 데이터 확인
-    const matchDetails = await getMatchDetailsById(matchId);
-    console.log("매치 데이터:", matchDetails);
-    console.log("홈팀명:", matchDetails?.homeTeam);
-    console.log("원정팀명:", matchDetails?.awayTeam);
-    
-    // 2. teams 컬렉션의 모든 문서 확인
-    const teamsSnapshot = await window.firebase.getDocs(window.firebase.collection(db, "teams"));
-    console.log("teams 컬렉션에 있는 팀들:");
-    teamsSnapshot.forEach(doc => {
-        console.log(`- 문서 ID: ${doc.id}`, doc.data());
-    });
-    
-    // 3. C101 팀 데이터 직접 확인
-    const c101TeamData = await getTeamLineup("C101");
-    console.log("C101 팀 라인업 데이터:", c101TeamData);
-    
-    console.log("=== 디버깅 완료 ===");
 }
 
 // 전역 함수로 노출
