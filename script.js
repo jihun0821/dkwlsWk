@@ -1256,3 +1256,202 @@ window.forceUpdatePointsUI = forceUpdatePointsUI;
 window.testPointsDisplay = testPointsDisplay;
 window.setMatchResult = setMatchResult;
 window.logout = logout;
+
+// 🔍 디버깅용: 매치와 팀명 확인 함수
+async function debugMatchAndTeams(matchId) {
+    console.log("=== 매치 및 팀명 디버깅 시작 ===");
+    
+    // 1. 매치 데이터 확인
+    const matchDetails = await getMatchDetailsById(matchId);
+    console.log("매치 데이터:", matchDetails);
+    console.log("홈팀명:", matchDetails?.homeTeam);
+    console.log("원정팀명:", matchDetails?.awayTeam);
+    
+    // 2. teams 컬렉션의 모든 문서 확인
+    const teamsSnapshot = await window.firebase.getDocs(window.firebase.collection(db, "teams"));
+    console.log("teams 컬렉션에 있는 팀들:");
+    teamsSnapshot.forEach(doc => {
+        console.log(`- 문서 ID: ${doc.id}`, doc.data());
+    });
+    
+    // 3. C101 팀 데이터 직접 확인
+    const c101TeamData = await getTeamLineup("C101");
+    console.log("C101 팀 라인업 데이터:", c101TeamData);
+    
+    console.log("=== 디버깅 완료 ===");
+}
+
+// ✅ 수정된 getTeamLineup 함수 (디버깅 로그 추가)
+async function getTeamLineup(teamName) {
+    try {
+        console.log(`🔍 라인업 조회 시도 - 팀명: "${teamName}"`);
+        
+        const teamDocRef = window.firebase.doc(db, "teams", teamName);
+        const teamDoc = await window.firebase.getDoc(teamDocRef);
+        
+        if (teamDoc.exists()) {
+            const teamData = teamDoc.data();
+            console.log(`✅ 라인업 조회 성공 - 팀명: "${teamName}"`, teamData.lineup);
+            return teamData.lineup || {
+                first: [],
+                second: [],
+                third: []
+            };
+        } else {
+            console.warn(`❌ 팀 "${teamName}"의 라인업 데이터가 없습니다.`);
+            console.warn(`💡 teams 컬렉션에 "${teamName}" 문서가 존재하는지 확인하세요.`);
+            return {
+                first: [],
+                second: [],
+                third: []
+            };
+        }
+    } catch (error) {
+        console.error(`❌ 팀 "${teamName}" 라인업 불러오기 실패:`, error);
+        return {
+            first: [],
+            second: [],
+            third: []
+        };
+    }
+}
+
+// ✅ 수정된 loadMatchDetails 함수 (디버깅 로그 추가)
+async function loadMatchDetails(matchId) {
+    console.log(`🔍 매치 상세 로드 시작 - matchId: ${matchId}`);
+    
+    const matchDetails = await getMatchDetailsById(matchId);
+    if (!matchDetails) {
+        console.error("❌ 매치 데이터를 찾을 수 없습니다.");
+        return;
+    }
+    
+    console.log("📋 매치 정보:", {
+        homeTeam: matchDetails.homeTeam,
+        awayTeam: matchDetails.awayTeam,
+        date: matchDetails.date,
+        status: matchDetails.status
+    });
+    
+    panelTitle.textContent = `${matchDetails.homeTeam} vs ${matchDetails.awayTeam}`;
+
+    const isLoggedIn = !!auth.currentUser;
+    const userVoted = isLoggedIn ? await hasUserVoted(matchId) : false;
+    const stats = await getVotingStatsFromFirestore(matchId);
+
+    let predictionHtml = "";
+    
+    // 경기가 finished 상태이고 관리자인 경우 결과 설정 버튼 표시
+    if (matchDetails.status === "finished" && isAdmin && !matchDetails.adminResult) {
+        predictionHtml = `
+            <h3>경기 결과 설정 (관리자)</h3>
+            <div class="admin-result-btns">
+                <button class="admin-result-btn home-win" onclick="setMatchResult('${matchId}', 'homeWin')">홈팀 승</button>
+                <button class="admin-result-btn draw" onclick="setMatchResult('${matchId}', 'draw')">무승부</button>
+                <button class="admin-result-btn away-win" onclick="setMatchResult('${matchId}', 'awayWin')">원정팀 승</button>
+            </div>
+            <h3>승부예측 결과</h3><div id="votingStats"></div>
+        `;
+    }
+    // 관리자가 결과를 이미 설정한 경우
+    else if (matchDetails.status === "finished" && matchDetails.adminResult) {
+        const resultText = {
+            'homeWin': '홈팀 승',
+            'draw': '무승부', 
+            'awayWin': '원정팀 승'
+        }[matchDetails.adminResult] || '결과 미정';
+        
+        predictionHtml = `
+            <h3>경기 결과: ${resultText}</h3>
+            <h3>승부예측 결과</h3><div id="votingStats"></div>
+        `;
+    }
+    // 예정된 경기의 승부예측
+    else if (matchDetails.status === "scheduled") {
+        if (!isLoggedIn || userVoted) {
+            predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+        } else {
+            predictionHtml = `
+                <h3>승부예측</h3>
+                <div class="prediction-btns">
+                    <button class="prediction-btn home-win" data-vote="homeWin">1</button>
+                    <button class="prediction-btn draw" data-vote="draw">X</button>
+                    <button class="prediction-btn away-win" data-vote="awayWin">2</button>
+                </div>`;
+        }
+    }
+    // 기타 경기 상태
+    else {
+        predictionHtml = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+    }
+
+    panelContent.innerHTML = `
+        <div class="match-date">${matchDetails.date}</div>
+        <div class="match-league">${matchDetails.league}</div>
+        <div class="match-score">
+            <div class="team-name">${matchDetails.homeTeam}</div>
+            <div class="score-display">${matchDetails.homeScore} - ${matchDetails.awayScore}</div>
+            <div class="team-name">${matchDetails.awayTeam}</div>
+        </div>
+        <div class="prediction-container">${predictionHtml}</div>
+        ${await renderPanelTabs(matchDetails, matchId)}
+    `;
+
+    const statsContainer = panelContent.querySelector('#votingStats');
+    if (statsContainer) renderVotingGraph(statsContainer, stats);
+
+    setupPanelTabs(matchId);
+
+    // 일반 사용자 승부예측 버튼 이벤트
+    const buttons = panelContent.querySelectorAll('.prediction-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const voteType = btn.getAttribute("data-vote");
+            const success = await saveVoteToFirestore(matchId, voteType);
+            if (success) {
+                const updatedStats = await getVotingStatsFromFirestore(matchId);
+                const container = btn.closest('.prediction-container');
+                container.innerHTML = `<h3>승부예측 결과</h3><div id="votingStats"></div>`;
+                renderVotingGraph(container.querySelector('#votingStats'), updatedStats);
+            }
+        });
+    });
+}
+
+// ✅ 수정된 renderPanelTabs 함수 (디버깅 로그 추가)
+async function renderPanelTabs(matchDetails, matchId) {
+    console.log(`🔍 라인업 렌더링 시작`);
+    console.log(`홈팀: "${matchDetails.homeTeam}", 원정팀: "${matchDetails.awayTeam}"`);
+    
+    // 홈팀과 원정팀 라인업을 각각 조회
+    const homeLineup = await getTeamLineup(matchDetails.homeTeam);
+    const awayLineup = await getTeamLineup(matchDetails.awayTeam);
+    
+    console.log("🏠 홈팀 라인업:", homeLineup);
+    console.log("✈️ 원정팀 라인업:", awayLineup);
+    
+    return `
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="lineup">라인업</div>
+                <div class="tab" data-tab="chat">채팅</div>
+            </div>
+            <div class="tab-contents">
+                <div class="tab-content lineup-content active">
+                    ${renderLineup(matchDetails, homeLineup, awayLineup)}
+                </div>
+                <div class="tab-content chat-content">
+                    ${renderChatBox(matchId)}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ✅ 개발자 도구에서 실행할 수 있는 디버깅 함수들
+window.debugMatchAndTeams = debugMatchAndTeams;
+window.getTeamLineup = getTeamLineup;
+
+// 💡 브라우저 개발자 도구에서 실행하여 확인하세요:
+// debugMatchAndTeams('your_match_id_here')
+// getTeamLineup('C101')
