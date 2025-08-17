@@ -982,11 +982,27 @@ async function renderMatches() {
     updateButtons(); // 페이지 버튼도 함께 갱신
 }
 
+// script.js의 updateButtons 함수 수정
 async function updateButtons() {
     const totalPages = await getTotalPages();
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
+    
+    // null 체크 추가
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+    }
+    
+    if (nextBtn) {
+        nextBtn.disabled = currentPage === totalPages;
+    }
 }
+
+// 그리고 prevBtn, nextBtn 선언 부분도 수정
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+// 전역 변수로 db, auth를 노출하여 predictions.js에서 사용할 수 있도록 함
+window.db = db;
+window.auth = auth;
 
 // 페이지네이션 이벤트 (중복되지 않게 1회만!)
 prevBtn?.addEventListener('click', async () => {
