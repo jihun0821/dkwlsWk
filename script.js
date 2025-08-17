@@ -19,7 +19,25 @@ async function getTotalPages() {
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
+// ✅ Firebase 변수들을 전역으로 선언하고 초기화
 let db, auth;
+
+// ✅ Firebase 초기화를 전역 window 객체에 노출 (predictions.js와 공유)
+function initializeFirebaseGlobals() {
+    if (window.firebase && window.firebase.getFirestore && window.firebase.getAuth) {
+        db = window.firebase.getFirestore();
+        auth = window.firebase.getAuth();
+        
+        // 전역 변수로 노출하여 predictions.js에서 사용 가능하도록 함
+        window.db = db;
+        window.auth = auth;
+        window.firebase = window.firebase; // firebase 객체도 명시적으로 노출
+        
+        console.log("script.js - Firebase 초기화 완료");
+        return true;
+    }
+    return false;
+}
 
 window.onload = function () {
     const savedTheme = localStorage.getItem("theme");
@@ -31,25 +49,27 @@ window.onload = function () {
         body.classList.remove("light-mode");
     }
 
-    // ✅ Firebase SDK 로드 후에 초기화
-    if (window.firebase && window.firebase.getFirestore && window.firebase.getAuth) {
-        db = window.firebase.getFirestore();
-        auth = window.firebase.getAuth();
-        
-        // ✅ 관리자 권한 확인 추가
-        checkAdminStatus();
-    } else {
-        console.error("Firebase SDK가 아직 로드되지 않았습니다.");
-        return;
-    }
-
-    const pagination = document.querySelector('.pagination-container');
-    if (pagination) {
-        renderMatches();
-        updateButtons();
-    } else {
-        setupMatchClickListeners();
-    }
+    // ✅ Firebase 초기화를 재시도 방식으로 변경
+    const waitForFirebaseInit = () => {
+        if (initializeFirebaseGlobals()) {
+            // Firebase 초기화 성공 시 관리자 권한 확인
+            checkAdminStatus();
+            
+            // 페이지네이션이 있는 경우 경기 렌더링
+            const pagination = document.querySelector('.pagination-container');
+            if (pagination) {
+                renderMatches();
+                updateButtons();
+            } else {
+                setupMatchClickListeners();
+            }
+        } else {
+            console.log("script.js - Firebase SDK 대기 중...");
+            setTimeout(waitForFirebaseInit, 100);
+        }
+    };
+    
+    waitForFirebaseInit();
     
     // 페이지 로드 시 공지 표시 여부 확인
     checkNoticeVisibility();
@@ -66,15 +86,11 @@ window.onload = function () {
 
 // 관리자 권한 확인 함수 (수정된 버전)
 async function checkAdminStatus() {
-    // Firebase가 초기화되지 않았으면 대기
-    if (!window.firebase || !window.firebase.getFirestore || !window.firebase.getAuth) {
-        console.error("Firebase SDK가 아직 로드되지 않았습니다.");
+    // Firebase가 초기화되지 않았으면 에러 반환
+    if (!auth || !db) {
+        console.error("Firebase 변수들이 초기화되지 않았습니다.");
         return;
     }
-
-    // 전역 변수 초기화
-    if (!auth) auth = window.firebase.getAuth();
-    if (!db) db = window.firebase.getFirestore();
     
     window.firebase.onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -996,41 +1012,44 @@ async function updateButtons() {
     }
 }
 
-// 그리고 prevBtn, nextBtn 선언 부분도 수정
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-
-// 전역 변수로 db, auth를 노출하여 predictions.js에서 사용할 수 있도록 함
-window.db = db;
-window.auth = auth;
-
 // 페이지네이션 이벤트 (중복되지 않게 1회만!)
-prevBtn?.addEventListener('click', async () => {
-    if (currentPage > 1) {
-        currentPage--;
-        await renderMatches();
-    }
-});
+if (prevBtn) {
+    prevBtn.addEventListener('click', async () => {
+        if (currentPage > 1) {
+            currentPage--;
+            await renderMatches();
+        }
+    });
+}
 
-nextBtn?.addEventListener('click', async () => {
-    const totalPages = await getTotalPages();
-    if (currentPage < totalPages) {
-        currentPage++;
-        await renderMatches();
-    }
-});
+if (nextBtn) {
+    nextBtn.addEventListener('click', async () => {
+        const totalPages = await getTotalPages();
+        if (currentPage < totalPages) {
+            currentPage++;
+            await renderMatches();
+        }
+    });
+}
 
 // 검색창 필터링
-document.querySelector('.search-bar')?.addEventListener('input', function (e) {
-    const keyword = e.target.value.toLowerCase();
-    document.querySelectorAll('section.main .match').forEach(match => {
-        match.style.display = match.textContent.toLowerCase().includes(keyword) ? 'block' : 'none';
+const searchBar = document.querySelector('.search-bar');
+if (searchBar) {
+    searchBar.addEventListener('input', function (e) {
+        const keyword = e.target.value.toLowerCase();
+        document.querySelectorAll('section.main .match').forEach(match => {
+            match.style.display = match.textContent.toLowerCase().includes(keyword) ? 'block' : 'none';
+        });
     });
-});
+}
 
 // 패널 닫기 버튼 및 오버레이 클릭 시 닫힘 처리
-closePanelBtn?.addEventListener("click", closePanel);
-overlay?.addEventListener("click", closePanel);
+if (closePanelBtn) {
+    closePanelBtn.addEventListener("click", closePanel);
+}
+if (overlay) {
+    overlay.addEventListener("click", closePanel);
+}
 
 // HTML 이스케이프
 function escapeHtml(text) {
