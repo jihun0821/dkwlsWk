@@ -8,7 +8,7 @@ let allLeaderboardUsers = [];
 window.addEventListener('DOMContentLoaded', () => {
     // script.js에서 Firebase가 초기화될 때까지 대기
     const waitForFirebase = () => {
-        if (window.db && window.auth) {
+        if (window.db && window.auth && window.firebase) {
             console.log("predictions.js - Firebase 변수들이 준비됨");
             
             // 인증 상태 변경 감지
@@ -21,7 +21,11 @@ window.addEventListener('DOMContentLoaded', () => {
             setupPaginationEvents();
             
         } else {
-            console.log("predictions.js - Firebase 변수들 대기 중...");
+            console.log("predictions.js - Firebase 변수들 대기 중...", {
+                db: !!window.db,
+                auth: !!window.auth,
+                firebase: !!window.firebase
+            });
             setTimeout(waitForFirebase, 100);
         }
     };
