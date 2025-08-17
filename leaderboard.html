@@ -51,7 +51,6 @@
   };
 </script>
 
-
 </head>
 <body>
 <header class="navbar">
@@ -116,51 +115,55 @@
 
 <main>
     <section class="main">
-        <div class="prediction-section">
-            <div class="prediction-header">
-                <h2>⚽ 승부예측</h2>
-                <p>득점왕, 우승팀, 도움왕을 예측해보세요!</p>
+        <div class="leaderboard-section">
+            <div class="leaderboard-header">
+                <h2>🏆 리더보드</h2>
+                <p>승부예측 포인트 순위입니다!</p>
             </div>
             
-            <div class="prediction-categories">
-                <div class="category-card">
-                    <h3>🥅 득점왕</h3>
-                    <p style="margin-bottom: 15px;">누가 가장 많은 골을 넣을까요?</p>
-                    <button class="prediction-btn" onclick="openPredictionModal('scorer')">예측하기</button>
-                    <div id="scorer-prediction" class="user-prediction" style="display: none;"></div>
+            <!-- 로딩 상태 -->
+            <div id="leaderboard-loading" class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>리더보드를 불러오는 중...</p>
+            </div>
+            
+            <!-- 리더보드 테이블 -->
+            <div id="leaderboard-container" class="leaderboard-container" style="display: none;">
+                <div class="leaderboard-table-wrapper">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th class="rank-col">순위</th>
+                                <th class="profile-col">프로필</th>
+                                <th class="nickname-col">닉네임</th>
+                                <th class="participation-col">참여횟수</th>
+                                <th class="accuracy-col">정확도</th>
+                                <th class="points-col">포인트</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                            <!-- 리더보드 데이터가 여기에 동적으로 추가됩니다 -->
+                        </tbody>
+                    </table>
                 </div>
                 
-                <div class="category-card">
-                    <h3>🏆 우승팀</h3>
-                    <p style="margin-bottom: 15px;">어느 팀이 우승할까요?</p>
-                    <button class="prediction-btn" onclick="openPredictionModal('champion')">예측하기</button>
-                    <div id="champion-prediction" class="user-prediction" style="display: none;"></div>
-                </div>
-                
-                <div class="category-card">
-                    <h3>🅰️ 도움왕</h3>
-                    <p style="margin-bottom: 15px;">누가 가장 많은 도움을 기록할까요?</p>
-                    <button class="prediction-btn" onclick="openPredictionModal('assist')">예측하기</button>
-                    <div id="assist-prediction" class="user-prediction" style="display: none;"></div>
+                <!-- 페이지네이션 -->
+                <div class="pagination-container">
+                    <button id="prevLeaderboardBtn" class="pagination-btn" disabled>이전</button>
+                    <span id="leaderboard-page-info" class="page-info">1 / 1</span>
+                    <button id="nextLeaderboardBtn" class="pagination-btn" disabled>다음</button>
                 </div>
             </div>
             
-            <!-- 차트 섹션 -->
-            <div id="charts-container">
-                <div class="chart-container">
-                    <div class="chart-title">🥅 득점왕 예측 현황</div>
-                    <div id="scorer-chart"></div>
-                </div>
-                
-                <div class="chart-container">
-                    <div class="chart-title">🏆 우승팀 예측 현황</div>
-                    <div id="champion-chart"></div>
-                </div>
-                
-                <div class="chart-container">
-                    <div class="chart-title">🅰️ 도움왕 예측 현황</div>
-                    <div id="assist-chart"></div>
-                </div>
+            <!-- 에러 상태 -->
+            <div id="leaderboard-error" class="error-container" style="display: none;">
+                <p>리더보드를 불러오는 중 오류가 발생했습니다.</p>
+                <button id="retry-leaderboard" class="retry-btn">다시 시도</button>
+            </div>
+            
+            <!-- 빈 상태 -->
+            <div id="leaderboard-empty" class="empty-container" style="display: none;">
+                <p>아직 참여자가 없습니다.</p>
             </div>
         </div>
     </section>
@@ -278,21 +281,290 @@
         </div>
     </div>
 
-<!-- 예측 모달 -->
-<div id="predictionModal" class="prediction-modal">
-    <div class="prediction-modal-content">
-        <span class="prediction-modal-close" onclick="closePredictionModal()">&times;</span>
-        <h2 id="modal-title" class="modal-title"></h2>
-        <div id="prediction-input-container" style="margin-bottom: 20px; display:none;">
-            <input type="text" id="prediction-input" class="prediction-input" placeholder="예측을 입력하세요" />        
-        </div>
-        <button id="submit-prediction" class="submit-prediction" onclick="submitPrediction()" disabled>예측 제출</button>
-    </div>
-</div>
-
 <script type="module" src="auth.js"></script>
 <script src="matchData.js"></script>
 <script src="script.js"></script>
 <script src="predictions.js"></script>
+
+<style>
+/* 리더보드 전용 스타일 */
+.leaderboard-section {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.leaderboard-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.leaderboard-header h2 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.leaderboard-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.loading-container, .error-container, .empty-container {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--background-secondary);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.leaderboard-table-wrapper {
+    background: var(--background-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.leaderboard-table thead {
+    background: var(--primary-color);
+}
+
+.leaderboard-table th {
+    color: white;
+    padding: 16px 12px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.leaderboard-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.leaderboard-table tbody tr:hover {
+    background: var(--background-tertiary);
+}
+
+.leaderboard-table tbody tr.top-rank {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+}
+
+.leaderboard-table tbody tr.top-rank:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.08));
+}
+
+.leaderboard-table td {
+    padding: 16px 12px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.rank-col {
+    width: 80px;
+}
+
+.profile-col {
+    width: 60px;
+}
+
+.nickname-col {
+    width: 150px;
+}
+
+.participation-col {
+    width: 100px;
+}
+
+.accuracy-col {
+    width: 100px;
+}
+
+.points-col {
+    width: 120px;
+}
+
+.rank-number {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.rank-number.gold {
+    color: #FFD700;
+}
+
+.rank-number.silver {
+    color: #C0C0C0;
+}
+
+.rank-number.bronze {
+    color: #CD7F32;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+}
+
+.user-nickname {
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: left;
+}
+
+.participation-count {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.accuracy-rate {
+    font-weight: 600;
+}
+
+.accuracy-rate.high {
+    color: #28a745;
+}
+
+.accuracy-rate.medium {
+    color: #ffc107;
+}
+
+.accuracy-rate.low {
+    color: #dc3545;
+}
+
+.user-points {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.pagination-btn {
+    padding: 10px 20px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+    background: var(--background-secondary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.page-info {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 80px;
+    text-align: center;
+}
+
+.retry-btn {
+    padding: 12px 24px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 20px;
+}
+
+.retry-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .leaderboard-table-wrapper {
+        overflow-x: auto;
+    }
+    
+    .leaderboard-table {
+        min-width: 600px;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 12px 8px;
+        font-size: 0.9rem;
+    }
+    
+    .profile-avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .pagination-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* 다크모드 대응 */
+:root {
+    --primary-color: #667eea;
+    --primary-hover: #5a67d8;
+    --background-primary: #ffffff;
+    --background-secondary: #f8f9fa;
+    --background-tertiary: #e9ecef;
+    --text-primary: #2d3748;
+    --text-secondary: #718096;
+    --border-color: #e2e8f0;
+}
+
+body:not(.light-mode) {
+    --background-primary: #1a202c;
+    --background-secondary: #2d3748;
+    --background-tertiary: #4a5568;
+    --text-primary: #f7fafc;
+    --text-secondary: #a0aec0;
+    --border-color: #4a5568;
+}
+</style>
+
 </body>
 </html>
