@@ -1,29 +1,32 @@
 // predictions.js - 리더보드 전용
-let db, auth;
+// script.js에서 이미 선언된 변수들을 재선언하지 않고 사용
 let currentLeaderboardPage = 1;
 const usersPerPage = 10;
 let allLeaderboardUsers = [];
 
 // Firebase 초기화 대기
 window.addEventListener('DOMContentLoaded', () => {
-    // Firebase SDK 로드 확인
-    if (window.firebase && window.firebase.getFirestore && window.firebase.getAuth) {
-        db = window.firebase.getFirestore();
-        auth = window.firebase.getAuth();
-        
-        // 인증 상태 변경 감지
-        window.firebase.onAuthStateChanged(auth, (user) => {
-            // 로그인 여부와 관계없이 리더보드 로드
-            loadLeaderboard();
-        });
-        
-        // 페이지네이션 버튼 이벤트 리스너
-        setupPaginationEvents();
-        
-    } else {
-        console.error("Firebase SDK가 아직 로드되지 않았습니다.");
-        showError();
-    }
+    // script.js에서 Firebase가 초기화될 때까지 대기
+    const waitForFirebase = () => {
+        if (window.db && window.auth) {
+            console.log("predictions.js - Firebase 변수들이 준비됨");
+            
+            // 인증 상태 변경 감지
+            window.firebase.onAuthStateChanged(window.auth, (user) => {
+                // 로그인 여부와 관계없이 리더보드 로드
+                loadLeaderboard();
+            });
+            
+            // 페이지네이션 버튼 이벤트 리스너
+            setupPaginationEvents();
+            
+        } else {
+            console.log("predictions.js - Firebase 변수들 대기 중...");
+            setTimeout(waitForFirebase, 100);
+        }
+    };
+    
+    waitForFirebase();
 });
 
 // 페이지네이션 이벤트 설정
@@ -66,8 +69,15 @@ async function loadLeaderboard() {
     showLoading();
     
     try {
+        // script.js에서 선언된 전역 변수 사용
+        if (!window.db) {
+            console.error("Firebase db가 초기화되지 않았습니다.");
+            showError();
+            return;
+        }
+        
         // 1. 모든 사용자 프로필 가져오기
-        const profilesSnapshot = await window.firebase.getDocs(window.firebase.collection(db, "profiles"));
+        const profilesSnapshot = await window.firebase.getDocs(window.firebase.collection(window.db, "profiles"));
         const userProfiles = {};
         
         profilesSnapshot.forEach(doc => {
@@ -83,7 +93,7 @@ async function loadLeaderboard() {
         console.log("사용자 프로필 로드 완료:", Object.keys(userProfiles).length, "명");
         
         // 2. 사용자별 포인트 가져오기
-        const pointsSnapshot = await window.firebase.getDocs(window.firebase.collection(db, "user_points"));
+        const pointsSnapshot = await window.firebase.getDocs(window.firebase.collection(window.db, "user_points"));
         const userPoints = {};
         
         pointsSnapshot.forEach(doc => {
@@ -93,7 +103,7 @@ async function loadLeaderboard() {
         console.log("포인트 데이터 로드 완료:", Object.keys(userPoints).length, "명");
         
         // 3. 완료된 경기 목록 가져오기 (관리자가 결과를 설정한 경기만)
-        const matchesSnapshot = await window.firebase.getDocs(window.firebase.collection(db, "matches"));
+        const matchesSnapshot = await window.firebase.getDocs(window.firebase.collection(window.db, "matches"));
         const finishedMatches = {};
         
         matchesSnapshot.forEach(doc => {
@@ -106,7 +116,7 @@ async function loadLeaderboard() {
         console.log("완료된 경기 수:", Object.keys(finishedMatches).length);
         
         // 4. 모든 투표 데이터 가져오기
-        const votesSnapshot = await window.firebase.getDocs(window.firebase.collection(db, "votes"));
+        const votesSnapshot = await window.firebase.getDocs(window.firebase.collection(window.db, "votes"));
         const userStats = {};
         
         // 사용자별 통계 초기화
@@ -262,6 +272,7 @@ function updatePaginationButtons() {
     const nextBtn = document.getElementById('nextLeaderboardBtn');
     const pageInfo = document.getElementById('leaderboard-page-info');
     
+    // null 체크 추가하여 오류 방지
     if (prevBtn) {
         prevBtn.disabled = currentLeaderboardPage <= 1;
     }
