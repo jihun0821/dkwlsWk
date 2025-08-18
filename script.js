@@ -989,11 +989,20 @@ async function getAllMatchData() {
     return matchMap;
 }
 
-// ✅ renderMatches 함수 - 메인 페이지에서만 실행되도록 수정
+// ✅ renderMatches 함수 - 메인(index.html)과 schedule.html에서만 실행
 async function renderMatches() {
     // 리더보드 페이지에서는 경기 렌더링을 하지 않음
     if (isLeaderboardPage()) {
         console.log("리더보드 페이지 - renderMatches 실행 건너뜀");
+        return;
+    }
+
+    // index.html, schedule.html 에서만 실행
+    const isSchedulePage = window.location.pathname.includes("schedule.html");
+    const isIndexPage = window.location.pathname.endsWith("/") || window.location.pathname.includes("index.html");
+
+    if (!isSchedulePage && !isIndexPage) {
+        console.log("해당 페이지에서 renderMatches 실행 건너뜀");
         return;
     }
 
@@ -1036,6 +1045,7 @@ async function renderMatches() {
     updateButtons(); // 페이지 버튼도 함께 갱신
     console.log("renderMatches 실행 완료");
 }
+
 
 // ✅ updateButtons 함수 - 리더보드 페이지에서는 실행하지 않음
 async function updateButtons() {
