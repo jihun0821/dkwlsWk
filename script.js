@@ -39,20 +39,38 @@ function initializeFirebaseGlobals() {
     return false;
 }
 
-// ✅ 현재 페이지가 리더보드인지 확인하는 함수 추가
+// ✅ 현재 페이지가 리더보드인지 확인하는 함수 수정 - 더 정확하게 감지
 function isLeaderboardPage() {
-    return window.location.pathname.includes('leaderboard.html') || 
-           document.querySelector('.leaderboard-section') !== null;
+    const url = window.location.pathname;
+    const hasLeaderboardClass = document.querySelector('.leaderboard-section') !== null;
+    const hasLeaderboardTitle = document.title && document.title.includes('리더보드');
+    
+    return url.includes('leaderboard.html') || hasLeaderboardClass || hasLeaderboardTitle;
 }
 
-// ✅ 현재 페이지가 메인 페이지(경기 목록)인지 확인하는 함수 추가
-function isMainMatchPage() {
-    // 메인 페이지거나 index.html이거나, 페이지네이션 컨테이너가 있는 경우
-    return (window.location.pathname === '/' || 
-            window.location.pathname.includes('index.html') || 
-            window.location.pathname === '') &&
-           document.querySelector('.pagination-container') !== null &&
-           !isLeaderboardPage();
+// ✅ 현재 페이지에서 경기 목록을 렌더링해야 하는지 확인하는 함수 수정
+function shouldRenderMatches() {
+    const url = window.location.pathname;
+    const hasPagination = document.querySelector('.pagination-container') !== null;
+    const hasMainSection = document.querySelector('section.main') !== null;
+    
+    // schedule.html이거나 index.html이거나 메인 페이지이면서, 리더보드가 아닌 경우
+    const isMatchPage = (
+        url.includes('schedule.html') || 
+        url.includes('index.html') || 
+        url === '/' || 
+        url === ''
+    ) && !isLeaderboardPage();
+    
+    console.log("shouldRenderMatches 체크:", {
+        url: url,
+        hasPagination: hasPagination,
+        hasMainSection: hasMainSection,
+        isMatchPage: isMatchPage,
+        isLeaderboard: isLeaderboardPage()
+    });
+    
+    return isMatchPage && hasPagination && hasMainSection;
 }
 
 window.onload = function () {
@@ -71,9 +89,9 @@ window.onload = function () {
             // Firebase 초기화 성공 시 관리자 권한 확인
             checkAdminStatus();
             
-            // ✅ 페이지별로 다른 초기화 실행
-            if (isMainMatchPage()) {
-                console.log("메인 경기 목록 페이지 - 경기 렌더링 실행");
+            // ✅ 페이지별로 다른 초기화 실행 - 수정된 로직
+            if (shouldRenderMatches()) {
+                console.log("경기 목록 페이지 - 경기 렌더링 실행");
                 renderMatches();
                 updateButtons();
             } else if (isLeaderboardPage()) {
@@ -989,11 +1007,11 @@ async function getAllMatchData() {
     return matchMap;
 }
 
-// ✅ renderMatches 함수 - 메인 페이지에서만 실행되도록 수정
+// ✅ renderMatches 함수 - 수정된 페이지 감지 로직 사용
 async function renderMatches() {
-    // 리더보드 페이지에서는 경기 렌더링을 하지 않음
-    if (isLeaderboardPage()) {
-        console.log("리더보드 페이지 - renderMatches 실행 건너뜀");
+    // shouldRenderMatches() 함수로 체크
+    if (!shouldRenderMatches()) {
+        console.log("renderMatches 실행 건너뜀 - 페이지 조건 불일치");
         return;
     }
 
@@ -1037,10 +1055,10 @@ async function renderMatches() {
     console.log("renderMatches 실행 완료");
 }
 
-// ✅ updateButtons 함수 - 리더보드 페이지에서는 실행하지 않음
+// ✅ updateButtons 함수 - 수정된 페이지 감지 로직 사용
 async function updateButtons() {
-    // 리더보드 페이지에서는 경기 페이지네이션 버튼 업데이트 안함
-    if (isLeaderboardPage()) {
+    // shouldRenderMatches() 함수로 체크
+    if (!shouldRenderMatches()) {
         return;
     }
 
@@ -1056,10 +1074,10 @@ async function updateButtons() {
     }
 }
 
-// ✅ 페이지네이션 이벤트 - 메인 페이지에서만 작동하도록 수정
+// ✅ 페이지네이션 이벤트 - 수정된 페이지 감지 로직 사용
 if (prevBtn) {
     prevBtn.addEventListener('click', async () => {
-        if (isLeaderboardPage()) return; // 리더보드에서는 작동 안함
+        if (!shouldRenderMatches()) return; // 수정된 조건
         
         if (currentPage > 1) {
             currentPage--;
@@ -1070,7 +1088,7 @@ if (prevBtn) {
 
 if (nextBtn) {
     nextBtn.addEventListener('click', async () => {
-        if (isLeaderboardPage()) return; // 리더보드에서는 작동 안함
+        if (!shouldRenderMatches()) return; // 수정된 조건
         
         const totalPages = await getTotalPages();
         if (currentPage < totalPages) {
