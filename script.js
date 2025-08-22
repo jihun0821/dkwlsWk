@@ -810,45 +810,117 @@ function updateProgressBar(percent) {
     }
 }
 
-// === 편집 모달 이벤트 연결 ===
+// === 편집 모달 이벤트 연결 (사진 + 닉네임 편집 지원) ===
 window.addEventListener('DOMContentLoaded', function() {
     const closeEdit = document.getElementById('closeProfileEditModal');
     const cancelEdit = document.getElementById('cancelEditBtn');
     const saveEdit = document.getElementById('saveNicknameBtn');
     
     if (closeEdit) closeEdit.onclick = () => { 
-        document.getElementById('profileEditModal').style.display = "none"; 
+        document.getElementById('profileEditModal').style.display = "none";
+        resetImagePreview(); // 이미지 미리보기 초기화
     };
     
     if (cancelEdit) cancelEdit.onclick = () => { 
         document.getElementById('profileEditModal').style.display = "none"; 
+        resetImagePreview(); // 이미지 미리보기 초기화
     };
     
-    // 닉네임 저장 버튼 이벤트 리스너
+    // 프로필 저장 버튼 이벤트 리스너 (닉네임 + 이미지)
     if (saveEdit) {
         saveEdit.onclick = async function () {
             const newNickname = document.getElementById('newNickname').value.trim();
-            if (newNickname.length < 2 || newNickname.length > 20) {
+            
+            // 닉네임 유효성 검사
+            if (newNickname && (newNickname.length < 2 || newNickname.length > 20)) {
                 alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
                 return;
             }
+            
             const user = auth.currentUser;
             if (!user) return;
+            
             try {
-                const docRef = window.firebase.doc(db, 'profiles', user.uid);
-                await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
-                await window.firebase.updateProfile(user, { displayName: newNickname });
-                document.getElementById('editSuccessMessage').style.display = "block";
+                // 버튼 비활성화 및 로딩 상태 표시
+                saveEdit.disabled = true;
+                saveEdit.textContent = '저장 중...';
                 
-                // 프로필 갱신은 한 번만 호출
-                await showUserProfile();
+                let profileUpdateData = {};
+                let shouldUpdateFirebaseProfile = false;
                 
+                // 1. 프로필 이미지 업로드 처리
+                if (window.selectedImageFile) {
+                    console.log('프로필 이미지 업로드 시작');
+                    
+                    // 기존 이미지 URL 가져오기 (삭제를 위해)
+                    const currentProfile = window.currentUserProfile;
+                    const oldImageUrl = currentProfile?.avatar_url;
+                    
+                    // 새 이미지 업로드
+                    const newImageUrl = await uploadProfileImage(window.selectedImageFile, user.uid);
+                    
+                    if (newImageUrl) {
+                        profileUpdateData.avatar_url = newImageUrl;
+                        shouldUpdateFirebaseProfile = true;
+                        
+                        // 기존 이미지 삭제 (기본 아바타가 아닌 경우)
+                        if (oldImageUrl && !oldImageUrl.includes('ui-avatars.com')) {
+                            await deleteOldProfileImage(oldImageUrl);
+                        }
+                        
+                        console.log('프로필 이미지 업로드 완료:', newImageUrl);
+                    } else {
+                        throw new Error('이미지 업로드에 실패했습니다.');
+                    }
+                }
+                
+                // 2. 닉네임 업데이트 처리
+                if (newNickname && newNickname !== (user.displayName || user.email.split('@')[0])) {
+                    profileUpdateData.nickname = newNickname;
+                    shouldUpdateFirebaseProfile = true;
+                    console.log('닉네임 업데이트 준비:', newNickname);
+                }
+                
+                // 3. 업데이트할 데이터가 있는 경우에만 처리
+                if (Object.keys(profileUpdateData).length > 0) {
+                    // Firestore profiles 컬렉션 업데이트
+                    const docRef = window.firebase.doc(db, 'profiles', user.uid);
+                    await window.firebase.setDoc(docRef, profileUpdateData, { merge: true });
+                    
+                    // Firebase Auth 프로필 업데이트 (닉네임이나 이미지가 변경된 경우)
+                    if (shouldUpdateFirebaseProfile) {
+                        const updateData = {};
+                        if (profileUpdateData.nickname) updateData.displayName = profileUpdateData.nickname;
+                        if (profileUpdateData.avatar_url) updateData.photoURL = profileUpdateData.avatar_url;
+                        
+                        await window.firebase.updateProfile(user, updateData);
+                    }
+                    
+                    // 성공 메시지 표시
+                    document.getElementById('editSuccessMessage').style.display = "block";
+                    
+                    // UI 갱신
+                    await showUserProfile();
+                    
+                    console.log('프로필 업데이트 완료:', profileUpdateData);
+                } else {
+                    // 변경된 데이터가 없는 경우
+                    alert('변경된 정보가 없습니다.');
+                }
+                
+                // 1초 후 모달 닫기
                 setTimeout(() => {
                     document.getElementById('profileEditModal').style.display = "none";
+                    resetImagePreview(); // 이미지 미리보기 초기화
                 }, 1000);
+                
             } catch (error) {
-                console.error('닉네임 수정 중 오류 발생:', error);
-                alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
+                console.error('프로필 수정 중 오류 발생:', error);
+                alert('프로필 수정에 실패했습니다. 다시 시도해주세요.');
+            } finally {
+                // 버튼 상태 복구
+                saveEdit.disabled = false;
+                saveEdit.textContent = '저장';
             }
         };
     }
