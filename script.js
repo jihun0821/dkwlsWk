@@ -598,9 +598,9 @@ function isUserLoggedIn() {
     return !!localStorage.getItem("userEmail");
 }
 
-// 프로필 편집 모달 이벤트 설정 (수정된 버전)
+// 프로필 편집 모달 이벤트 설정 (디버깅 강화 버전)
 function setupProfileEditModalEvents() {
-    console.log("프로필 편집 모달 이벤트 설정 시작");
+    console.log("=== 프로필 편집 모달 이벤트 설정 시작 ===");
     
     const closeProfileEditModal = document.getElementById('closeProfileEditModal');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -703,23 +703,26 @@ function setupProfileEditModalEvents() {
         };
     }
     
-    // ✅ 프로필 저장 버튼 - 이벤트 리스너 수정
+    // ✅ 프로필 저장 버튼 - 강화된 이벤트 리스너
     if (saveProfileBtn) {
-        console.log("저장 버튼 이벤트 리스너 등록 중...");
+        console.log("저장 버튼 발견! 이벤트 리스너 등록 중...");
+        console.log("저장 버튼 요소:", saveProfileBtn);
+        console.log("저장 버튼 disabled 상태:", saveProfileBtn.disabled);
+        console.log("저장 버튼 style:", saveProfileBtn.style.cssText);
         
-        // 기존 이벤트 리스너 제거 (중복 방지)
-        saveProfileBtn.removeEventListener('click', saveProfile);
+        // 기존 모든 이벤트 리스너 제거
+        const newSaveBtn = saveProfileBtn.cloneNode(true);
+        saveProfileBtn.parentNode.replaceChild(newSaveBtn, saveProfileBtn);
         
-        // 새 이벤트 리스너 등록
-        saveProfileBtn.addEventListener('click', async function(e) {
+        // 새로운 이벤트 리스너 등록
+        newSaveBtn.addEventListener('click', async function(e) {
+            console.log("🔥 저장 버튼 클릭 이벤트 발생!");
             e.preventDefault();
             e.stopPropagation();
             
-            console.log("저장 버튼 클릭됨!");
-            
             // 버튼 비활성화로 중복 클릭 방지
-            saveProfileBtn.disabled = true;
-            saveProfileBtn.textContent = '저장 중...';
+            newSaveBtn.disabled = true;
+            newSaveBtn.textContent = '저장 중...';
             
             try {
                 await saveProfile();
@@ -728,16 +731,61 @@ function setupProfileEditModalEvents() {
                 alert('프로필 저장에 실패했습니다. 다시 시도해주세요.');
             } finally {
                 // 버튼 상태 복원
-                saveProfileBtn.disabled = false;
-                saveProfileBtn.textContent = '저장';
+                newSaveBtn.disabled = false;
+                newSaveBtn.textContent = '저장';
             }
         });
         
-        console.log("저장 버튼 이벤트 리스너 등록 완료");
+        // 추가 이벤트도 테스트
+        newSaveBtn.addEventListener('mousedown', function() {
+            console.log("저장 버튼 mousedown 이벤트");
+        });
+        
+        newSaveBtn.addEventListener('mouseup', function() {
+            console.log("저장 버튼 mouseup 이벤트");
+        });
+        
+        console.log("저장 버튼 이벤트 리스너 등록 완료!");
+        
     } else {
-        console.error("saveProfileBtn 요소를 찾을 수 없습니다!");
+        console.error("❌ saveProfileBtn 요소를 찾을 수 없습니다!");
+        
+        // DOM에서 직접 찾아보기
+        const allButtons = document.querySelectorAll('button');
+        console.log("페이지의 모든 버튼들:", allButtons);
+        
+        const possibleSaveBtns = Array.from(allButtons).filter(btn => 
+            btn.textContent.includes('저장') || 
+            btn.id === 'saveProfileBtn' ||
+            btn.className.includes('save')
+        );
+        console.log("저장 관련 버튼들:", possibleSaveBtns);
+    }
+    
+    console.log("=== 프로필 편집 모달 이벤트 설정 완료 ===");
+}
+
+// 간단한 저장 버튼 테스트 함수
+function testSaveButton() {
+    const saveBtn = document.getElementById('saveProfileBtn');
+    if (saveBtn) {
+        console.log("저장 버튼 테스트:");
+        console.log("- 요소 존재:", !!saveBtn);
+        console.log("- disabled:", saveBtn.disabled);
+        console.log("- display:", getComputedStyle(saveBtn).display);
+        console.log("- visibility:", getComputedStyle(saveBtn).visibility);
+        console.log("- pointer-events:", getComputedStyle(saveBtn).pointerEvents);
+        console.log("- z-index:", getComputedStyle(saveBtn).zIndex);
+        
+        // 강제로 클릭 이벤트 발생
+        saveBtn.click();
+    } else {
+        console.error("저장 버튼을 찾을 수 없습니다!");
     }
 }
+
+// 전역 함수로 노출
+window.testSaveButton = testSaveButton;
 
 // 프로필 저장 함수 (수정된 버전)
 async function saveProfile() {
