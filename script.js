@@ -602,11 +602,21 @@ function isUserLoggedIn() {
 function openProfileEditModal(profileData) {
     const modal = document.getElementById('profileEditModal');
     if (!modal) return;
-    document.getElementById('currentProfileImage').src = profileData.avatar_url;
+    
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
+    
+    document.getElementById('currentProfileImage').src = profileData.avatar_url || defaultAvatar;
     document.getElementById('currentNickname').textContent = profileData.nickname;
     document.getElementById('currentEmail').textContent = profileData.email || "";
     document.getElementById('editSuccessMessage').style.display = "none";
     document.getElementById('newNickname').value = "";
+    
+    // 이미지 미리보기 초기화
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    if (imagePreviewContainer) {
+        imagePreviewContainer.style.display = 'none';
+    }
+    
     modal.style.display = "flex";
 }
 
@@ -615,6 +625,10 @@ function setupProfileEditModalEvents() {
     const closeProfileEditModal = document.getElementById('closeProfileEditModal');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const profileEditModal = document.getElementById('profileEditModal');
+    const changeImageBtn = document.getElementById('changeImageBtn');
+    const imageFileInput = document.getElementById('imageFileInput');
+    const cancelImageBtn = document.getElementById('cancelImageBtn');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
     
     if (closeProfileEditModal) {
         closeProfileEditModal.onclick = () => {
@@ -635,13 +649,186 @@ function setupProfileEditModalEvents() {
             }
         };
     }
+    
+    // 이미지 변경 버튼 클릭
+    if (changeImageBtn) {
+        changeImageBtn.onclick = () => {
+            if (imageFileInput) {
+                imageFileInput.click();
+            }
+        };
+    }
+    
+    // 파일 선택 시 미리보기 표시
+    if (imageFileInput) {
+        imageFileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // 파일 크기 체크 (5MB 제한)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('파일 크기가 너무 큽니다. 5MB 이하의 이미지를 선택해주세요.');
+                    return;
+                }
+                
+                // 파일 타입 체크
+                if (!file.type.startsWith('image/')) {
+                    alert('이미지 파일만 업로드할 수 있습니다.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imagePreview = document.getElementById('imagePreview');
+                    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+                    
+                    if (imagePreview && imagePreviewContainer) {
+                        imagePreview.src = e.target.result;
+                        imagePreviewContainer.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+    
+    // 이미지 취소 버튼
+    if (cancelImageBtn) {
+        cancelImageBtn.onclick = () => {
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            if (imagePreviewContainer) {
+                imagePreviewContainer.style.display = 'none';
+            }
+            if (imageFileInput) {
+                imageFileInput.value = '';
+            }
+        };
+    }
+    
+    // 프로필 저장 버튼
+    if (saveProfileBtn) {
+        saveProfileBtn.onclick = saveProfile;
+    }
+}
+
+// 프로필 저장 함수 (닉네임 및 프로필 사진)
+async function saveProfile() {
+    const user = auth.currentUser;
+    if (!user) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+    
+    const newNickname = document.getElementById('newNickname').value.trim();
+    const imageFileInput = document.getElementById('imageFileInput');
+    const selectedFile = imageFileInput?.files[0];
+    
+    // 닉네임과 이미지 모두 없으면 경고
+    if (!newNickname && !selectedFile) {
+        alert('변경할 닉네임을 입력하거나 새 프로필 사진을 선택해주세요.');
+        return;
+    }
+    
+    // 닉네임 길이 체크
+    if (newNickname && (newNickname.length < 2 || newNickname.length > 20)) {
+        alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+        return;
+    }
+    
+    try {
+        // 업로드 진행 표시
+        const uploadProgress = document.getElementById('uploadProgress');
+        const saveBtn = document.getElementById('saveProfileBtn');
+        if (uploadProgress) uploadProgress.style.display = 'block';
+        if (saveBtn) saveBtn.disabled = true;
+        
+        let newAvatarUrl = null;
+        
+        // 이미지 업로드 처리
+        if (selectedFile) {
+            const storage = window.firebase.getStorage();
+            const imageRef = window.firebase.ref(storage, `profile_images/${user.uid}/${Date.now()}_${selectedFile.name}`);
+            
+            try {
+                // 기존 이미지 삭제 (선택적)
+                const currentProfile = window.currentUserProfile;
+                if (currentProfile?.avatar_url && currentProfile.avatar_url.includes('firebase')) {
+                    try {
+                        const oldImageRef = window.firebase.ref(storage, currentProfile.avatar_url);
+                        await window.firebase.deleteObject(oldImageRef);
+                    } catch (deleteError) {
+                        console.log('기존 이미지 삭제 실패 (무시):', deleteError);
+                    }
+                }
+                
+                // 새 이미지 업로드
+                const uploadResult = await window.firebase.uploadBytes(imageRef, selectedFile);
+                newAvatarUrl = await window.firebase.getDownloadURL(uploadResult.ref);
+                console.log('이미지 업로드 성공:', newAvatarUrl);
+                
+            } catch (uploadError) {
+                console.error('이미지 업로드 실패:', uploadError);
+                alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+                return;
+            }
+        }
+        
+        // 프로필 데이터 업데이트 준비
+        const updateData = {};
+        if (newNickname) {
+            updateData.nickname = newNickname;
+        }
+        if (newAvatarUrl) {
+            updateData.avatar_url = newAvatarUrl;
+        }
+        
+        // Firestore 프로필 문서 업데이트
+        const profileDocRef = window.firebase.doc(db, 'profiles', user.uid);
+        await window.firebase.setDoc(profileDocRef, updateData, { merge: true });
+        
+        // Firebase Auth 프로필 업데이트
+        const authUpdateData = {};
+        if (newNickname) {
+            authUpdateData.displayName = newNickname;
+        }
+        if (newAvatarUrl) {
+            authUpdateData.photoURL = newAvatarUrl;
+        }
+        
+        if (Object.keys(authUpdateData).length > 0) {
+            await window.firebase.updateProfile(user, authUpdateData);
+        }
+        
+        // 성공 메시지 표시
+        const successMessage = document.getElementById('editSuccessMessage');
+        if (successMessage) {
+            successMessage.style.display = 'block';
+        }
+        
+        // UI 새로고침
+        await showUserProfile();
+        
+        // 1초 후 모달 닫기
+        setTimeout(() => {
+            const modal = document.getElementById('profileEditModal');
+            if (modal) modal.style.display = 'none';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('프로필 저장 실패:', error);
+        alert('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+        // 업로드 진행 표시 숨김
+        const uploadProgress = document.getElementById('uploadProgress');
+        const saveBtn = document.getElementById('saveProfileBtn');
+        if (uploadProgress) uploadProgress.style.display = 'none';
+        if (saveBtn) saveBtn.disabled = false;
+    }
 }
 
 // === 편집 모달 이벤트 연결 ===
 window.addEventListener('DOMContentLoaded', function() {
     const closeEdit = document.getElementById('closeProfileEditModal');
     const cancelEdit = document.getElementById('cancelEditBtn');
-    const saveEdit = document.getElementById('saveNicknameBtn');
     
     if (closeEdit) closeEdit.onclick = () => { 
         document.getElementById('profileEditModal').style.display = "none"; 
@@ -650,35 +837,6 @@ window.addEventListener('DOMContentLoaded', function() {
     if (cancelEdit) cancelEdit.onclick = () => { 
         document.getElementById('profileEditModal').style.display = "none"; 
     };
-    
-    // 닉네임 저장 버튼 이벤트 리스너
-    if (saveEdit) {
-        saveEdit.onclick = async function () {
-            const newNickname = document.getElementById('newNickname').value.trim();
-            if (newNickname.length < 2 || newNickname.length > 20) {
-                alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
-                return;
-            }
-            const user = auth.currentUser;
-            if (!user) return;
-            try {
-                const docRef = window.firebase.doc(db, 'profiles', user.uid);
-                await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
-                await window.firebase.updateProfile(user, { displayName: newNickname });
-                document.getElementById('editSuccessMessage').style.display = "block";
-                
-                // 프로필 갱신은 한 번만 호출
-                await showUserProfile();
-                
-                setTimeout(() => {
-                    document.getElementById('profileEditModal').style.display = "none";
-                }, 1000);
-            } catch (error) {
-                console.error('닉네임 수정 중 오류 발생:', error);
-                alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
-            }
-        };
-    }
 });
 
 // saveVoteToFirestore - firebase 네임스페이스 통일
