@@ -598,30 +598,10 @@ function isUserLoggedIn() {
     return !!localStorage.getItem("userEmail");
 }
 
-// === 프로필 편집 모달 열기 함수 ===
-function openProfileEditModal(profileData) {
-    const modal = document.getElementById('profileEditModal');
-    if (!modal) return;
-    
-    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
-    
-    document.getElementById('currentProfileImage').src = profileData.avatar_url || defaultAvatar;
-    document.getElementById('currentNickname').textContent = profileData.nickname;
-    document.getElementById('currentEmail').textContent = profileData.email || "";
-    document.getElementById('editSuccessMessage').style.display = "none";
-    document.getElementById('newNickname').value = "";
-    
-    // 이미지 미리보기 초기화
-    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-    if (imagePreviewContainer) {
-        imagePreviewContainer.style.display = 'none';
-    }
-    
-    modal.style.display = "flex";
-}
-
-// 프로필 편집 모달 이벤트 설정
+// 프로필 편집 모달 이벤트 설정 (수정된 버전)
 function setupProfileEditModalEvents() {
+    console.log("프로필 편집 모달 이벤트 설정 시작");
+    
     const closeProfileEditModal = document.getElementById('closeProfileEditModal');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const profileEditModal = document.getElementById('profileEditModal');
@@ -630,14 +610,27 @@ function setupProfileEditModalEvents() {
     const cancelImageBtn = document.getElementById('cancelImageBtn');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     
+    // 각 요소 존재 확인 및 로그
+    console.log("프로필 편집 모달 요소들 확인:", {
+        closeProfileEditModal: !!closeProfileEditModal,
+        cancelEditBtn: !!cancelEditBtn,
+        profileEditModal: !!profileEditModal,
+        changeImageBtn: !!changeImageBtn,
+        imageFileInput: !!imageFileInput,
+        cancelImageBtn: !!cancelImageBtn,
+        saveProfileBtn: !!saveProfileBtn
+    });
+    
     if (closeProfileEditModal) {
         closeProfileEditModal.onclick = () => {
+            console.log("닫기 버튼 클릭됨");
             if (profileEditModal) profileEditModal.style.display = 'none';
         };
     }
     
     if (cancelEditBtn) {
         cancelEditBtn.onclick = () => {
+            console.log("취소 버튼 클릭됨");
             if (profileEditModal) profileEditModal.style.display = 'none';
         };
     }
@@ -645,6 +638,7 @@ function setupProfileEditModalEvents() {
     if (profileEditModal) {
         profileEditModal.onclick = (e) => {
             if (e.target === profileEditModal) {
+                console.log("모달 배경 클릭됨");
                 profileEditModal.style.display = 'none';
             }
         };
@@ -653,6 +647,7 @@ function setupProfileEditModalEvents() {
     // 이미지 변경 버튼 클릭
     if (changeImageBtn) {
         changeImageBtn.onclick = () => {
+            console.log("이미지 변경 버튼 클릭됨");
             if (imageFileInput) {
                 imageFileInput.click();
             }
@@ -663,6 +658,8 @@ function setupProfileEditModalEvents() {
     if (imageFileInput) {
         imageFileInput.onchange = (e) => {
             const file = e.target.files[0];
+            console.log("파일 선택됨:", file ? file.name : 'none');
+            
             if (file) {
                 // 파일 크기 체크 (5MB 제한)
                 if (file.size > 5 * 1024 * 1024) {
@@ -684,6 +681,7 @@ function setupProfileEditModalEvents() {
                     if (imagePreview && imagePreviewContainer) {
                         imagePreview.src = e.target.result;
                         imagePreviewContainer.style.display = 'block';
+                        console.log("이미지 미리보기 표시됨");
                     }
                 };
                 reader.readAsDataURL(file);
@@ -694,6 +692,7 @@ function setupProfileEditModalEvents() {
     // 이미지 취소 버튼
     if (cancelImageBtn) {
         cancelImageBtn.onclick = () => {
+            console.log("이미지 취소 버튼 클릭됨");
             const imagePreviewContainer = document.getElementById('imagePreviewContainer');
             if (imagePreviewContainer) {
                 imagePreviewContainer.style.display = 'none';
@@ -704,23 +703,63 @@ function setupProfileEditModalEvents() {
         };
     }
     
-    // 프로필 저장 버튼
+    // ✅ 프로필 저장 버튼 - 이벤트 리스너 수정
     if (saveProfileBtn) {
-        saveProfileBtn.onclick = saveProfile;
+        console.log("저장 버튼 이벤트 리스너 등록 중...");
+        
+        // 기존 이벤트 리스너 제거 (중복 방지)
+        saveProfileBtn.removeEventListener('click', saveProfile);
+        
+        // 새 이벤트 리스너 등록
+        saveProfileBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log("저장 버튼 클릭됨!");
+            
+            // 버튼 비활성화로 중복 클릭 방지
+            saveProfileBtn.disabled = true;
+            saveProfileBtn.textContent = '저장 중...';
+            
+            try {
+                await saveProfile();
+            } catch (error) {
+                console.error("프로필 저장 중 오류:", error);
+                alert('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+            } finally {
+                // 버튼 상태 복원
+                saveProfileBtn.disabled = false;
+                saveProfileBtn.textContent = '저장';
+            }
+        });
+        
+        console.log("저장 버튼 이벤트 리스너 등록 완료");
+    } else {
+        console.error("saveProfileBtn 요소를 찾을 수 없습니다!");
     }
 }
 
-// 프로필 저장 함수 (닉네임 및 프로필 사진)
+// 프로필 저장 함수 (수정된 버전)
 async function saveProfile() {
+    console.log("saveProfile 함수 실행 시작");
+    
     const user = auth.currentUser;
     if (!user) {
+        console.error("로그인된 사용자가 없습니다.");
         alert('로그인이 필요합니다.');
         return;
     }
     
+    console.log("현재 로그인된 사용자:", user.email);
+    
     const newNickname = document.getElementById('newNickname').value.trim();
     const imageFileInput = document.getElementById('imageFileInput');
     const selectedFile = imageFileInput?.files[0];
+    
+    console.log("입력된 데이터:", {
+        newNickname: newNickname,
+        selectedFile: selectedFile ? selectedFile.name : 'none'
+    });
     
     // 닉네임과 이미지 모두 없으면 경고
     if (!newNickname && !selectedFile) {
@@ -735,16 +774,21 @@ async function saveProfile() {
     }
     
     try {
+        console.log("프로필 저장 프로세스 시작");
+        
         // 업로드 진행 표시
         const uploadProgress = document.getElementById('uploadProgress');
-        const saveBtn = document.getElementById('saveProfileBtn');
-        if (uploadProgress) uploadProgress.style.display = 'block';
-        if (saveBtn) saveBtn.disabled = true;
+        if (uploadProgress) {
+            uploadProgress.style.display = 'block';
+            console.log("업로드 진행 표시");
+        }
         
         let newAvatarUrl = null;
         
         // 이미지 업로드 처리
         if (selectedFile) {
+            console.log("이미지 업로드 시작:", selectedFile.name);
+            
             const storage = window.firebase.getStorage();
             const imageRef = window.firebase.ref(storage, `profile_images/${user.uid}/${Date.now()}_${selectedFile.name}`);
             
@@ -755,6 +799,7 @@ async function saveProfile() {
                     try {
                         const oldImageRef = window.firebase.ref(storage, currentProfile.avatar_url);
                         await window.firebase.deleteObject(oldImageRef);
+                        console.log("기존 이미지 삭제 완료");
                     } catch (deleteError) {
                         console.log('기존 이미지 삭제 실패 (무시):', deleteError);
                     }
@@ -776,14 +821,19 @@ async function saveProfile() {
         const updateData = {};
         if (newNickname) {
             updateData.nickname = newNickname;
+            console.log("닉네임 업데이트 예정:", newNickname);
         }
         if (newAvatarUrl) {
             updateData.avatar_url = newAvatarUrl;
+            console.log("아바타 URL 업데이트 예정:", newAvatarUrl);
         }
+        
+        console.log("Firestore 업데이트 데이터:", updateData);
         
         // Firestore 프로필 문서 업데이트
         const profileDocRef = window.firebase.doc(db, 'profiles', user.uid);
         await window.firebase.setDoc(profileDocRef, updateData, { merge: true });
+        console.log("Firestore 프로필 업데이트 완료");
         
         // Firebase Auth 프로필 업데이트
         const authUpdateData = {};
@@ -796,22 +846,30 @@ async function saveProfile() {
         
         if (Object.keys(authUpdateData).length > 0) {
             await window.firebase.updateProfile(user, authUpdateData);
+            console.log("Firebase Auth 프로필 업데이트 완료");
         }
         
         // 성공 메시지 표시
         const successMessage = document.getElementById('editSuccessMessage');
         if (successMessage) {
             successMessage.style.display = 'block';
+            console.log("성공 메시지 표시됨");
         }
         
         // UI 새로고침
+        console.log("사용자 프로필 UI 새로고침 중...");
         await showUserProfile();
         
-        // 1초 후 모달 닫기
+        // 1.5초 후 모달 닫기
         setTimeout(() => {
             const modal = document.getElementById('profileEditModal');
-            if (modal) modal.style.display = 'none';
+            if (modal) {
+                modal.style.display = 'none';
+                console.log("프로필 편집 모달 닫힘");
+            }
         }, 1500);
+        
+        console.log("프로필 저장 완료");
         
     } catch (error) {
         console.error('프로필 저장 실패:', error);
@@ -819,11 +877,79 @@ async function saveProfile() {
     } finally {
         // 업로드 진행 표시 숨김
         const uploadProgress = document.getElementById('uploadProgress');
-        const saveBtn = document.getElementById('saveProfileBtn');
-        if (uploadProgress) uploadProgress.style.display = 'none';
-        if (saveBtn) saveBtn.disabled = false;
+        if (uploadProgress) {
+            uploadProgress.style.display = 'none';
+        }
+        
+        console.log("saveProfile 함수 실행 완료");
     }
 }
+
+// === 프로필 편집 모달 열기 함수 (수정된 버전) ===
+function openProfileEditModal(profileData) {
+    console.log("프로필 편집 모달 열기:", profileData);
+    
+    const modal = document.getElementById('profileEditModal');
+    if (!modal) {
+        console.error("프로필 편집 모달을 찾을 수 없습니다!");
+        return;
+    }
+    
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=35&bold=true`;
+    
+    // 현재 정보 표시
+    const currentProfileImage = document.getElementById('currentProfileImage');
+    const currentNickname = document.getElementById('currentNickname');
+    const currentEmail = document.getElementById('currentEmail');
+    const editSuccessMessage = document.getElementById('editSuccessMessage');
+    const newNicknameInput = document.getElementById('newNickname');
+    
+    if (currentProfileImage) {
+        currentProfileImage.src = profileData.avatar_url || defaultAvatar;
+    }
+    
+    if (currentNickname) {
+        currentNickname.textContent = profileData.nickname;
+    }
+    
+    if (currentEmail) {
+        currentEmail.textContent = profileData.email || "";
+    }
+    
+    if (editSuccessMessage) {
+        editSuccessMessage.style.display = "none";
+    }
+    
+    if (newNicknameInput) {
+        newNicknameInput.value = "";
+    }
+    
+    // 이미지 미리보기 초기화
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    if (imagePreviewContainer) {
+        imagePreviewContainer.style.display = 'none';
+    }
+    
+    // 파일 입력 초기화
+    const imageFileInput = document.getElementById('imageFileInput');
+    if (imageFileInput) {
+        imageFileInput.value = '';
+    }
+    
+    modal.style.display = "flex";
+    console.log("프로필 편집 모달이 표시됨");
+    
+    // 모달이 열린 후 이벤트 리스너 재설정
+    setTimeout(() => {
+        setupProfileEditModalEvents();
+    }, 100);
+}
+
+// DOMContentLoaded 이벤트에서 초기 이벤트 설정
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOMContentLoaded - 프로필 편집 모달 이벤트 설정");
+    setupProfileEditModalEvents();
+});
 
 // === 편집 모달 이벤트 연결 ===
 window.addEventListener('DOMContentLoaded', function() {
@@ -1544,6 +1670,9 @@ async function logout() {
 }
 
 // 전역 함수로 노출
+window.openProfileEditModal = openProfileEditModal;
+window.saveProfile = saveProfile;
+window.setupProfileEditModalEvents = setupProfileEditModalEvents;
 window.forceUpdatePointsUI = forceUpdatePointsUI;
 window.testPointsDisplay = testPointsDisplay;
 window.setMatchResult = setMatchResult;
