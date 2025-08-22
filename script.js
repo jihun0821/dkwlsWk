@@ -19,23 +19,21 @@ async function getTotalPages() {
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
-// ✅ Firebase 변수들을 전역으로 선언하고 초기화 (Storage 포함)
-let db, auth, storage;
+// ✅ Firebase 변수들을 전역으로 선언하고 초기화
+let db, auth;
 
-// ✅ Firebase 초기화를 전역 window 객체에 노출 (predictions.js와 공유) - Storage 포함
+// ✅ Firebase 초기화를 전역 window 객체에 노출 (predictions.js와 공유)
 function initializeFirebaseGlobals() {
-    if (window.firebase && window.firebase.getFirestore && window.firebase.getAuth && window.firebase.getStorage) {
+    if (window.firebase && window.firebase.getFirestore && window.firebase.getAuth) {
         db = window.firebase.getFirestore();
         auth = window.firebase.getAuth();
-        storage = window.firebase.getStorage(); // Storage 초기화 추가
         
-        // 전역 변수로 노출하여 다른 파일에서도 사용 가능하도록 함
+        // 전역 변수로 노출하여 predictions.js에서 사용 가능하도록 함
         window.db = db;
         window.auth = auth;
-        window.storage = storage; // Storage도 전역으로 노출
-        window.firebase = window.firebase;
+        window.firebase = window.firebase; // firebase 객체도 명시적으로 노출
         
-        console.log("script.js - Firebase 초기화 완료 (Storage 포함)");
+        console.log("script.js - Firebase 초기화 완료");
         return true;
     }
     return false;
@@ -604,42 +602,29 @@ function isUserLoggedIn() {
 function openProfileEditModal(profileData) {
     const modal = document.getElementById('profileEditModal');
     if (!modal) return;
-    
-    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.nickname || 'USER')}&background=667eea&color=fff&size=120&bold=true`;
-    const currentImage = profileData.avatar_url || defaultAvatar;
-    
-    document.getElementById('currentProfileImage').src = currentImage;
+    document.getElementById('currentProfileImage').src = profileData.avatar_url;
     document.getElementById('currentNickname').textContent = profileData.nickname;
     document.getElementById('currentEmail').textContent = profileData.email || "";
     document.getElementById('editSuccessMessage').style.display = "none";
     document.getElementById('newNickname').value = "";
-    
-    // 이미지 미리보기 리셋
-    resetImagePreview();
-    
     modal.style.display = "flex";
 }
 
-// 프로필 편집 모달 이벤트 설정 함수 수정
+// 프로필 편집 모달 이벤트 설정
 function setupProfileEditModalEvents() {
     const closeProfileEditModal = document.getElementById('closeProfileEditModal');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const profileEditModal = document.getElementById('profileEditModal');
-    const changeImageBtn = document.getElementById('changeImageBtn');
-    const imageFileInput = document.getElementById('imageFileInput');
-    const cancelImageBtn = document.getElementById('cancelImageBtn');
     
     if (closeProfileEditModal) {
         closeProfileEditModal.onclick = () => {
             if (profileEditModal) profileEditModal.style.display = 'none';
-            resetImagePreview();
         };
     }
     
     if (cancelEditBtn) {
         cancelEditBtn.onclick = () => {
             if (profileEditModal) profileEditModal.style.display = 'none';
-            resetImagePreview();
         };
     }
 
@@ -647,280 +632,50 @@ function setupProfileEditModalEvents() {
         profileEditModal.onclick = (e) => {
             if (e.target === profileEditModal) {
                 profileEditModal.style.display = 'none';
-                resetImagePreview();
             }
         };
     }
-    
-    // 이미지 변경 버튼 이벤트
-    if (changeImageBtn) {
-        changeImageBtn.onclick = (e) => {
-            e.stopPropagation();
-            imageFileInput.click();
-        };
-    }
-    
-    // 파일 선택 이벤트
-    if (imageFileInput) {
-        imageFileInput.onchange = handleImageSelect;
-    }
-    
-    // 이미지 취소 버튼 이벤트
-    if (cancelImageBtn) {
-        cancelImageBtn.onclick = resetImagePreview;
-    }
-    
-    // 프로필 이미지 컨테이너 클릭 이벤트
-    const profileImageContainer = document.querySelector('.profile-image-container');
-    if (profileImageContainer) {
-        profileImageContainer.onclick = () => {
-            imageFileInput.click();
-        };
-    }
 }
 
-// 이미지 선택 처리 함수
-function handleImageSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    // 파일 크기 체크 (5MB 제한)
-    if (file.size > 5 * 1024 * 1024) {
-        alert('파일 크기가 너무 큽니다. 5MB 이하의 이미지를 선택해주세요.');
-        return;
-    }
-    
-    // 이미지 파일 타입 체크
-    if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다.');
-        return;
-    }
-    
-    // 미리보기 표시
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const imagePreview = document.getElementById('imagePreview');
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        
-        if (imagePreview && previewContainer) {
-            imagePreview.src = e.target.result;
-            previewContainer.style.display = 'block';
-        }
-    };
-    reader.readAsDataURL(file);
-    
-    // 선택된 파일을 전역 변수에 저장
-    window.selectedImageFile = file;
-}
-
-// 이미지 미리보기 리셋 함수
-function resetImagePreview() {
-    const imageFileInput = document.getElementById('imageFileInput');
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    const imagePreview = document.getElementById('imagePreview');
-    
-    if (imageFileInput) imageFileInput.value = '';
-    if (previewContainer) previewContainer.style.display = 'none';
-    if (imagePreview) imagePreview.src = '';
-    
-    window.selectedImageFile = null;
-}
-
-// 이미지 업로드 함수
-async function uploadProfileImage(file, userId) {
-    if (!storage || !file) return null;
-    
-    try {
-        // 업로드 진행률 표시 시작
-        showUploadProgress(true);
-        
-        // Storage 경로: profiles/{userId}/profile.jpg
-        const imageRef = window.firebase.ref(storage, `profiles/${userId}/profile_${Date.now()}.jpg`);
-        
-        // 파일 업로드
-        updateProgressBar(30);
-        const snapshot = await window.firebase.uploadBytes(imageRef, file);
-        
-        updateProgressBar(70);
-        
-        // 다운로드 URL 가져오기
-        const downloadURL = await window.firebase.getDownloadURL(snapshot.ref);
-        
-        updateProgressBar(100);
-        
-        console.log('이미지 업로드 성공:', downloadURL);
-        return downloadURL;
-        
-    } catch (error) {
-        console.error('이미지 업로드 실패:', error);
-        alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
-        return null;
-    } finally {
-        // 업로드 진행률 표시 숨김
-        setTimeout(() => {
-            showUploadProgress(false);
-        }, 500);
-    }
-}
-
-// 기존 프로필 이미지 삭제 함수
-async function deleteOldProfileImage(oldImageUrl) {
-    if (!storage || !oldImageUrl || oldImageUrl.includes('ui-avatars.com')) {
-        return; // 기본 아바타는 삭제하지 않음
-    }
-    
-    try {
-        // Firebase Storage URL에서 참조 생성
-        const imageRef = window.firebase.ref(storage, oldImageUrl);
-        await window.firebase.deleteObject(imageRef);
-        console.log('기존 프로필 이미지 삭제 완료');
-    } catch (error) {
-        console.error('기존 이미지 삭제 실패:', error);
-        // 삭제 실패해도 새 이미지 업로드는 계속 진행
-    }
-}
-
-// 업로드 진행률 표시 함수
-function showUploadProgress(show) {
-    const progressContainer = document.getElementById('uploadProgress');
-    if (progressContainer) {
-        progressContainer.style.display = show ? 'block' : 'none';
-    }
-    
-    if (!show) {
-        updateProgressBar(0);
-    }
-}
-
-// 진행률 바 업데이트 함수
-function updateProgressBar(percent) {
-    const progressFill = document.querySelector('.progress-fill');
-    const progressText = document.querySelector('.progress-text');
-    
-    if (progressFill) {
-        progressFill.style.width = `${percent}%`;
-    }
-    
-    if (progressText) {
-        if (percent === 100) {
-            progressText.textContent = '업로드 완료!';
-        } else {
-            progressText.textContent = `업로드 중... ${percent}%`;
-        }
-    }
-}
-
-// === 편집 모달 이벤트 연결 (사진 + 닉네임 편집 지원) ===
+// === 편집 모달 이벤트 연결 ===
 window.addEventListener('DOMContentLoaded', function() {
     const closeEdit = document.getElementById('closeProfileEditModal');
     const cancelEdit = document.getElementById('cancelEditBtn');
     const saveEdit = document.getElementById('saveNicknameBtn');
     
     if (closeEdit) closeEdit.onclick = () => { 
-        document.getElementById('profileEditModal').style.display = "none";
-        resetImagePreview(); // 이미지 미리보기 초기화
+        document.getElementById('profileEditModal').style.display = "none"; 
     };
     
     if (cancelEdit) cancelEdit.onclick = () => { 
         document.getElementById('profileEditModal').style.display = "none"; 
-        resetImagePreview(); // 이미지 미리보기 초기화
     };
     
-    // 프로필 저장 버튼 이벤트 리스너 (닉네임 + 이미지)
+    // 닉네임 저장 버튼 이벤트 리스너
     if (saveEdit) {
         saveEdit.onclick = async function () {
             const newNickname = document.getElementById('newNickname').value.trim();
-            
-            // 닉네임 유효성 검사
-            if (newNickname && (newNickname.length < 2 || newNickname.length > 20)) {
+            if (newNickname.length < 2 || newNickname.length > 20) {
                 alert('닉네임은 2자 이상 20자 이하로 입력해주세요.');
                 return;
             }
-            
             const user = auth.currentUser;
             if (!user) return;
-            
             try {
-                // 버튼 비활성화 및 로딩 상태 표시
-                saveEdit.disabled = true;
-                saveEdit.textContent = '저장 중...';
+                const docRef = window.firebase.doc(db, 'profiles', user.uid);
+                await window.firebase.setDoc(docRef, { nickname: newNickname }, { merge: true });
+                await window.firebase.updateProfile(user, { displayName: newNickname });
+                document.getElementById('editSuccessMessage').style.display = "block";
                 
-                let profileUpdateData = {};
-                let shouldUpdateFirebaseProfile = false;
+                // 프로필 갱신은 한 번만 호출
+                await showUserProfile();
                 
-                // 1. 프로필 이미지 업로드 처리
-                if (window.selectedImageFile) {
-                    console.log('프로필 이미지 업로드 시작');
-                    
-                    // 기존 이미지 URL 가져오기 (삭제를 위해)
-                    const currentProfile = window.currentUserProfile;
-                    const oldImageUrl = currentProfile?.avatar_url;
-                    
-                    // 새 이미지 업로드
-                    const newImageUrl = await uploadProfileImage(window.selectedImageFile, user.uid);
-                    
-                    if (newImageUrl) {
-                        profileUpdateData.avatar_url = newImageUrl;
-                        shouldUpdateFirebaseProfile = true;
-                        
-                        // 기존 이미지 삭제 (기본 아바타가 아닌 경우)
-                        if (oldImageUrl && !oldImageUrl.includes('ui-avatars.com')) {
-                            await deleteOldProfileImage(oldImageUrl);
-                        }
-                        
-                        console.log('프로필 이미지 업로드 완료:', newImageUrl);
-                    } else {
-                        throw new Error('이미지 업로드에 실패했습니다.');
-                    }
-                }
-                
-                // 2. 닉네임 업데이트 처리
-                if (newNickname && newNickname !== (user.displayName || user.email.split('@')[0])) {
-                    profileUpdateData.nickname = newNickname;
-                    shouldUpdateFirebaseProfile = true;
-                    console.log('닉네임 업데이트 준비:', newNickname);
-                }
-                
-                // 3. 업데이트할 데이터가 있는 경우에만 처리
-                if (Object.keys(profileUpdateData).length > 0) {
-                    // Firestore profiles 컬렉션 업데이트
-                    const docRef = window.firebase.doc(db, 'profiles', user.uid);
-                    await window.firebase.setDoc(docRef, profileUpdateData, { merge: true });
-                    
-                    // Firebase Auth 프로필 업데이트 (닉네임이나 이미지가 변경된 경우)
-                    if (shouldUpdateFirebaseProfile) {
-                        const updateData = {};
-                        if (profileUpdateData.nickname) updateData.displayName = profileUpdateData.nickname;
-                        if (profileUpdateData.avatar_url) updateData.photoURL = profileUpdateData.avatar_url;
-                        
-                        await window.firebase.updateProfile(user, updateData);
-                    }
-                    
-                    // 성공 메시지 표시
-                    document.getElementById('editSuccessMessage').style.display = "block";
-                    
-                    // UI 갱신
-                    await showUserProfile();
-                    
-                    console.log('프로필 업데이트 완료:', profileUpdateData);
-                } else {
-                    // 변경된 데이터가 없는 경우
-                    alert('변경된 정보가 없습니다.');
-                }
-                
-                // 1초 후 모달 닫기
                 setTimeout(() => {
                     document.getElementById('profileEditModal').style.display = "none";
-                    resetImagePreview(); // 이미지 미리보기 초기화
                 }, 1000);
-                
             } catch (error) {
-                console.error('프로필 수정 중 오류 발생:', error);
-                alert('프로필 수정에 실패했습니다. 다시 시도해주세요.');
-            } finally {
-                // 버튼 상태 복구
-                saveEdit.disabled = false;
-                saveEdit.textContent = '저장';
+                console.error('닉네임 수정 중 오류 발생:', error);
+                alert('닉네임 수정에 실패했습니다. 다시 시도해주세요.');
             }
         };
     }
